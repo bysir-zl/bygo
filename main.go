@@ -7,15 +7,15 @@ import (
 
 func main() {
     args := os.Args
-    if len(os.Args) == 0 {
+    if len(args) == 1 {
         args = []string{"create", "helloworld"}
     }
 
-    command := args[0]
+    command := args[1]
 
     switch command {
     case "create":
-        projectName := args[1]
+        projectName := args[2]
         artisan.CreateProject(projectName)
 
     }
