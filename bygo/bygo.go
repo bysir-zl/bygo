@@ -24,14 +24,10 @@ func NewApiHandler() (apiHandle *ApiHandler) {
         OtherItemMap:make(map[string]interface{}),
     };
 
-    node := byhttp.RouterNode{}
-    node.ChildrenList = &[]byhttp.RouterNode{}
-    node.MiddlewareList = &[]byhttp.Middleware{}
-    node.HandlerType = "Base"
 
     apiHandle = &ApiHandler{
         AppContainer:appContainer,
-        Router:byhttp.Router{RouterNode: node},
+        Router:byhttp.NewRouter(),
     }
     return
 }

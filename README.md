@@ -20,7 +20,7 @@ bygo create hello_bygo
 it will create a simple project named hello_bygo
 
 ## feature
- - **router :** if u use Laravel(php framework),u will find bygo's route is similar to laravel,Uh uh ,because i like laravel. :D 
+ - **router :** if u used Laravel(php framework),u will find bygo's route is similar to laravel,Uh uh ,because i like laravel. :D 
  - **middleware :** u can use router+middleware to perform a lot of functions.eg:encrypt the output,decrypt the input,auth from token,add head ...
  - **IOC :** on Controller , if u need db,cache,or custom data in middleware,u just wirte code like this ```func (p IndexController) Index(r *http.Request, s *http.Response) http.ResponseData``` ,
  when bygo call this func,the params will injection.

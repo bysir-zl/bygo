@@ -9,19 +9,24 @@ import (
 )
 
 type Router struct {
-    RouterNode RouterNode
+    RouterNode    RouterNode
+    MatchedRouter map[string]*[]RouterNode
 }
 
 // 根据url匹配路由,
-// url:全路径
-// node:路由节点
+// url:当前路径
+// node:当前路由节点
 // nodeList:当前递归路径
 // currNodeList:匹配到的node路径
 // deep:当前递归深度
 // currDeep:匹配到的深度
-func Handler(url string, node *RouterNode, nodeList *[]RouterNode, currNodeList *[]RouterNode, deep int, currDeep int) (hasNext bool) {
+func (p Router)Handler(allUrl string, url string, node *RouterNode, nodeList *[]RouterNode, matchedNodeList *[]RouterNode, deep int, matchedDeep int) (hasNext bool) {
     if (url == "") {
         return false
+    }
+    if c:=p.MatchedRouter[allUrl];c!=nil{
+        matchedNodeList = c
+        return
     }
 
     index := strings.Index(url, node.Path)
@@ -42,25 +47,29 @@ func Handler(url string, node *RouterNode, nodeList *[]RouterNode, currNodeList 
         // 处理器全匹配直接返回不再匹配其他
         if (node.HandlerType == "Func" || node.HandlerType == "Model" || node.HandlerType == "Controller") &&
             len(url) == len(node.Path) + 1 {
-            *currNodeList = *nodeList
+            *matchedNodeList = *nodeList
             return false
         }
 
         // 保存匹配到的最深的路径
-        if (deep > currDeep) {
-            currDeep = deep
-            *currNodeList = *nodeList
+        if (deep > matchedDeep) {
+            matchedDeep = deep
+            *matchedNodeList = *nodeList
         }
 
         if (node.ChildrenList != nil) {
             u := url[len(node.Path):];
             for _, children := range *node.ChildrenList {
-                if !Handler(u, &children, nodeList, currNodeList, deep, currDeep) {
+                if !p.Handler(allUrl, u, &children, nodeList, matchedNodeList, deep, matchedDeep) {
                     break
                 }
             }
         }
     }
+    if len(*matchedNodeList)!=0{
+        p.MatchedRouter[allUrl] = matchedNodeList
+    }
+
     return true
 }
 
@@ -91,7 +100,7 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     var nodeList []RouterNode = []RouterNode{}
     var currNodeList []RouterNode = []RouterNode{}
 
-    Handler(baseUrl, &p.RouterNode, &nodeList, &currNodeList, 0, 0);
+    p.Handler(baseUrl, baseUrl, &p.RouterNode, &nodeList, &currNodeList, 0, 0);
 
     //获取最后一个Handler,就是成功匹配到的Handler
     var node RouterNode;
@@ -207,3 +216,10 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     return sessionContainer.Response.ResponseData
 }
 
+func NewRouter() Router {
+    node := RouterNode{}
+    node.ChildrenList = &[]RouterNode{}
+    node.MiddlewareList = &[]Middleware{}
+    node.HandlerType = "Base"
+    return Router{RouterNode: node, MatchedRouter:map[string]*[]RouterNode{}}
+}
