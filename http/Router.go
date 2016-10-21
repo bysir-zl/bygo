@@ -140,7 +140,6 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
 
     request.Router.Url = url
     request.Router.Hash = urlHash
-    request.Router.Handler = reflect.TypeOf(node.Handler).Name() + "@" + method
 
     //运行中间件
     for _, item := range middlewareList {
@@ -152,6 +151,7 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
 
     // 处理运行某个node
 
+    var handlerName = ""
     var fun reflect.Value = reflect.Value{};
     if node.HandlerType == "Model" {
         modelHandler := RouterModelHandler{
@@ -164,6 +164,8 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     } else if node.HandlerType == "Controller" {
         // 从controller中读取一个方法
         fv := reflect.ValueOf(node.Handler).Elem();
+        handlerName = fv.Type().Name() + "@" + method
+
         me := fv.MethodByName(method)
 
         //没找到类方法,url不正确
@@ -174,10 +176,13 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
         fun = me;
     } else if node.HandlerType == "Func" {
         fun = reflect.ValueOf(node.Handler)
+        handlerName = "func"
     } else {
         //没有配置路由
         return ResponseData{Code:200, Body:"<h1>Welcome Use Bygo</h1>"}
     }
+
+    request.Router.Handler = handlerName
 
     //从容器中获取参数
     params, err := sessionContainer.GetFuncParams(fun);
