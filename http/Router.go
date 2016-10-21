@@ -9,8 +9,8 @@ import (
 )
 
 type Router struct {
-    RouterNode    RouterNode
-    MatchedRouter map[string]*[]RouterNode
+    RouterNode RouterNode
+    RouterPath map[string][]RouterNode // 根据router设置解析出来的节点列表
 }
 
 // 根据url匹配路由,
@@ -20,57 +20,86 @@ type Router struct {
 // currNodeList:匹配到的node路径
 // deep:当前递归深度
 // currDeep:匹配到的深度
-func (p Router)Handler(allUrl string, url string, node *RouterNode, nodeList *[]RouterNode, matchedNodeList *[]RouterNode, deep int, matchedDeep int) (hasNext bool) {
-    if (url == "") {
-        return false
-    }
-    if c:=p.MatchedRouter[allUrl];c!=nil{
-        matchedNodeList = c
+func (p *Router)Handler(allUrl string) (matchedUrl string, matchedNodeList []RouterNode) {
+    if (allUrl == "") {
         return
     }
 
-    index := strings.Index(url, node.Path)
-
-    // 以 /xx开头,并且(/结尾 或者 空结尾)
-    // 或者 path=="" 则默认匹配成功,继续匹配下一级
-    if node.Path == "" || (index == 0 && (len(url) == len(node.Path) + 1 || url[len(node.Path)] == '/')) {
-        *nodeList = append(*nodeList, *node)
-
-        if node.Path != "" || node.HandlerType != "Group" {
-            // 如果不是空组(空组可能是为了分组设置中间件) , 深度才加一
-            // 深度会影响到最深路径的判断
-            deep = deep + 1
-        }
-
-        //log.Println(url, "'"+node.Path+"'", node.HandlerType)
-
-        // 处理器全匹配直接返回不再匹配其他
-        if (node.HandlerType == "Func" || node.HandlerType == "Model" || node.HandlerType == "Controller") &&
-            len(url) == len(node.Path) + 1 {
-            *matchedNodeList = *nodeList
-            return false
-        }
-
-        // 保存匹配到的最深的路径
-        if (deep > matchedDeep) {
-            matchedDeep = deep
-            *matchedNodeList = *nodeList
-        }
-
-        if (node.ChildrenList != nil) {
-            u := url[len(node.Path):];
-            for _, children := range *node.ChildrenList {
-                if !p.Handler(allUrl, u, &children, nodeList, matchedNodeList, deep, matchedDeep) {
-                    break
-                }
+    var pathMaxLen = 0
+    for path, nodes := range p.RouterPath {
+        if strings.Index(allUrl, path) >= 0 {
+            pathLen := len(path)
+            if pathLen > pathMaxLen {
+                pathMaxLen = pathLen
+                matchedNodeList = nodes
+                matchedUrl = path
             }
         }
     }
-    if len(*matchedNodeList)!=0{
-        p.MatchedRouter[allUrl] = matchedNodeList
-    }
 
-    return true
+    return
+
+    //  old slow code
+    //index := strings.Index(url, node.Path)
+    //
+    //// 以 /xx开头,并且(/结尾 或者 空结尾)
+    //// 或者 path=="" 则默认匹配成功,继续匹配下一级
+    //if node.Path == "" || (index == 0 && (len(url) == len(node.Path) + 1 || url[len(node.Path)] == '/')) {
+    //    *nodeList = append(*nodeList, *node)
+    //
+    //    if node.Path != "" || node.HandlerType != "Group" {
+    //        // 如果不是空组(空组可能是为了分组设置中间件) , 深度才加一
+    //        // 深度会影响到最深路径的判断
+    //        deep = deep + 1
+    //    }
+    //
+    //    //log.Println(url, "'"+node.Path+"'", node.HandlerType)
+    //
+    //    // 处理器全匹配直接返回不再匹配其他
+    //    if (node.HandlerType == "Func" || node.HandlerType == "Model" || node.HandlerType == "Controller") &&
+    //        len(url) == len(node.Path) + 1 {
+    //        *matchedNodeList = *nodeList
+    //        return false
+    //    }
+    //
+    //    // 保存匹配到的最深的路径
+    //    if (deep > matchedDeep) {
+    //        matchedDeep = deep
+    //        *matchedNodeList = *nodeList
+    //    }
+    //
+    //    if (node.ChildrenList != nil) {
+    //        u := url[len(node.Path):];
+    //        for _, children := range *node.ChildrenList {
+    //            if !p.Handler(allUrl, u, &children, nodeList, matchedNodeList, deep, matchedDeep) {
+    //                break
+    //            }
+    //        }
+    //    }
+    //}
+    //return true
+}
+
+func (p *Router)ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]RouterNode) {
+
+    matchedUrl = matchedUrl + node.Path
+
+    *nodeList = append(*nodeList, *node)
+
+    if node.ChildrenList != nil {
+        for _, children := range *node.ChildrenList {
+            p.ParseToPath(matchedUrl, &children, nodeList)
+        }
+    } else {
+        p.RouterPath[matchedUrl] = *nodeList
+    }
+}
+
+func (p *Router)Init(fun func(node *RouterNode)) {
+    fun(&p.RouterNode)
+
+    nodeList := []RouterNode{}
+    p.ParseToPath("", &p.RouterNode, &nodeList);
 }
 
 func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseData) {
@@ -97,18 +126,14 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
         urlHash = urs[1]
     }
 
-    var nodeList []RouterNode = []RouterNode{}
-    var currNodeList []RouterNode = []RouterNode{}
+    matchedUrl, currNodeList := p.Handler(baseUrl);
 
-    p.Handler(baseUrl, baseUrl, &p.RouterNode, &nodeList, &currNodeList, 0, 0);
-
-    //获取最后一个Handler,就是成功匹配到的Handler
+    // 获取最后一个Handler,就是成功匹配到的Handler
+    // 或者中间件列表
     var node RouterNode;
-    matchedUrl := "";
     var middlewareList []Middleware = []Middleware{};
     for _, item := range currNodeList {
         node = item;
-        matchedUrl = matchedUrl + item.Path;
         // 将当前node中的中间件一次加载到要运行的middlewareList中
         if (item.MiddlewareList != nil) {
             for _, middlewareItem := range *item.MiddlewareList {
@@ -188,7 +213,7 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
         handlerName = "func"
     } else {
         //没有配置路由
-        return ResponseData{Code:200, Body:"<h1>Welcome Use Bygo</h1>"}
+        return NewRespDataError(500, errors.New("u are forget set route? bug welcome use bygo . :D"))
     }
 
     request.Router.Handler = handlerName
@@ -221,5 +246,8 @@ func NewRouter() Router {
     node.ChildrenList = &[]RouterNode{}
     node.MiddlewareList = &[]Middleware{}
     node.HandlerType = "Base"
-    return Router{RouterNode: node, MatchedRouter:map[string]*[]RouterNode{}}
+    return Router{
+        RouterNode: node,
+        RouterPath:map[string][]RouterNode{},
+    }
 }
