@@ -2,7 +2,7 @@ package http
 
 import (
     "net/http"
-    "bygo/http/input"
+    "github.com/bysir-zl/bygo/http/input"
 )
 
 // 保存当前请求的路由信息

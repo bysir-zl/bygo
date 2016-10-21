@@ -2,11 +2,11 @@ package bygo
 
 import (
     "net/http"
-    byhttp "bygo/http"
+    byhttp "github.com/bysir-zl/bygo/http"
     "io"
-    "bygo/cache"
-    "bygo/db"
-    "bygo/bean"
+    "github.com/bysir-zl/bygo/cache"
+    "github.com/bysir-zl/bygo/db"
+    "github.com/bysir-zl/bygo/bean"
     "config"
 )
 

@@ -2,7 +2,7 @@ package input
 
 import (
     "net/http"
-    "bygo/util"
+    "github.com/bysir-zl/bygo/util"
     "errors"
 )
 

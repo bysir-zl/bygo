@@ -2,7 +2,7 @@ package exception
 
 import (
     "app/bean"
-    "bygo/http"
+    "github.com/bysir-zl/bygo/http"
 )
 
 // 将报错的Exception处理成Response返回。在这里你可以判断e.Code统一处理错误,比如上报code==500的错误

@@ -1,6 +1,6 @@
 package config
 
-import "bygo/db"
+import "github.com/bysir-zl/bygo/db"
 
 var DbConfigs map[string]db.DbConfig = map[string]db.DbConfig{}
 

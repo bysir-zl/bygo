@@ -1,7 +1,7 @@
 package middleware
 
 import (
-    "bygo/http"
+    "github.com/bysir-zl/bygo/http"
 )
 
 type HeaderMiddleware struct {

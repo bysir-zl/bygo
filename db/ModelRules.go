@@ -3,7 +3,7 @@ package db
 import (
     "strings"
     "errors"
-    "bygo/util"
+    "github.com/bysir-zl/bygo/util"
     "strconv"
 )
 

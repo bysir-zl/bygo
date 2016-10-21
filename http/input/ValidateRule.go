@@ -3,7 +3,7 @@ package input
 import (
     "strings"
     "strconv"
-    "bygo/util"
+    "github.com/bysir-zl/bygo/util"
 )
 
 type rule struct {

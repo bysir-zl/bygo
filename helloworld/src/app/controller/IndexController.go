@@ -3,7 +3,7 @@ package controller
 import (
     "fmt"
     "strings"
-    "bygo/http"
+    "github.com/bysir-zl/bygo/http"
 )
 
 type IndexController struct{}

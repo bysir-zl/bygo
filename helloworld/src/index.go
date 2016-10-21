@@ -5,7 +5,7 @@ import
     "app/router"
     "net/http"
     "log"
-    "bygo/bygo"
+    "github.com/bysir-zl/bygo/bygo"
     "app/exception"
 )
 

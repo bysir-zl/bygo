@@ -1,8 +1,8 @@
 package http
 
 import (
-    "bygo/db"
-    "bygo/bean"
+    "github.com/bysir-zl/bygo/db"
+    "github.com/bysir-zl/bygo/bean"
 )
 
 type  RouterModelInterface interface {

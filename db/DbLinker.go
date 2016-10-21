@@ -2,7 +2,7 @@ package db
 
 //连接(join)
 import (
-    "bygo/util"
+    "github.com/bysir-zl/bygo/util"
 )
 
 func LinkMapListToObjList(dbConfigs map[string]DbConfig,data []map[string]interface{}, out interface{}, pk string, outPk string) (err error) {

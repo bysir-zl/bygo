@@ -2,7 +2,7 @@ package main
 
 import (
     "os"
-    "bygo/artisan"
+    "github.com/bysir-zl/bygo/artisan"
 )
 
 func main() {

@@ -6,8 +6,8 @@ import (
     "errors"
     "config"
     "strconv"
-    "bygo/util"
-    "bygo/bean"
+    "github.com/bysir-zl/bygo/util"
+    "github.com/bysir-zl/bygo/bean"
 )
 
 //用于处理Router中的Model

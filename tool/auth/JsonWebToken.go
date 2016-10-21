@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "strings"
     "time"
-    "bygo/util"
+    "github.com/bysir-zl/bygo/util"
 )
 
 const secret string = "Bqweiopxj293gweG46we7gAfew54";

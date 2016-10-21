@@ -9,8 +9,8 @@ import (
     "regexp"
     "math"
     "time"
-    "bygo/util"
-    "bygo/bean"
+    "github.com/bysir-zl/bygo/util"
+    "github.com/bysir-zl/bygo/bean"
 )
 
 type orderItem struct {

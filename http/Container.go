@@ -4,8 +4,8 @@ import (
     "reflect"
     "strings"
     "errors"
-    "bygo/db"
-    "bygo/cache"
+    "github.com/bysir-zl/bygo/db"
+    "github.com/bysir-zl/bygo/cache"
 )
 
 

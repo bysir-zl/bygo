@@ -3,7 +3,7 @@ package router
 import (
     "app/middleware"
     "app/controller"
-    "bygo/http"
+    "github.com/bysir-zl/bygo/http"
 )
 
 func Init(node *http.RouterNode) {
