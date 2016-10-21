@@ -7,7 +7,17 @@ bygo is a simple and private go webapi framework,it only support api service.
  - **private :** i like something,so bygo hava something,i not like something,bygo hava not something,eg:restfull.
 
 ## use 
- - **insert :** go get github.com/bysir-zl/bygo
+**insert** 
+```
+go get github.com/bysir-zl/bygo
+```
+**create project**
+ 
+use bygo ,u need set ```$GOPATH/bin``` in to ```$PATH```
+```
+bygo create hello_bygo
+```
+it will create a simple project named hello_bygo
 
 ## feature
  - **router :** if u use Laravel(php framework),u will find bygo's route is similar to laravel,Uh uh ,because i like laravel. :D 

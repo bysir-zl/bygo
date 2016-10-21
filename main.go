@@ -7,7 +7,9 @@ import (
 
 func main() {
     args := os.Args
-    args = []string{"create", "helloworld"}
+    if len(os.Args) == 0 {
+        args = []string{"create", "helloworld"}
+    }
 
     command := args[0]
 
