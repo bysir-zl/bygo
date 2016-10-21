@@ -1,4 +1,4 @@
-## bygo 
+# bygo 
 
 bygo is a simple and private go webapi framework,it only support api service.
 
@@ -16,3 +16,4 @@ bygo is a simple and private go webapi framework,it only support api service.
  when bygo call this func,the params will injection.
 
 ## to be continued ...
+
