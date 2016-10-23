@@ -1,16 +1,14 @@
 package http
 
 import (
-    "reflect"
     "strings"
     "log"
     "runtime/debug"
-    "errors"
 )
 
 type Router struct {
-    RouterNode RouterNode
-    RouterPath map[string][]RouterNode // 根据router设置解析出来的节点列表
+    RouterNode     RouterNode
+    RouterPath     map[string][]RouterNode // 根据router设置解析出来的节点列表
 }
 
 // 根据url匹配路由,
@@ -129,7 +127,7 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     matchedUrl, currNodeList := p.Handler(baseUrl);
 
     // 获取最后一个Handler,就是成功匹配到的Handler
-    // 或者中间件列表
+    // 和中间件列表
     var node RouterNode;
     var middlewareList []Middleware = []Middleware{};
     for _, item := range currNodeList {
@@ -156,13 +154,13 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
         urlParamsList := strings.Split(otherParam, "/");
 
         if node.HandlerType == "Controller" || node.HandlerType == "Model" {
-            //有参
+            // 有参
             if (len(urlParamsList) > 0) {
                 method = urlParamsList[0]
-                //大写第一个字母
+                // 大写第一个字母
                 method = strings.ToUpper(string(method[0])) + string(method[1:])
             }
-            //除了第一个作为方法名,还有多余的参
+            // 除了第一个作为方法名,还有多余的参
             if (len(urlParamsList) > 1) {
                 urlParams := urlParamsList[1:]
                 request.Router.Params = urlParams;
@@ -183,54 +181,11 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
         }
     }
 
-    // 处理运行某个node
+    // 运行某个node
+    request.Router.Handler, sessionContainer.Response.ResponseData = node.run(sessionContainer, method);
 
-    var handlerName = ""
-    var fun reflect.Value = reflect.Value{};
-    if node.HandlerType == "Model" {
-        modelHandler := RouterModelHandler{
-            model:node.Handler.(RouterModelInterface),
-            method:method,
-        };
-        //运行Model的Handle
-        return modelHandler.Handle(sessionContainer);
-
-    } else if node.HandlerType == "Controller" {
-        // 从controller中读取一个方法
-        fv := reflect.ValueOf(node.Handler).Elem();
-        handlerName = fv.Type().Name() + "@" + method
-
-        me := fv.MethodByName(method)
-
-        //没找到类方法,url不正确
-        if !me.IsValid() {
-            return NewRespDataError(404, errors.New("the method '" + method + "' is undefined " +
-                "in controller '" + reflect.TypeOf(node.Handler).String() + "'!"))
-        }
-        fun = me;
-    } else if node.HandlerType == "Func" {
-        fun = reflect.ValueOf(node.Handler)
-        handlerName = "func"
-    } else {
-        //没有配置路由
-        return NewRespDataError(500, errors.New("u are forget set route? bug welcome use bygo . :D"))
-    }
-
-    request.Router.Handler = handlerName
-
-    //从容器中获取参数
-    params, err := sessionContainer.GetFuncParams(fun);
-    if (err != nil) {
-        return NewRespDataError(500, err)
-    }
-
-    //执行方法
-    sessionContainer.Response.ResponseData = (fun.Call(params)[0]).Interface().(ResponseData)
-
-    //倒着运行中间件
-    l := len(middlewareList)
-
-    for i := l - 1; i >= 0; i = i - 1 {
+    // 倒着运行中间件
+    for i := len(middlewareList) - 1; i >= 0; i = i - 1 {
         item := middlewareList[i]
         needStop, data := item.HandlerAfter(sessionContainer)
         if (needStop) {
