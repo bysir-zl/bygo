@@ -75,8 +75,10 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
         }
 
         if value := mapper[key]; value != nil {
-            setFieldValue(field, value)
-            fields = append(fields, fieldName)
+            if (field.CanInterface()){
+                setFieldValue(field, value)
+                fields = append(fields, fieldName)
+            }
         }
     }
     return

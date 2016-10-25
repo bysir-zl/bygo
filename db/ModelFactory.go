@@ -380,7 +380,7 @@ func (p *ModelFactory) GetPk(types string) string {
     return pk
 }
 
-// 取得需要自动填充的字段与值
+// 取得在method操作时需要自动填充的字段与值
 func (p *ModelFactory) GetAutoSetField(method string) (needSet  map[string]interface{}, err error) {
     autoField := p.modelFieldMap.GetFieldMapByTagName("auto")
     if len(autoField) != 0 {
@@ -391,8 +391,10 @@ func (p *ModelFactory) GetAutoSetField(method string) (needSet  map[string]inter
             methods := tyAme[1];
 
             if util.ItemInArray(method, strings.Split(methods, "|")) {
-                if tyAme[0] == "time" {
-                    needSet[field] = time.Now().Format("2006-01-02 15:04:05");
+                if tyAme[0] == "timestr" {
+                    needSet[field] = time.Now().Format("2006-01-02 15:04:05")
+                } else if tyAme[0] == "timeint" {
+                    needSet[field] = time.Now().Unix()
                 }
             }
         }
@@ -570,6 +572,22 @@ func (p *ModelFactory) Update() (count int64, err error) {
         }
 
         saveData[k] = value
+    }
+
+    autoSet, e := p.GetAutoSetField("update");
+    if e != nil {
+        err = e
+        return
+    }
+
+    if autoSet != nil&&len(autoSet) != 0 {
+        for k, v := range autoSet {
+            k = fieldTagMap[k];
+            saveData[k] = v
+        }
+
+        //将自动添加的字段附加到model里，方便返回
+        util.MapToObj(p.out, autoSet, "")
     }
 
     sql, args, e := buildUpdateSql(p.table, saveData, p.where, fieldTagMap)
@@ -895,3 +913,5 @@ func NewModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 
     return modelFactory;
 }
+
+

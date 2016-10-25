@@ -3,8 +3,8 @@ package cache
 func NewCache(driverType string) (CacheInterface) {
     switch driverType {
     case "redis":
-        return NewcacheRedis()
+        return NewCacheRedis()
         break;
     }
-    return NewcacheRedis()
+    return NewCacheRedis()
 }

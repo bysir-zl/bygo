@@ -26,7 +26,7 @@ type cacheRedis struct {
     Pool *redis.Pool
 }
 
-func NewcacheRedis() (cache cacheRedis) {
+func NewCacheRedis() (cache cacheRedis) {
     cache = cacheRedis{Pool:pool}
     return
 }
