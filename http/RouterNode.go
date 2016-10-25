@@ -3,7 +3,6 @@ package http
 import (
     "reflect"
     "errors"
-    "log"
 )
 
 type RouterNode struct {
@@ -62,7 +61,6 @@ func (p *RouterNode) Middleware(middleware Middleware) *RouterNode {
 func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode {
     path = formatPath(path)
 
-
     //新建一个子node
     routerNode := RouterNode{};
 
@@ -73,14 +71,11 @@ func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode
     routerNode.ControllerFunc = map[string]reflect.Value{}
 
     stru := reflect.ValueOf(controller).Elem();
-    for i := stru.NumMethod() - 1; i > 0; i-- {
+    typ := stru.Type()
+    for i := stru.NumMethod() - 1; i >= 0; i-- {
         fun := stru.Method(i)
-        routerNode.ControllerFunc[fun.Type().Name()] = fun
+        routerNode.ControllerFunc[typ.Method(i).Name] = fun
     }
-
-    //log.Print(controller)
-
-    log.Print(routerNode.ControllerFunc)
 
     *p.ChildrenList = append(*p.ChildrenList, routerNode);
     return &routerNode
@@ -139,7 +134,7 @@ func (node *RouterNode) run(sessionContainer SessionContainer, method string) (h
 
         //没找到类方法,url不正确
         var zero reflect.Value
-        if fun ==   zero {
+        if fun == zero {
             response = NewRespDataError(404, errors.New("the method '" + method + "' is undefined " +
                 "in controller '" + reflect.TypeOf(node.Handler).String() + "'!"))
             return

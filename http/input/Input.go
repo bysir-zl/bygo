@@ -33,6 +33,22 @@ func (i *Input) Get(key string) string {
     return i.valueMap[key]
 }
 
+func (i *Input) Gets(keys ...string) map[string]string {
+    if i.valueMap == nil {
+        i.All()
+    }
+    mapper := map[string]string{};
+
+    for _, key := range keys {
+        value := i.valueMap[key]
+        if value != "" {
+            mapper[key] = value
+        }
+    }
+
+    return mapper
+}
+
 func (i *Input) Set(key string, value string) {
     if i.valueMap == nil {
         i.All()

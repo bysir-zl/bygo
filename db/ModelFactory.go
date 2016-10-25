@@ -107,15 +107,16 @@ func (p *ModelFactory) Db(connect string) *ModelFactory {
 }
 
 //指定连接哪个数据库
-func (p *ModelFactory) DbConfig(connect string, fun func() (dbConfig DbConfig)) *ModelFactory {
-    dbConfig := p.dbConfigs[connect]
+func (p *ModelFactory) DbConfig(connect string, config DbConfig) *ModelFactory {
 
-    if dbConfig.Port == 0 {
-        dbConfig = fun()
-        p.dbConfigs[connect] = dbConfig
-    }
+    p.dbConfigs[connect] = config
+    p.connect = config
 
-    p.connect = dbConfig
+    return p
+}
+//指定表
+func (p *ModelFactory) Table(table string) *ModelFactory {
+    p.table = table
     return p
 }
 
@@ -139,7 +140,7 @@ func (p *ModelFactory) Query(sql string, config DbConfig, args ...interface{}) (
 }
 
 //查询主方法,返回[]Map原数据给get和first使用
-func (p *ModelFactory) QueryToMap(m interface{}) (data []map[string]interface{}, err error) {
+func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 
     //字段->数据库字段映射
     fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
@@ -148,14 +149,13 @@ func (p *ModelFactory) QueryToMap(m interface{}) (data []map[string]interface{},
     //检查fields是否在Model里
     if p.fields != nil&&len(p.fields) != 0 {
         if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
-            err = errors.New("filed`s `" + msg + "` is not in the struct `" + reflect.TypeOf(m).String() + "` fields")
+            err = errors.New("filed`s `" + msg + "` is not in the model fields")
             return
         }
     }
 
-    tableName := modelConfig["Table"]
-    if tableName == "" {
-        err = errors.New("the struct `" + reflect.TypeOf(m).String() + "` has not `Table` field or Tag.name")
+    if p.table == "" {
+        err = errors.New("the model has not `Table` field or Tag.name")
         return
     }
 
@@ -168,12 +168,12 @@ func (p *ModelFactory) QueryToMap(m interface{}) (data []map[string]interface{},
         p.connect = p.dbConfigs[dbConnect]
         //没有找到connect配置
         if p.connect.Port == 0 {
-            err = errors.New("the `" + reflect.TypeOf(m).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
+            err = errors.New("the connect `" + dbConnect + "` is undefined in dbConfig")
             return
         }
     }
 
-    sql, args, e := buildSelectSql(p.fields, tableName, p.where, p.order, p.limit, fieldTagMap);
+    sql, args, e := buildSelectSql(p.fields, p.table, p.where, p.order, p.limit, fieldTagMap);
     if e != nil {
         err = e
         return
@@ -216,9 +216,8 @@ func (p *ModelFactory) QueryToMap(m interface{}) (data []map[string]interface{},
 }
 
 func (p *ModelFactory)GetAndLink(out interface{}, pk string, outPk string) (err error) {
-    m := reflect.New(reflect.TypeOf(p.out).Elem().Elem()).Interface()
 
-    data, e := p.QueryToMap(m)
+    data, e := p.QueryToMap()
     if e != nil {
         err = e
         return
@@ -239,8 +238,7 @@ func (p *ModelFactory) Get() (err error) {
         err = errors.New("Get function need one slice(model) param")
         return
     }
-    m := reflect.New(mo.Elem()).Interface()
-    data, err := p.QueryToMap(m)
+    data, err := p.QueryToMap()
     if err != nil {
         return
     }
@@ -261,8 +259,7 @@ func (p *ModelFactory) Page(page int, pageSize int) (pageData bean.Page, err err
 
     p.limit = [2]int{(page - 1) * pageSize, pageSize}
 
-    m := reflect.New(reflect.ValueOf(p.out).Type().Elem().Elem()).Interface()
-    data, err := p.QueryToMap(m)
+    data, err := p.QueryToMap()
     if err != nil {
         return
     }
@@ -291,8 +288,7 @@ func (p *ModelFactory)PageWithOutTotal(page int, pageSize int) (pageData bean.Pa
 
     p.limit = [2]int{(page - 1) * pageSize, pageSize}
 
-    m := reflect.New(reflect.ValueOf(p.out).Type().Elem().Elem()).Interface()
-    data, err := p.QueryToMap(m)
+    data, err := p.QueryToMap()
     if err != nil {
         return
     }
@@ -307,7 +303,7 @@ func (p *ModelFactory)PageWithOutTotal(page int, pageSize int) (pageData bean.Pa
 func (p *ModelFactory) First() (err error) {
 
     p.limit = [2]int{0, 1}
-    datas, err := p.QueryToMap(p.out);
+    datas, err := p.QueryToMap();
 
     if err != nil {
         return
@@ -327,8 +323,7 @@ func (p *ModelFactory) Count() (count int64, err error) {
     fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
     modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
-    tableName := modelConfig["Table"]
-    if tableName == "" {
+    if p.table == "" {
         err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
         return
     }
@@ -349,7 +344,7 @@ func (p *ModelFactory) Count() (count int64, err error) {
         }
     }
 
-    sql, args, e := buildCountSql(tableName, p.where, fieldTagMap)
+    sql, args, e := buildCountSql(p.table, p.where, fieldTagMap)
     if e != nil {
         err = e
         return
@@ -420,8 +415,7 @@ func (p *ModelFactory) Insert() (err error) {
         }
     }
 
-    tableName := modelConfig["Table"]
-    if tableName == "" {
+    if p.table == "" {
         err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
         return
     }
@@ -482,7 +476,7 @@ func (p *ModelFactory) Insert() (err error) {
         util.MapToObj(p.out, autoSet, "")
     }
 
-    sql, args, e := buildInsertSql(tableName, saveData, p.where);
+    sql, args, e := buildInsertSql(p.table, saveData, p.where);
     if e != nil {
         err = e
         return
@@ -530,8 +524,7 @@ func (p *ModelFactory) Update() (count int64, err error) {
         }
     }
 
-    tableName := modelConfig["Table"]
-    if tableName == "" {
+    if p.table == "" {
         err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
         return
     }
@@ -579,7 +572,7 @@ func (p *ModelFactory) Update() (count int64, err error) {
         saveData[k] = value
     }
 
-    sql, args, e := buildUpdateSql(tableName, saveData, p.where, fieldTagMap)
+    sql, args, e := buildUpdateSql(p.table, saveData, p.where, fieldTagMap)
     if e != nil {
         err = e
         return
@@ -617,8 +610,7 @@ func (p *ModelFactory) Delete() (count int64, err error) {
         }
     }
 
-    tableName := modelConfig["Table"]
-    if tableName == "" {
+    if p.table == "" {
         err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
         return
     }
@@ -639,7 +631,7 @@ func (p *ModelFactory) Delete() (count int64, err error) {
         }
     }
 
-    sql, args, e := buildDeleteSql(tableName, p.where, fieldTagMap)
+    sql, args, e := buildDeleteSql(p.table, p.where, fieldTagMap)
     if e != nil {
         err = e
         return
@@ -861,17 +853,21 @@ func buildWhere(where map[string]([]interface{}), fieldMapper map[string]string)
 
         whereString = whereString[5:]
 
-        //处理where的字段,但是必须在写条件的时候,必须在字段两边加上`符号 如:`Id` = ? AND `Name` = ? ,才能映射字段
-        reg, _ := regexp.Compile("`(.+?)`")
+        if fieldMapper != nil && len(fieldMapper) != 0 {
 
-        whereString = reg.ReplaceAllStringFunc(whereString, func(in string) string {
-            k := string(in)[1:len(in) - 1] //去掉左右`号
-            var ne string = fieldMapper[k]
-            if ne == "" {
-                err = errors.New("the where field(in '" + whereString + "') " + k + " is undefined in model")
-            }
-            return "`" + ne + "`"
-        })
+            //处理where的字段,但是必须在写条件的时候,必须在字段两边加上`符号 如:`Id` = ? AND `Name` = ? ,才能映射字段
+            reg, _ := regexp.Compile("`(.+?)`")
+
+            whereString = reg.ReplaceAllStringFunc(whereString, func(in string) string {
+                k := string(in)[1:len(in) - 1] //去掉左右`号
+                var ne string = fieldMapper[k]
+                if ne == "" {
+                    err = errors.New("the where field(in '" + whereString + "') " + k + " is undefined in model")
+                }
+                return "`" + ne + "`"
+            })
+        }
+
     }
 
     return
@@ -881,14 +877,20 @@ func NewModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
     modelFactory := &ModelFactory{
         dbConfigs:dbConfig,
     }
-    modelFactory.out = m
 
-    //如果是slice
-    if (reflect.ValueOf(m).Type().Elem().String()[0] == '[') {
-        mo := reflect.New(reflect.TypeOf(m).Elem().Elem()).Interface()
-        modelFactory.modelFieldMap = util.GetTagMapperFromPool(mo)
-    } else {
-        modelFactory.modelFieldMap = util.GetTagMapperFromPool(m)
+    if m != nil {
+        modelFactory.out = m
+
+        //如果是slice
+        if (reflect.ValueOf(m).Type().Elem().String()[0] == '[') {
+            mo := reflect.New(reflect.TypeOf(m).Elem().Elem()).Interface()
+            modelFactory.modelFieldMap = util.GetTagMapperFromPool(mo)
+        } else {
+            modelFactory.modelFieldMap = util.GetTagMapperFromPool(m)
+        }
+
+        modelFactory.table = modelFactory.modelFieldMap.GetFieldMapByTagName("db")["Table"]
+
     }
 
     return modelFactory;

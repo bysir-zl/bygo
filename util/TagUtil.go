@@ -12,6 +12,9 @@ type FieldTagMapper struct {
 
 func (p *FieldTagMapper) GetFieldMapByTagName(tag string) (data map[string]string) {
     data = p.mapData[tag]
+    if data==nil{
+        data = map[string]string{}
+    }
     return
 }
 

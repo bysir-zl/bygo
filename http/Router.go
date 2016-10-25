@@ -4,11 +4,12 @@ import (
     "strings"
     "log"
     "runtime/debug"
+    "reflect"
 )
 
 type Router struct {
-    RouterNode     RouterNode
-    RouterPath     map[string][]RouterNode // 根据router设置解析出来的节点列表
+    RouterNode RouterNode
+    RouterPath map[string][]RouterNode // 根据router设置解析出来的节点列表
 }
 
 // 根据url匹配路由,
@@ -111,6 +112,7 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     }()
 
     request := sessionContainer.Request;
+    response := sessionContainer.Response;
 
     baseUrl := strings.Split(strings.Split(url, "?")[0], "#")[0];
     // 加上/以匹配"/"根
@@ -126,19 +128,9 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
 
     matchedUrl, currNodeList := p.Handler(baseUrl);
 
-    // 获取最后一个Handler,就是成功匹配到的Handler
-    // 和中间件列表
     var node RouterNode;
-    var middlewareList []Middleware = []Middleware{};
-    for _, item := range currNodeList {
-        node = item;
-        // 将当前node中的中间件一次加载到要运行的middlewareList中
-        if (item.MiddlewareList != nil) {
-            for _, middlewareItem := range *item.MiddlewareList {
-                middlewareList = append(middlewareList, middlewareItem);
-            }
-        }
-    }
+
+    node = currNodeList[len(currNodeList) - 1]
 
     otherParam := string(baseUrl[len(matchedUrl):])
 
@@ -173,27 +165,40 @@ func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseDa
     request.Router.Url = url
     request.Router.Hash = urlHash
 
-    //运行中间件
-    for _, item := range middlewareList {
-        needStop, data := item.HandlerBefore(sessionContainer)
-        if (needStop) {
-            return data;
+    // 运行中间件
+    stop := false
+    for _, item := range currNodeList {
+        if (item.MiddlewareList != nil) {
+            for _, item := range *item.MiddlewareList {
+                needStop, data := item.HandlerBefore(sessionContainer)
+                if (needStop) {
+                    stop = true
+                    response.ResponseData = data
+                    request.Router.Handler = reflect.TypeOf(item).Name()
+                }
+            }
         }
     }
 
-    // 运行某个node
-    request.Router.Handler, sessionContainer.Response.ResponseData = node.run(sessionContainer, method);
+    if !stop {
+        // 运行某个node
+        request.Router.Handler, response.ResponseData = node.run(sessionContainer, method);
+    }
 
     // 倒着运行中间件
-    for i := len(middlewareList) - 1; i >= 0; i = i - 1 {
-        item := middlewareList[i]
-        needStop, data := item.HandlerAfter(sessionContainer)
-        if (needStop) {
-            return data;
+    for i := len(currNodeList) - 1; i >= 0; i = i - 1 {
+        item := currNodeList[i]
+        if (item.MiddlewareList != nil) {
+            for _, item := range *item.MiddlewareList {
+                needStop, data := item.HandlerAfter(sessionContainer)
+                if (needStop) {
+                    return data;
+                }
+            }
         }
     }
 
-    return sessionContainer.Response.ResponseData
+    return response.ResponseData
 }
 
 func NewRouter() Router {

@@ -63,9 +63,6 @@ func (s *Container)GetFuncParams(fun reflect.Value) (data []reflect.Value, err e
 }
 
 
-
-
-
 // 存储用于依赖注入的容器
 type SessionContainer struct {
     Response     *Response
@@ -104,7 +101,10 @@ func (p *SessionContainer)GetItemByClassName(name string) interface{} {
 
 func (p *SessionContainer)SetItem(item interface{}) {
     va := reflect.ValueOf(item);
-    p.OtherItemMap[ va.Type().String()] = item
+    p.OtherItemMap[va.Type().String()] = item
+}
+func (p *SessionContainer)SetItemAlias(name string,item interface{}) {
+    p.OtherItemMap[name] = item
 }
 
 func (p *SessionContainer)GetFuncParams(fun reflect.Value) (data []reflect.Value, err error) {
