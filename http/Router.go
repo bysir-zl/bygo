@@ -24,7 +24,7 @@ func (p *Router)Handler(allUrl string) (matchedUrl string, matchedNodeList []Rou
         return
     }
 
-    var pathMaxLen = 0
+    var pathMaxLen = -1
     for path, nodes := range p.RouterPath {
         if strings.Index(allUrl, path) >= 0 {
             pathLen := len(path)
