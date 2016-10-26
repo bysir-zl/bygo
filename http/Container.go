@@ -66,7 +66,7 @@ func (s *Container)GetFuncParams(fun reflect.Value) (data []reflect.Value, err e
 
 
 // 存储用于依赖注入的容器
-type SessionContainer struct {
+type Context struct {
     Response     *Response
     Request      *Request
 
@@ -77,12 +77,12 @@ type SessionContainer struct {
     OtherItemMap map[string]interface{}
 }
 
-func (p *SessionContainer)GetItemByClass(item interface{}) interface{} {
+func (p *Context)GetItemByClass(item interface{}) interface{} {
     va := reflect.ValueOf(item)
     return p.GetItemByClassName(va.Type().String())
 }
 
-func (p *SessionContainer)GetItemByClassName(name string) interface{} {
+func (p *Context)GetItemByClassName(name string) interface{} {
 
     if (name == "db.DbFactory") {
         return p.DbFactory
@@ -99,21 +99,21 @@ func (p *SessionContainer)GetItemByClassName(name string) interface{} {
     if (name == "config.Config") {
         return p.Config
     }
-    if (name == "*http.SessionContainer") {
+    if (name == "*http.Context") {
         return p
     }
     return p.OtherItemMap[name]
 }
 
-func (p *SessionContainer)SetItem(item interface{}) {
+func (p *Context)SetItem(item interface{}) {
     va := reflect.ValueOf(item);
     p.OtherItemMap[va.Type().String()] = item
 }
-func (p *SessionContainer)SetItemAlias(name string, item interface{}) {
+func (p *Context)SetItemAlias(name string, item interface{}) {
     p.OtherItemMap[name] = item
 }
 
-func (p *SessionContainer)GetFuncParams(fun reflect.Value) (data []reflect.Value, err error) {
+func (p *Context)GetFuncParams(fun reflect.Value) (data []reflect.Value, err error) {
     var params []reflect.Value = nil;
 
     rf := fun.Type().String();

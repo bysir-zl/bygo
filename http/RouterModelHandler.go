@@ -16,7 +16,7 @@ type RouterModelHandler struct {
     method string
 }
 
-func (p *RouterModelHandler) Handle(container SessionContainer) ResponseData {
+func (p *RouterModelHandler) Handle(container Context) ResponseData {
     method := p.method
 
     if method == "Update" {
@@ -65,7 +65,7 @@ func (p *RouterModelHandler) Handle(container SessionContainer) ResponseData {
 }
 
 // 处理update方法
-func (p *RouterModelHandler) handleUpdate(container SessionContainer) ResponseData {
+func (p *RouterModelHandler) handleUpdate(container Context) ResponseData {
     model := p.model
 
     response, modelRules := model.UpdateBefore(container)
@@ -116,7 +116,7 @@ func (p *RouterModelHandler) handleUpdate(container SessionContainer) ResponseDa
     return defaultResponse
 }
 
-func (p *RouterModelHandler) handleSelect(container SessionContainer) ResponseData {
+func (p *RouterModelHandler) handleSelect(container Context) ResponseData {
     model := p.model
     response, modelRules := model.SelectBefore(container)
 
@@ -198,7 +198,7 @@ func (p *RouterModelHandler) handleSelect(container SessionContainer) ResponseDa
     return defaultResponse
 }
 
-func (p *RouterModelHandler) handleInsert(container SessionContainer) ResponseData {
+func (p *RouterModelHandler) handleInsert(container Context) ResponseData {
     model := p.model
     response, modelRules := model.InsertBefore(container)
     util.EmptyObject(model);
@@ -232,7 +232,7 @@ func (p *RouterModelHandler) handleInsert(container SessionContainer) ResponseDa
     return defaultResponse
 }
 
-func (p *RouterModelHandler) handleDelete(container SessionContainer) ResponseData {
+func (p *RouterModelHandler) handleDelete(container Context) ResponseData {
     model := p.model
 
     response, modelRules := model.DeleteBefore(container)

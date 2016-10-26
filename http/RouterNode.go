@@ -114,7 +114,7 @@ func (p *RouterNode) Model(path string, model RouterModelInterface) *RouterNode 
     return &routerNode
 }
 
-func (node *RouterNode) run(sessionContainer SessionContainer, method string) (handlerName string, response ResponseData) {
+func (node *RouterNode) run(context Context, method string) (handlerName string, response ResponseData) {
     var fun reflect.Value = reflect.Value{};
 
     if node.HandlerType == "Model" {
@@ -123,7 +123,7 @@ func (node *RouterNode) run(sessionContainer SessionContainer, method string) (h
             method:method,
         };
         //运行Model的Handle
-        response = modelHandler.Handle(sessionContainer);
+        response = modelHandler.Handle(context);
         return
 
     } else if node.HandlerType == "Controller" {
@@ -149,7 +149,7 @@ func (node *RouterNode) run(sessionContainer SessionContainer, method string) (h
     }
 
     //从容器中获取参数
-    params, err := sessionContainer.GetFuncParams(fun);
+    params, err := context.GetFuncParams(fun);
     if (err != nil) {
         response = NewRespDataError(500, err)
         return

@@ -101,7 +101,7 @@ func (p *Router)Init(fun func(node *RouterNode)) {
     p.ParseToPath("", &p.RouterNode, &nodeList);
 }
 
-func (p *Router)Start(url string, sessionContainer SessionContainer) (ResponseData) {
+func (p *Router)Start(url string, sessionContainer Context) (ResponseData) {
 
     defer func() {
         if err := recover(); err != nil {

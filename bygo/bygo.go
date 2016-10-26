@@ -17,7 +17,7 @@ type ApiHandler struct {
     AppContainer    byhttp.Container
 
     Router          byhttp.Router
-    ExceptionHandle func(byhttp.SessionContainer, byhttp.Exceptions) byhttp.ResponseData
+    ExceptionHandle func(byhttp.Context, byhttp.Exceptions) byhttp.ResponseData
 }
 
 func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     request := byhttp.Request{Request:r};
     request.Init();
 
-    sessionContainer := byhttp.SessionContainer{
+    sessionContainer := byhttp.Context{
         OtherItemMap:make(map[string]interface{}),
         Request:&request,
         Response:&response,
@@ -68,7 +68,7 @@ func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {
     p.Router.Init(fun)
 }
 
-func (p *ApiHandler) ConfigExceptHandler(fun func(byhttp.SessionContainer, byhttp.Exceptions) byhttp.ResponseData) {
+func (p *ApiHandler) ConfigExceptHandler(fun func(byhttp.Context, byhttp.Exceptions) byhttp.ResponseData) {
     p.ExceptionHandle = fun
 }
 func (p *ApiHandler) Config(files ...string) {
