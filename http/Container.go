@@ -6,6 +6,7 @@ import (
     "errors"
     "github.com/bysir-zl/bygo/db"
     "github.com/bysir-zl/bygo/cache"
+    "github.com/bysir-zl/bygo/config"
 )
 
 
@@ -13,6 +14,7 @@ import (
 type Container struct {
     DbFactory    db.DbFactory
     Cache        cache.CacheInterface
+    Config       config.Config
 
     OtherItemMap map[string]interface{}
 }
@@ -70,6 +72,7 @@ type SessionContainer struct {
 
     DbFactory    db.DbFactory
     Cache        cache.CacheInterface
+    Config       config.Config
 
     OtherItemMap map[string]interface{}
 }
@@ -93,8 +96,11 @@ func (p *SessionContainer)GetItemByClassName(name string) interface{} {
     if (name == "*http.Response") {
         return p.Response
     }
-    if (name == "http.SessionContainer") {
-        return *p
+    if (name == "config.Config") {
+        return p.Config
+    }
+    if (name == "*http.SessionContainer") {
+        return p
     }
     return p.OtherItemMap[name]
 }
@@ -103,7 +109,7 @@ func (p *SessionContainer)SetItem(item interface{}) {
     va := reflect.ValueOf(item);
     p.OtherItemMap[va.Type().String()] = item
 }
-func (p *SessionContainer)SetItemAlias(name string,item interface{}) {
+func (p *SessionContainer)SetItemAlias(name string, item interface{}) {
     p.OtherItemMap[name] = item
 }
 

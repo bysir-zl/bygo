@@ -4,10 +4,10 @@ import (
     "reflect"
     "strings"
     "errors"
-    "config"
     "strconv"
     "github.com/bysir-zl/bygo/util"
     "github.com/bysir-zl/bygo/bean"
+    "github.com/bysir-zl/bygo/config"
 )
 
 //用于处理Router中的Model
@@ -131,7 +131,7 @@ func (p *RouterModelHandler) handleSelect(container SessionContainer) ResponseDa
     //生成一个Slice用于存储返回列表
     models := reflect.New(reflect.SliceOf(reflect.TypeOf(model).Elem())).Interface()
     factory := dbFactory.Model(models).
-        Debug(!config.Debug);
+        Debug(!config.BConfig.Debug);
 
     where, err := modelRules.CheckWhereString(whereString, false)
     if err != nil {
@@ -277,7 +277,7 @@ func (p *RouterModelHandler) handleDelete(container SessionContainer) ResponseDa
     defaultResponse := NewRespDataJson(200, bean.ApiData{Code:200})
     count, err :=
         factory.
-        Debug(!config.Debug).Delete()
+        Debug(!config.BConfig.Debug).Delete()
     if err != nil {
         return NewRespDataError(500, err)
     }

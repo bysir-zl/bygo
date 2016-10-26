@@ -5,17 +5,17 @@ import (
 )
 
 type DbConfig struct {
-    Driver   string
+    Driver   string `json:"driver"`
     //
-    Host     string
+    Host     string `json:"host"`
     //端口
-    Port     int
+    Port     int `json:"port"`
     //用户名
-    User     string
+    User     string `json:"user"`
     //密码
-    Password string
+    Password string `json:"password"`
     //数据库名name
-    Name     string
+    Name     string `json:"name"`
 }
 
 func (p DbConfig) String() string {

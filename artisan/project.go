@@ -28,7 +28,7 @@ func CreateProject(name string) {
     files := map[string]string{}
 
     // Index
-    files["index.go"] = "package main\n\nimport\n(\n    \"app/router\"\n    \"net/http\"\n    \"log\"\n    \"github.com/bysir-zl/bygo/bygo\"\n    \"app/exception\"\n)\n\nfunc main() {\n\n    apiHandle := bygo.NewApiHandler()\n\n    apiHandle.ConfigRouter(\"api\", router.Init)\n    apiHandle.ConfigExceptHandler(exception.Handler)\n    apiHandle.Init()\n\n    http.Handle(\"/api/\", apiHandle);\n    http.Handle(\"/\", http.FileServer(http.Dir(\"./dist\")))\n\n    log.Println(\"server start success\")\n\n    err := http.ListenAndServe(\":81\", nil)\n\n    if err != nil {\n        log.Println(err)\n    }\n}"
+    files["index.go"] = "package main\n\nimport (\n    \"app/exception\"\n    \"app/router\"\n    \"github.com/bysir-zl/bygo/bygo\"\n    \"log\"\n    \"net/http\"\n)\n\nfunc main() {\n\n    apiHandle := bygo.NewApiHandler()\n\n    apiHandle.ConfigRouter(\"api\", router.Init)\n    apiHandle.ConfigExceptHandler(exception.Handler)\n    apiHandle.Config(\"./config/config.json\")\n    apiHandle.Init()\n\n    http.Handle(\"/api/\", apiHandle)\n    http.Handle(\"/\", http.FileServer(http.Dir(\"./dist\")))\n\n    log.Println(\"server start success\")\n\n    err := http.ListenAndServe(\":81\", nil)\n\n    if err != nil {\n        log.Println(err)\n    }\n}\n"
     // router
     files["app/router/router.go"] = "package router\n\nimport (\n    \"app/middleware\"\n    \"app/controller\"\n    \"github.com/bysir-zl/bygo/http\"\n)\n\nfunc Init(node *http.RouterNode) {\n    node.Middleware(&middleware.HeaderMiddleware{}) // 为当前节点添加中间件\n\n    node.Get(\"/\", func(request *http.Request, p *http.Response) http.ResponseData {\n        return http.NewRespDataHtml(404, \"blank\")\n    })\n\n    node.Controller(\"index\", &controller.IndexController{})\n}\n"
     // IndexController
@@ -43,15 +43,8 @@ func CreateProject(name string) {
     // UserModel
     files["app/model/UserModel.go"] = "package model\n\ntype UserModel struct {\n    Table    string  `db:\"user\" json:\"-\"`\n    Connect  string `db:\"default\" json:\"-\"`\n\n    Id       int64 `name:\"id\" pk:\"auto\" json:\"id\"`\n    Password string `name:\"password\" json:\"password,omitempty\"`\n    UserName string `name:\"username\" json:\"username\"`\n\n    CreateAt string `name:\"create_at\" auto:\"time,insert\" json:\"create_at\"`\n    UpdateAt string `name:\"update_at\" auto:\"time,update|insert\" json:\"update_at\"`\n\n    Token    string `json:\"token,omitempty\"`\n}\n    "
 
-    // config - app
-    files["config/app.go"] = "package config\n\nvar Debug = true\n"
-
-    // config - chche
-    files["config/chche.go"] = "package config\n\nvar CacheDriver = \"redis\"\n"
-    // config - db
-    files["config/db.go"] = "package config\n\nimport \"github.com/bysir-zl/bygo/db\"\n\nvar DbConfigs map[string]db.DbConfig = map[string]db.DbConfig{}\n\nfunc init() {\n    if !Debug {\n        DbConfigs[\"default\"] = db.DbConfig{\n            Driver:\"mysql\",\n            Host:\"localhost\",\n            Port:3306,\n            Name:\"password\",\n            User:\"root\",\n            Password:\"zhangliang\",\n        }\n    } else {\n        DbConfigs[\"default\"] = db.DbConfig{\n            Driver:\"mysql\",\n            Host:\"localhost\",\n            Port:3306,\n            Name:\"password\",\n            User:\"root\",\n            Password:\"\",\n        }\n    }\n}\n"
-    // config - redis
-    files["config/redis.go"] = "package config\n\nvar RedisHost = \"127.0.0.1:6379\"\n"
+    // config.json
+    files["config/config.json"] = "{\n  \"evn\": \"debug\",\n  \"app\": {\n    \"debug\": true\n  },\n  \"cache\": {\n    \"cache_driver\": \"redis\"\n  },\n  \"database\": {\n    \"default\": {\n      \"driver\": \"mysql\",\n      \"host\": \"localhost\",\n      \"port\": 3306,\n      \"name\": \"anyminisdk\",\n      \"user\": \"root\",\n      \"password\": \"root\"\n    }\n  },\n  \"redis\": {\n    \"host\": \"127.0.0.1:6379\"\n  }\n}"
 
     // 写入文件
     for filename, content := range files {
