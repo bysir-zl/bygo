@@ -129,8 +129,12 @@ func (p *Router)Start(url string, sessionContainer Context) (ResponseData) {
     matchedUrl, currNodeList := p.Handler(baseUrl);
 
     var node RouterNode;
-
-    node = currNodeList[len(currNodeList) - 1]
+    // 没有匹配到东西
+    if len(currNodeList) == 0 {
+        node = p.RouterNode
+    } else {
+        node = currNodeList[len(currNodeList) - 1]
+    }
 
     otherParam := string(baseUrl[len(matchedUrl):])
 

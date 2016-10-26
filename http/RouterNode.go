@@ -144,7 +144,7 @@ func (node *RouterNode) run(context Context, method string) (handlerName string,
         handlerName = "func"
     } else {
         //没有配置路由
-        response = NewRespDataError(500, errors.New("u are forget set route? bug welcome use bygo . :D"))
+        response = NewRespDataError(500, errors.New("u are forget set route? but welcome use bygo . :D"))
         return
     }
 
