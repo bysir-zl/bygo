@@ -88,6 +88,8 @@ func (p *ApiHandler) Init() {
     p.AppContainer.Cache = c
     p.AppContainer.DbFactory = dbFactory
 
+    db.BFactory = dbFactory
+
     log.Info("apiHandler evn is : " + p.AppContainer.Config.Evn)
 }
 
