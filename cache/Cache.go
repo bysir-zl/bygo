@@ -1,12 +1,14 @@
 package cache
 
-import "github.com/bysir-zl/bygo/config"
+import (
+    "github.com/bysir-zl/bygo/config"
+)
 
-func NewCache(driverType string) (CacheInterface) {
-    switch driverType {
+func NewCache(c config.Config) (CacheInterface) {
+    switch c.CacheDrive {
     case "redis":
-        return NewCacheRedis(config.BConfig.RedisHost)
+        return NewCacheRedis(c.RedisHost)
         break;
     }
-    return NewCacheRedis(config.BConfig.RedisHost)
+    return NewCacheRedis(c.RedisHost)
 }

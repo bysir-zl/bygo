@@ -115,26 +115,32 @@ func setFieldValue(field reflect.Value, value interface{}) {
 		break
 	case int, int8, int16, int32, int64:
 		var intv int64 = 0
+
 		switch value.(type) {
-		case int, int8, int16, int32, int64:
-			intv = value.(int64)
-			break
+		case int:
+			intv = int64(value.(int))
+		case int32:
+			intv = int64(value.(int32))
+		case int64:
+			intv = int64(value.(int64))
+		case float32:
+			intv = int64(value.(float32))
+		case float64:
+			intv = int64(value.(float64))
 		case string:
 			intv, _ = strconv.ParseInt(value.(string), 10, 64)
-			break
 		case []uint8:
 			intv, _ = strconv.ParseInt(string(value.([]uint8)), 10, 64)
-			break
 		}
-
 		field.SetInt(intv)
 		break
 	case float32, float64:
 		var flov float64 = 0
 		switch value.(type) {
-		case float32, float64:
-			flov = float64(flov)
-			break
+		case float32:
+			flov = float64(value.(float32))
+		case float64:
+			flov = float64(value.(float64))
 		case string:
 			flov, _ = strconv.ParseFloat(value.(string), 64)
 			break
@@ -170,7 +176,7 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 			key = fieldNameToTagName[key]
 			// 如果有逗号 比如 json:"password,omitempty" 则只取逗号前面的第一个
 			key = strings.Split(key, ",")[0]
-			if key!="" {
+			if key != "" {
 				data[key] = field.Interface()
 			}
 		} else {

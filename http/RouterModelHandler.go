@@ -7,7 +7,6 @@ import (
     "strconv"
     "github.com/bysir-zl/bygo/util"
     "github.com/bysir-zl/bygo/bean"
-    "github.com/bysir-zl/bygo/config"
 )
 
 //用于处理Router中的Model
@@ -96,8 +95,7 @@ func (p *RouterModelHandler) handleUpdate(container Context) ResponseData {
     }
 
     count, err :=
-        factory.
-        Debug(true).Update()
+        factory.Update()
     if err != nil {
         return NewRespDataError(500, err)
     }
@@ -130,8 +128,7 @@ func (p *RouterModelHandler) handleSelect(container Context) ResponseData {
 
     //生成一个Slice用于存储返回列表
     models := reflect.New(reflect.SliceOf(reflect.TypeOf(model).Elem())).Interface()
-    factory := dbFactory.Model(models).
-        Debug(!config.BConfig.Debug);
+    factory := dbFactory.Model(models)
 
     where, err := modelRules.CheckWhereString(whereString, false)
     if err != nil {
@@ -277,7 +274,7 @@ func (p *RouterModelHandler) handleDelete(container Context) ResponseData {
     defaultResponse := NewRespDataJson(200, bean.ApiData{Code:200})
     count, err :=
         factory.
-        Debug(!config.BConfig.Debug).Delete()
+        Delete()
     if err != nil {
         return NewRespDataError(500, err)
     }

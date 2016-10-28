@@ -23,6 +23,7 @@ func Singleton(config DbConfig) (*DbDriverMysql, error) {
     dbPoolMapLock.RLock()
     db, isOk := dbPoolMap[configString];
 
+
     if (!isOk) {
         dbPoolMapLock.RUnlock()
         dbPoolMapLock.Lock()
@@ -56,7 +57,6 @@ func (p *DbDriverMysql) Query(sql string, args ...interface{}) (data []map[strin
     outData := []map[string]interface{}{}
 
     data = nil
-
     stmt, err := p.db.Prepare(sql)
     if err != nil {
         return
