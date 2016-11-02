@@ -889,7 +889,7 @@ func buildWhere(where map[string]([]interface{}), fieldMapper map[string]string)
 	return
 }
 
-func NewModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
+func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 	modelFactory := &ModelFactory{
 		dbConfigs:dbConfig,
 	}

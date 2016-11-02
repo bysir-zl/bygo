@@ -11,7 +11,7 @@ func LinkMapListToObjList(dbConfigs map[string]DbConfig,data []map[string]interf
         ids = append(ids, item[pk])
     }
 
-    err = NewModel(dbConfigs,out).
+    err = newModel(dbConfigs,out).
         WhereIn(outPk, ids...).
         Get()
 

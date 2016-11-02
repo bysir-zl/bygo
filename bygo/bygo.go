@@ -13,7 +13,7 @@ import (
 )
 
 var _ = log.Blue
-var BConfig = config.Config{}
+var bConfig = config.Config{}
 
 type ApiHandler struct {
 	AppContainer    byhttp.Container
@@ -81,7 +81,7 @@ func Config(files ...string) {
 			if err != nil {
 				log.Warn(err)
 			}
-			BConfig = config
+			bConfig = config
 			return
 		}
 	}
@@ -89,19 +89,17 @@ func Config(files ...string) {
 }
 
 func (p *ApiHandler) Init() {
-	if BConfig.Evn==""{
+	if bConfig.Evn==""{
 		log.Warn("you have not config the bygo , please use bygo.Config(filePath) to config it .")
 	}
 
-
-	c := cache.NewCache(BConfig)
-	dbFactory := db.NewDbFactory(BConfig.DbConfigs)
+	c := cache.NewCache(bConfig)
+	dbFactory := db.Init(bConfig.DbConfigs)
 
 	p.AppContainer.Cache = c
 	p.AppContainer.DbFactory = dbFactory
-	p.AppContainer.Config = BConfig
+	p.AppContainer.Config = bConfig
 
-	db.BFactory = dbFactory
 	log.Info("apiHandler evn is : " + p.AppContainer.Config.Evn)
 }
 

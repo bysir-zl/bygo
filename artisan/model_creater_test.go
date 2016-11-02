@@ -5,5 +5,5 @@ import (
 )
 
 func Test_CreateMode(b *testing.T) {
-	CreateModelFile("c_platform")
+	CreateModelFile("user")
 }
