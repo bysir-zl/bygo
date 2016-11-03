@@ -1,14 +1,14 @@
 package util
 
 import (
-	"reflect"
 	"log"
-	"strings"
+	"reflect"
 	"strconv"
+	"strings"
 )
 
 func EncodeTag(tag string) (data map[string]string) {
-	data = map[string]string{};
+	data = map[string]string{}
 	if tag == "" {
 		return
 	}
@@ -26,8 +26,8 @@ func EncodeTag(tag string) (data map[string]string) {
 
 func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) {
 
-	pointer := reflect.Indirect(reflect.ValueOf(obj));
-	typer := pointer.Type().Elem();
+	pointer := reflect.Indirect(reflect.ValueOf(obj))
+	typer := pointer.Type().Elem()
 
 	for _, mapper := range mappers {
 		item := reflect.New(typer)
@@ -37,11 +37,11 @@ func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag 
 }
 
 func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]interface{}) {
-	mappers = []map[string]interface{}{};
+	mappers = []map[string]interface{}{}
 
-	value := reflect.ValueOf(obj);
+	value := reflect.ValueOf(obj)
 	for i := 0; i < value.Len(); i = i + 1 {
-		item := value.Index(i);
+		item := value.Index(i)
 		mappers = append(mappers, ObjToMap(item.Interface(), useTag))
 	}
 	return
@@ -51,13 +51,13 @@ func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]inte
 // 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上
 // 返回设置成功的Fields列表字段
 func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fields []string) {
-	pointer := reflect.Indirect(reflect.ValueOf(obj));
-	typer := pointer.Type();
+	pointer := reflect.Indirect(reflect.ValueOf(obj))
+	typer := pointer.Type()
 	fieldNum := pointer.NumField()
 
 	var fieldNameToTagName map[string]string
-	if (useTag != "") {
-		fieldTagMapper := GetTagMapperFromPool(obj);
+	if useTag != "" {
+		fieldTagMapper := GetTagMapperFromPool(obj)
 		fieldNameToTagName = fieldTagMapper.GetFieldMapByTagName(useTag)
 	}
 
@@ -67,7 +67,7 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 		fieldName := typer.Field(i).Name
 		key := fieldName
 
-		if (useTag != "") {
+		if useTag != "" {
 			// 根据指定的tag的key重新映射
 			key = fieldNameToTagName[key]
 			// 如果有逗号 比如 json:"password,omitempty" 则只取逗号前面的第一个
@@ -75,7 +75,7 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 		}
 
 		if value := mapper[key]; value != nil {
-			if (field.CanInterface()) {
+			if field.CanInterface() {
 				setFieldValue(field, value)
 				fields = append(fields, fieldName)
 			}
@@ -154,14 +154,14 @@ func setFieldValue(field reflect.Value, value interface{}) {
 }
 
 func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
-	pointer := reflect.Indirect(reflect.ValueOf(obj));
+	pointer := reflect.Indirect(reflect.ValueOf(obj))
 	typer := pointer.Type()
 
 	fieldNum := pointer.NumField()
 
 	var fieldNameToTagName map[string]string
-	if (useTag != "") {
-		fieldTagMapper := GetTagMapperFromPool(obj);
+	if useTag != "" {
+		fieldTagMapper := GetTagMapperFromPool(obj)
 		fieldNameToTagName = fieldTagMapper.GetFieldMapByTagName(useTag)
 	}
 
@@ -171,7 +171,7 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 		field := pointer.Field(i)
 		key := typer.Field(i).Name
 
-		if (useTag != "") {
+		if useTag != "" {
 			// 根据指定的tag的key重新映射
 			key = fieldNameToTagName[key]
 			// 如果有逗号 比如 json:"password,omitempty" 则只取逗号前面的第一个
@@ -188,7 +188,6 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 	return data
 }
 
-
 //将map[string'key']string'value'  转换为map[value]key
 func ReverseMap(ma map[string]string) (data map[string]string) {
 	data = map[string]string{}
@@ -200,13 +199,12 @@ func ReverseMap(ma map[string]string) (data map[string]string) {
 	return
 }
 
-
 //判断一个array每一个原始是不是都在map的value里
 func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
 	if min == nil || len(min) == 0 {
 		return true, ""
 	}
-	lenMin := len(min);
+	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
 		has := false
 		for _, value := range m {
@@ -223,10 +221,10 @@ func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
 
 //获取map的keys
 func GetMapKey(m map[string]string) (keys []string) {
-	keys = []string{};
+	keys = []string{}
 
 	for key, _ := range m {
-		keys = append(keys, key);
+		keys = append(keys, key)
 	}
 
 	return keys
@@ -237,10 +235,10 @@ func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 	if min == nil || len(min) == 0 {
 		return true, ""
 	}
-	if (m == nil) {
+	if m == nil {
 		return false, ""
 	}
-	lenMin := len(min);
+	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
 		has := false
 		for key, _ := range m {
@@ -260,8 +258,8 @@ func ArrayInArray(min []string, max []string) (has bool, msg string) {
 		return true, ""
 	}
 
-	lenMax := len(max);
-	lenMin := len(min);
+	lenMax := len(max)
+	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
 		has := false
 		for maxI := 0; maxI < lenMax; maxI = maxI + 1 {
@@ -284,7 +282,7 @@ func ItemInArray(item string, max []string) (has bool) {
 		return false
 	}
 
-	lenMax := len(max);
+	lenMax := len(max)
 
 	for maxI := 0; maxI < lenMax; maxI = maxI + 1 {
 		if max[maxI] == item {
@@ -315,7 +313,7 @@ func IsEmptyValue(value interface{}) bool {
 }
 
 func EmptyObject(obj interface{}) {
-	pointer := reflect.Indirect(reflect.ValueOf(obj));
+	pointer := reflect.Indirect(reflect.ValueOf(obj))
 	fieldNum := pointer.NumField()
 
 	for i := 0; i < fieldNum; i++ {

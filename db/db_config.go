@@ -19,8 +19,8 @@ type DbConfig struct {
 }
 
 func (p DbConfig) String() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s~%s", p.User, p.Password, p.Host, p.Port, p.Name, p.Driver);
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s~%s", p.User, p.Password, p.Host, p.Port, p.Name, p.Driver)
 }
 func (p DbConfig) GetSqlOpenString() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", p.User, p.Password, p.Host, p.Port, p.Name);
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", p.User, p.Password, p.Host, p.Port, p.Name)
 }

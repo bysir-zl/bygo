@@ -1,15 +1,15 @@
 package bygo
 
 import (
-	"net/http"
+	"github.com/bysir-zl/bygo/bean"
+	"github.com/bysir-zl/bygo/cache"
+	"github.com/bysir-zl/bygo/config"
+	"github.com/bysir-zl/bygo/db"
 	byhttp "github.com/bysir-zl/bygo/http"
 	"io"
-	"github.com/bysir-zl/bygo/cache"
-	"github.com/bysir-zl/bygo/db"
-	"github.com/bysir-zl/bygo/bean"
-	"os"
 	"lib.com/deepzz0/go-com/log"
-	"github.com/bysir-zl/bygo/config"
+	"net/http"
+	"os"
 )
 
 var _ = log.Blue
@@ -19,50 +19,48 @@ type ApiHandler struct {
 	AppContainer    byhttp.Container
 
 	Router          byhttp.Router
-	ExceptionHandle func(byhttp.Context, byhttp.Exceptions) byhttp.ResponseData
+	ExceptionHandle func(*byhttp.Context)
 }
 
 func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	response := byhttp.Response{ResponseWrite: w};
+	response := byhttp.Response{ResponseWrite: w}
 
-	request := byhttp.Request{Request:r};
-	request.Init();
+	request := byhttp.Request{Request: r}
+	request.Init()
 
-	sessionContainer := byhttp.Context{
-		OtherItemMap:make(map[string]interface{}),
-		Request:&request,
-		Response:&response,
-	};
+	context := byhttp.NewContext()
+	context.Request = &request
+	context.Response = &response
 
 	//将app容器添加到session容器
-	sessionContainer.Cache = p.AppContainer.Cache
-	sessionContainer.DbFactory = p.AppContainer.DbFactory
-	sessionContainer.Config = p.AppContainer.Config
+	context.Cache = p.AppContainer.Cache
+	context.DbFactory = p.AppContainer.DbFactory
+	context.Config = p.AppContainer.Config
 
 	for k, v := range p.AppContainer.OtherItemMap {
-		sessionContainer.OtherItemMap[k] = v
+		context.SetItemByAlias(k, v)
 	}
 
-	responseData := p.Router.Start(r.URL.String(), sessionContainer);
+	p.Router.Start(r.URL.String(), &context)
 
 	// 错误处理
 	// todo 这里没有运行中间件,是一个bug
-	if (responseData.Exception.Code != 0) {
+	if context.Response.Data.Exception.Code != 0 {
 		if p.ExceptionHandle != nil {
-			responseData = p.ExceptionHandle(sessionContainer, responseData.Exception)
+			p.ExceptionHandle(&context)
 		} else {
-			responseData = byhttp.NewRespDataJson(
-				responseData.Code,
+			context.Response.Data = byhttp.NewRespDataJson(
+				context.Response.Data.Code,
 				bean.ApiData{
-					Code:responseData.Exception.Code,
-					Msg:responseData.Exception.Message,
+					Code: context.Response.Data.Exception.Code,
+					Msg:  context.Response.Data.Exception.Message,
 				})
 		}
 	}
 
-	w.Header().Set("Content-Type", responseData.Type);
-	w.WriteHeader(responseData.Code)
-	io.WriteString(w, responseData.Body)
+	w.Header().Set("Content-Type", context.Response.Data.Type)
+	w.WriteHeader(context.Response.Data.Code)
+	io.WriteString(w, context.Response.Data.Body)
 }
 
 func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {
@@ -70,7 +68,7 @@ func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {
 	p.Router.Init(fun)
 }
 
-func (p *ApiHandler) ConfigExceptHandler(fun func(byhttp.Context, byhttp.Exceptions) byhttp.ResponseData) {
+func (p *ApiHandler) ConfigExceptHandler(fun func(*byhttp.Context)) {
 	p.ExceptionHandle = fun
 }
 func Config(files ...string) {
@@ -89,7 +87,7 @@ func Config(files ...string) {
 }
 
 func (p *ApiHandler) Init() {
-	if bConfig.Evn==""{
+	if bConfig.Evn == "" {
 		log.Warn("you have not config the bygo , please use bygo.Config(filePath) to config it .")
 	}
 
@@ -106,12 +104,12 @@ func (p *ApiHandler) Init() {
 func NewApiHandler() (apiHandle *ApiHandler) {
 	//App 容器
 	appContainer := byhttp.Container{
-		OtherItemMap:make(map[string]interface{}),
-	};
+		OtherItemMap: make(map[string]interface{}),
+	}
 
 	apiHandle = &ApiHandler{
-		AppContainer:appContainer,
-		Router:byhttp.NewRouter(),
+		AppContainer: appContainer,
+		Router:       byhttp.NewRouter(),
 	}
 	return
 }

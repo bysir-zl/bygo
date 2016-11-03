@@ -1,11 +1,11 @@
 package artisan
 
 import (
+	"fmt"
 	"github.com/bysir-zl/bygo/config"
 	"github.com/bysir-zl/bygo/db"
-	"lib.com/deepzz0/go-com/log"
 	"github.com/bysir-zl/bygo/util"
-	"fmt"
+	"lib.com/deepzz0/go-com/log"
 	"os"
 	"strings"
 )
@@ -53,5 +53,3 @@ func CreateModelFile(tableName string) {
 	}
 	file.WriteString(fileContent)
 }
-
-

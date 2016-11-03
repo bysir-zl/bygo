@@ -10,28 +10,26 @@ type DbDriverMysql struct {
 	db *sql.DB
 }
 
-var dbPoolMap = map[string]*sql.DB{};
+var dbPoolMap = map[string]*sql.DB{}
 
-var dbPoolMapLock *sync.RWMutex = &sync.RWMutex{};
-
+var dbPoolMapLock *sync.RWMutex = &sync.RWMutex{}
 
 // 单例取出db 并返回自己
 // err 是打开数据库连接的错误
 func Singleton(config DbConfig) (*DbDriverMysql, error) {
-	configString := config.String();
+	configString := config.String()
 
 	dbPoolMapLock.RLock()
-	db, isOk := dbPoolMap[configString];
+	db, isOk := dbPoolMap[configString]
 
-
-	if (!isOk) {
+	if !isOk {
 		dbPoolMapLock.RUnlock()
 		dbPoolMapLock.Lock()
 		_db, err := sql.Open(config.Driver, config.GetSqlOpenString())
 		if err != nil {
 			return nil, err
 		}
-		err = _db.Ping();
+		err = _db.Ping()
 		if err != nil {
 			return nil, err
 		}
@@ -58,17 +56,17 @@ func (p *DbDriverMysql) Query(sql string, args ...interface{}) (data []map[strin
 
 	data = nil
 	stmt, err := p.db.Prepare(sql)
-	defer stmt.Close();
+	defer stmt.Close()
 	if err != nil {
 		return
 	}
-	rows, err := stmt.Query(args...);
+	rows, err := stmt.Query(args...)
 	if err != nil {
 		return
 	}
-	defer rows.Close();
+	defer rows.Close()
 
-	columns, err := rows.Columns();
+	columns, err := rows.Columns()
 	if err != nil {
 		return
 	}
@@ -80,7 +78,7 @@ func (p *DbDriverMysql) Query(sql string, args ...interface{}) (data []map[strin
 	}
 
 	for rows.Next() {
-		st := map[string]interface{}{};
+		st := map[string]interface{}{}
 		err2 := rows.Scan(scanArgs...)
 
 		if err2 != nil {
@@ -110,15 +108,15 @@ func (p *DbDriverMysql) Exec(sql string, args ...interface{}) (affectCount int64
 		return
 	}
 
-	defer stmt.Close();
-	result, err := stmt.Exec(args...);
+	defer stmt.Close()
+	result, err := stmt.Exec(args...)
 
 	if err != nil {
 		return
 	}
 
-	_affectCount, _ := result.RowsAffected();
-	_lastInsertId, _ := result.LastInsertId();
+	_affectCount, _ := result.RowsAffected()
+	_lastInsertId, _ := result.LastInsertId()
 
 	affectCount = _affectCount
 	lastInsertId = _lastInsertId

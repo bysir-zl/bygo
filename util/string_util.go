@@ -16,22 +16,22 @@ func SheXing2TuoFeng(src []byte) (out []byte) {
 	del := 0
 	for i := 1; i < l; i = i + 1 {
 		// 小写
-		if 97 <= src[i] &&src[i]  <= 122 {
-			out[i-del] = src[i]
-		} else if 65 <= src[i]&&src[i]  <= 90 {
+		if 97 <= src[i] && src[i] <= 122 {
+			out[i - del] = src[i]
+		} else if 65 <= src[i] && src[i] <= 90 {
 			// 大写
-			out[i-del] = src[i]
+			out[i - del] = src[i]
 		} else {
-			if 97 <= src[i+1]&&src[i+1] <= 122 {
-				out[i-del] = src[i+1] - 32
+			if 97 <= src[i + 1] && src[i + 1] <= 122 {
+				out[i - del] = src[i + 1] - 32
 			} else {
-				out[i-del] = src[i+1]
+				out[i - del] = src[i + 1]
 			}
 
 			del++
 			i++
 		}
 	}
-	out = out[0 : l-del]
+	out = out[0 : l - del]
 	return
 }

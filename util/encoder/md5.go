@@ -1,4 +1,4 @@
-package util
+package encoder
 
 import (
 	"crypto/md5"
@@ -6,16 +6,16 @@ import (
 )
 
 func Md5(in []byte) (out []byte) {
-	h := md5.New();
-	h.Write(in);
+	h := md5.New()
+	h.Write(in)
 	mbs := h.Sum(nil)
-	out := make([]byte, hex.EncodedLen(len(mbs)))
+	out = make([]byte, hex.EncodedLen(len(mbs)))
 	hex.Encode(out, mbs)
 
 	return
 }
 func Md5String(in string) (out string) {
-	out := string(Md5([]byte(in)))
+	out = string(Md5([]byte(in)))
 	return
 
 }

@@ -10,18 +10,17 @@ type cacheRedis struct {
 }
 
 func NewCacheRedis(redisHost string) (cache cacheRedis) {
-	var pool =
-		&redis.Pool{
-			MaxIdle:   80,
-			MaxActive: 12000, // max number of connections
-			Dial: func() (redis.Conn, error) {
-				c, err := redis.Dial("tcp", redisHost)
-				if err != nil {
-					panic(err.Error())
-				}
-				return c, err
-			},
-		}
+	var pool = &redis.Pool{
+		MaxIdle:   80,
+		MaxActive: 12000, // max number of connections
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", redisHost)
+			if err != nil {
+				panic(err.Error())
+			}
+			return c, err
+		},
+	}
 
 	cache = cacheRedis{
 		Pool: pool,

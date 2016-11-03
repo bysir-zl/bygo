@@ -1,16 +1,16 @@
 package db
 
 import (
-	"strings"
-	"fmt"
-	"reflect"
 	"errors"
-	"log"
-	"regexp"
-	"math"
-	"time"
-	"github.com/bysir-zl/bygo/util"
+	"fmt"
 	"github.com/bysir-zl/bygo/bean"
+	"github.com/bysir-zl/bygo/util"
+	"log"
+	"math"
+	"reflect"
+	"regexp"
+	"strings"
+	"time"
 )
 
 type orderItem struct {
@@ -93,7 +93,6 @@ func (p *ModelFactory) WhereIn(field string, params ...interface{}) *ModelFactor
 	return p
 }
 
-
 //指定连接哪个数据库
 //connect 必须是已经是在config/db配置好了的
 func (p *ModelFactory) Db(connect string) *ModelFactory {
@@ -114,6 +113,7 @@ func (p *ModelFactory) DbConfig(connect string, config DbConfig) *ModelFactory {
 
 	return p
 }
+
 //指定表
 func (p *ModelFactory) Table(table string) *ModelFactory {
 	p.table = table
@@ -145,7 +145,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	//检查fields是否在Model里
-	if p.fields != nil&&len(p.fields) != 0 {
+	if p.fields != nil && len(p.fields) != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the model fields")
 			return
@@ -159,7 +159,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"];
+		dbConnect := modelConfig["Connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -171,7 +171,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 		}
 	}
 
-	sql, args, e := buildSelectSql(p.fields, p.table, p.where, p.order, p.limit, fieldTagMap);
+	sql, args, e := buildSelectSql(p.fields, p.table, p.where, p.order, p.limit, fieldTagMap)
 	if e != nil {
 		err = e
 		return
@@ -213,7 +213,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 	return
 }
 
-func (p *ModelFactory)GetAndLink(out interface{}, pk string, outPk string) (err error) {
+func (p *ModelFactory) GetAndLink(out interface{}, pk string, outPk string) (err error) {
 
 	data, e := p.QueryToMap()
 	if e != nil {
@@ -264,17 +264,17 @@ func (p *ModelFactory) Page(page int, pageSize int) (pageData bean.Page, err err
 
 	util.MapListToObjList(p.out, data, "name")
 
-	count, err := p.Count();
+	count, err := p.Count()
 	if err != nil {
 		return
 	}
 	pageTotal := int(math.Ceil(float64(count) / float64(pageSize)))
-	pageData = bean.Page{Total:count, Page:page, PageSize:pageSize, PageTotal:pageTotal}
+	pageData = bean.Page{Total: count, Page: page, PageSize: pageSize, PageTotal: pageTotal}
 
 	return
 }
 
-func (p *ModelFactory)PageWithOutTotal(page int, pageSize int) (pageData bean.Page, err error) {
+func (p *ModelFactory) PageWithOutTotal(page int, pageSize int) (pageData bean.Page, err error) {
 	if page < 1 {
 		page = 1
 	}
@@ -293,7 +293,7 @@ func (p *ModelFactory)PageWithOutTotal(page int, pageSize int) (pageData bean.Pa
 
 	util.MapListToObjList(p.out, data, "name")
 
-	pageData = bean.Page{Page:page, PageSize:pageSize}
+	pageData = bean.Page{Page: page, PageSize: pageSize}
 
 	return
 }
@@ -301,7 +301,7 @@ func (p *ModelFactory)PageWithOutTotal(page int, pageSize int) (pageData bean.Pa
 func (p *ModelFactory) First() (err error) {
 
 	p.limit = [2]int{0, 1}
-	datas, err := p.QueryToMap();
+	datas, err := p.QueryToMap()
 
 	if err != nil {
 		return
@@ -328,7 +328,7 @@ func (p *ModelFactory) Count() (count int64, err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"];
+		dbConnect := modelConfig["Connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -368,7 +368,7 @@ func (p *ModelFactory) Count() (count int64, err error) {
 func (p *ModelFactory) GetPk(types string) string {
 	pk := ""
 	pkMap := p.modelFieldMap.GetFieldMapByTagName("pk")
-	if pkMap != nil&&len(pkMap) != 0 {
+	if pkMap != nil && len(pkMap) != 0 {
 		for key, value := range pkMap {
 			if value == types {
 				pk = key
@@ -379,14 +379,14 @@ func (p *ModelFactory) GetPk(types string) string {
 }
 
 // 取得在method操作时需要自动填充的字段与值
-func (p *ModelFactory) GetAutoSetField(method string) (needSet  map[string]interface{}, err error) {
+func (p *ModelFactory) GetAutoSetField(method string) (needSet map[string]interface{}, err error) {
 	autoField := p.modelFieldMap.GetFieldMapByTagName("auto")
 	if len(autoField) != 0 {
-		needSet = map[string]interface{}{};
+		needSet = map[string]interface{}{}
 		for field, tagVal := range autoField {
 			// time,insert
-			tyAme := strings.Split(tagVal, ",");
-			methods := tyAme[1];
+			tyAme := strings.Split(tagVal, ",")
+			methods := tyAme[1]
 
 			if util.ItemInArray(method, strings.Split(methods, "|")) {
 				if tyAme[0] == "timestr" {
@@ -408,7 +408,7 @@ func (p *ModelFactory) Insert() (err error) {
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	//检查fields是否在Model里
-	if p.fields != nil&&len(p.fields) != 0 {
+	if p.fields != nil && len(p.fields) != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the struct `" + reflect.TypeOf(p.out).String() + "` fields")
 			return
@@ -422,7 +422,7 @@ func (p *ModelFactory) Insert() (err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"];
+		dbConnect := modelConfig["Connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -460,15 +460,15 @@ func (p *ModelFactory) Insert() (err error) {
 		}
 		saveData[k] = value
 	}
-	autoSet, e := p.GetAutoSetField("insert");
+	autoSet, e := p.GetAutoSetField("insert")
 	if e != nil {
 		err = e
 		return
 	}
 
-	if autoSet != nil&&len(autoSet) != 0 {
+	if autoSet != nil && len(autoSet) != 0 {
 		for k, v := range autoSet {
-			k = fieldTagMap[k];
+			k = fieldTagMap[k]
 			saveData[k] = v
 		}
 
@@ -476,7 +476,7 @@ func (p *ModelFactory) Insert() (err error) {
 		util.MapToObj(p.out, autoSet, "")
 	}
 
-	sql, args, e := buildInsertSql(p.table, saveData, p.where);
+	sql, args, e := buildInsertSql(p.table, saveData, p.where)
 	if e != nil {
 		err = e
 		return
@@ -494,7 +494,7 @@ func (p *ModelFactory) Insert() (err error) {
 
 	//找到主键，并且赋值为lastInsertId
 
-	pk := p.GetPk("auto");
+	pk := p.GetPk("auto")
 	if pk != "" {
 		ma := map[string]interface{}{}
 		ma[pk] = _insertId
@@ -511,13 +511,12 @@ func (p *ModelFactory) Update() (count int64, err error) {
 		return
 	}
 
-
 	//字段->数据库字段映射
 	fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	//检查fields是否在Model里
-	if p.fields != nil&&len(p.fields) != 0 {
+	if p.fields != nil && len(p.fields) != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the struct `" + reflect.TypeOf(p.out).String() + "` fields")
 			return
@@ -531,7 +530,7 @@ func (p *ModelFactory) Update() (count int64, err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"];
+		dbConnect := modelConfig["Connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -544,8 +543,6 @@ func (p *ModelFactory) Update() (count int64, err error) {
 			return
 		}
 	}
-
-
 
 	//获取应该存数据库的键值对 数据库字段->值映射
 	saveData := map[string]interface{}{}
@@ -572,15 +569,15 @@ func (p *ModelFactory) Update() (count int64, err error) {
 		saveData[k] = value
 	}
 
-	autoSet, e := p.GetAutoSetField("update");
+	autoSet, e := p.GetAutoSetField("update")
 	if e != nil {
 		err = e
 		return
 	}
 
-	if autoSet != nil&&len(autoSet) != 0 {
+	if autoSet != nil && len(autoSet) != 0 {
 		for k, v := range autoSet {
-			k = fieldTagMap[k];
+			k = fieldTagMap[k]
 			saveData[k] = v
 		}
 
@@ -613,13 +610,12 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 		return
 	}
 
-
 	//字段->数据库字段映射
 	fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	//检查fields是否在Model里
-	if p.fields != nil&&len(p.fields) != 0 {
+	if p.fields != nil && len(p.fields) != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the struct `" + reflect.TypeOf(p.out).String() + "` fields")
 			return
@@ -633,7 +629,7 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"];
+		dbConnect := modelConfig["Connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -667,7 +663,7 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 	return
 }
 
-func (p *ModelFactory)Exec(sql string, args ...interface{}) (affectCount int64, lastInsertId int64, err error) {
+func (p *ModelFactory) Exec(sql string, args ...interface{}) (affectCount int64, lastInsertId int64, err error) {
 
 	dbDriver, err := Singleton(p.connect)
 	if err != nil {
@@ -698,7 +694,7 @@ func buildSelectSql(fields []string, tableName string, where map[string]([]inter
 		for _, value := range fields {
 			fieldString = fieldString + "," + fieldMapper[value]
 		}
-		fieldString = fieldString[1:];
+		fieldString = fieldString[1:]
 	}
 
 	sql = sql + fieldString + " "
@@ -875,7 +871,7 @@ func buildWhere(where map[string]([]interface{}), fieldMapper map[string]string)
 			reg, _ := regexp.Compile("`(.+?)`")
 
 			whereString = reg.ReplaceAllStringFunc(whereString, func(in string) string {
-				k := string(in)[1:len(in) - 1] //去掉左右`号
+				k := string(in)[1 : len(in) - 1] //去掉左右`号
 				var ne string = fieldMapper[k]
 				if ne == "" {
 					err = errors.New("the where field(in '" + whereString + "') " + k + " is undefined in model")
@@ -891,7 +887,7 @@ func buildWhere(where map[string]([]interface{}), fieldMapper map[string]string)
 
 func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 	modelFactory := &ModelFactory{
-		dbConfigs:dbConfig,
+		dbConfigs: dbConfig,
 	}
 
 	if m != nil {
@@ -899,7 +895,7 @@ func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 
 		// 如果是slice
 		// todo 这里可以用.Kind() 优化
-		if (reflect.ValueOf(m).Type().Elem().String()[0] == '[') {
+		if reflect.ValueOf(m).Type().Elem().String()[0] == '[' {
 			mo := reflect.New(reflect.TypeOf(m).Elem().Elem()).Interface()
 			modelFactory.modelFieldMap = util.GetTagMapperFromPool(mo)
 		} else {
@@ -912,7 +908,5 @@ func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 		modelFactory.connect = dbConfig["default"]
 	}
 
-	return modelFactory;
+	return modelFactory
 }
-
-

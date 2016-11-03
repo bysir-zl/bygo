@@ -1,12 +1,10 @@
 package config
 
 import (
+	"encoding/json"
 	"github.com/bysir-zl/bygo/db"
-	"github.com/bysir-zl/bygo/util"
-	"github.com/widuu/gojson"
 	"io/ioutil"
 	"os"
-	"strconv"
 )
 
 type Config struct {
@@ -15,6 +13,20 @@ type Config struct {
 	CacheDrive string
 	DbConfigs  map[string]db.DbConfig
 	RedisHost  string
+}
+
+type configFile struct {
+	Evn      string
+	App      struct {
+			 Debug bool
+		 }
+	Cache    struct {
+			 Driver string `json:"driver"`
+		 }
+	Database map[string]db.DbConfig
+	Redis    struct {
+			 Host string
+		 }
 }
 
 func LoadConfigFromFile(filePath string) (config Config, err error) {
@@ -26,22 +38,18 @@ func LoadConfigFromFile(filePath string) (config Config, err error) {
 	if err != nil {
 		return
 	}
-	jsonString := string(bs)
+
+	configFile := configFile{}
+	json.Unmarshal(bs, &configFile)
 
 	config = Config{}
-	config.Evn = gojson.Json(jsonString).Get("evn").Tostring()
-	config.Debug, _ = strconv.ParseBool(gojson.Json(jsonString).Get("app").Get("debug").Tostring())
-	config.CacheDrive = gojson.Json(jsonString).Get("cache").Get("cache_driver").Tostring()
-	config.RedisHost = gojson.Json(jsonString).Get("redis").Get("host").Tostring()
+	config.Evn = configFile.Evn
 
-	ds := gojson.Json(jsonString).Get("database").Getdata()
-	dbConfigs := map[string]db.DbConfig{}
-	for name, conf := range ds {
-		c := db.DbConfig{}
-		util.MapToObj(&c, conf.(map[string]interface{}), "json")
-		dbConfigs[name] = c
-	}
-	config.DbConfigs = dbConfigs
+	config.Debug = configFile.App.Debug
+	config.CacheDrive = configFile.Cache.Driver
+	config.RedisHost = configFile.Redis.Host
+
+	config.DbConfigs = configFile.Database
 
 	return
 }
