@@ -41,7 +41,6 @@ func request(url string, method string, params url.Values) (result string, err e
 		}
 		response, err = http.Get(url)
 	} else if method == "POST" {
-		http.DefaultClient.Head()
 		response, err = http.PostForm(url, params)
 	}
 

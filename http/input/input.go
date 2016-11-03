@@ -127,6 +127,7 @@ func (i *Input) Validate(rule *ValidateRule) (err error) {
 	if i.valueMap == nil {
 		i.All()
 	}
+
 	if len(rule.filter) != 0 {
 		ok, m := util.ArrayInArray(util.GetMapKey(i.valueMap), rule.filter)
 		if !ok {
@@ -135,9 +136,17 @@ func (i *Input) Validate(rule *ValidateRule) (err error) {
 		}
 	}
 
+	if len(rule.need) != 0 {
+		ok, m := util.ArrayInArray(rule.need, util.GetMapKey(i.valueMap))
+		if !ok {
+			err = errors.New("field :" + m + " must be seted")
+			return
+		}
+	}
+
 	for field, r := range rule.rules {
 		value := i.valueMap[field]
-		ok, m := rule.ValidateValue(value, r)
+		ok, m := rule.validateValue(value, r)
 		if !ok {
 			err = errors.New(m)
 			return

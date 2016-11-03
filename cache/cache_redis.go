@@ -5,6 +5,12 @@ import (
 	"log"
 )
 
+var Redis cacheRedis
+
+func InitCacheRedis(host string) {
+	Redis = NewCacheRedis(host)
+}
+
 type cacheRedis struct {
 	Pool *redis.Pool
 }

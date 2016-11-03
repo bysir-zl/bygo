@@ -73,6 +73,7 @@ func (p *RouterNode) Controller(path string, controller ControllerInterface) *Ro
 	stru := reflect.ValueOf(controller)
 	typ := stru.Type()
 
+	// 取出所有的方法, 检查签名, 若签名正确就保存到map里
 	for i := stru.NumMethod() - 1; i >= 0; i-- {
 		fun := stru.Method(i)
 		ifun, ok := fun.Interface().(func())
@@ -108,8 +109,8 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 	response := context.Response
 
 	if node.HandlerType == "Controller" {
-		method := "Index"
 		node.Handler.(ControllerInterface).SetBase(context)
+		method := "Index"
 
 		// 解析方法与路由参数
 		if otherUrl != "" {
@@ -130,10 +131,8 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				}
 			}
 		}
-		// 从controller中读取一个方法
-
 		request.Router.Handler = reflect.ValueOf(node.Handler).Type().String() + "@" + method
-
+		// 从controller中读取一个方法
 		fun := node.ControllerFunc[method]
 		//没找到类方法,url不正确
 		if fun == nil {

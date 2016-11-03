@@ -14,6 +14,7 @@ type rule struct {
 type ValidateRule struct {
 	filter []string // only field
 	rules  map[string]rule
+	need []string // need field
 }
 
 func NewValidateRule() (r *ValidateRule) {
@@ -28,13 +29,17 @@ func (p *ValidateRule) Only(fields ...string) (r *ValidateRule) {
 	p.filter = fields
 	return p
 }
+func (p *ValidateRule) Need(fields ...string) (r *ValidateRule) {
+	p.need = fields
+	return p
+}
 
 func (p *ValidateRule) Rule(field string, ru string, msg string) (r *ValidateRule) {
 	p.rules[field] = rule{ru, msg}
 	return p
 }
 
-func (p *ValidateRule) ValidateValue(value string, rule rule) (isOk bool, notice string) {
+func (p *ValidateRule) validateValue(value string, rule rule) (isOk bool, notice string) {
 	if rule.rules == "" {
 		isOk = false
 		notice = rule.msg

@@ -111,6 +111,11 @@ func (p *Context) SetItem(item interface{}) {
 func (p *Context) SetItemByAlias(name string, item interface{}) {
 	p.otherItemMap[name] = item
 }
+
+func (p *Context) Resp(data ResponseData) {
+	p.Response.Data = data
+}
+
 func (p *Context) SetBase(a *Context) {
 	*p = *a
 }
