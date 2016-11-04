@@ -5,5 +5,5 @@ import (
 )
 
 func Test_CreateMode(b *testing.T) {
-	CreateModelFile("user")
+	CreateModelFile("g5_game_channel_notice")
 }

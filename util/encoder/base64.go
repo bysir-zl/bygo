@@ -15,3 +15,8 @@ func Base64Decode(src []byte) (out []byte) {
 
 	return buf
 }
+
+
+func Base64DecodeString(src string) (out string) {
+	return string(Base64Decode([]byte(src)))
+}

@@ -2,19 +2,18 @@ package http
 
 import (
 	"encoding/json"
+	"lib.com/deepzz0/go-com/log"
 )
 
 type ResponseData struct {
-	Code      int
-	Header    map[string]string
-	Body      string
-	Type      string
-	Exception Exceptions
+	Code   int
+	Header map[string]string
+	Body   string
+	Type   string
 }
 
 func NewRespDataHtml(code int, body string) ResponseData {
 	response := ResponseData{}
-
 	response.Type = "text/html charset=utf-8"
 
 	response.Code = code
@@ -25,7 +24,6 @@ func NewRespDataHtml(code int, body string) ResponseData {
 
 func NewRespDataJsonString(code int, body string) ResponseData {
 	response := ResponseData{}
-
 	response.Type = "application/json charset=utf-8"
 
 	response.Code = code
@@ -41,16 +39,10 @@ func NewRespDataJson(code int, jsonObj interface{}) ResponseData {
 	response.Code = code
 	bs, err := json.Marshal(jsonObj)
 	if err != nil {
-		response.Exception = Exceptions{Code: 500, Message: "parse to json string fail", Err: err}
+		log.Warnf("parse to json string fail : %v", err)
 	} else {
 		response.Body = string(bs)
 	}
 
 	return response
-}
-
-func NewRespDataError(code int, err error) ResponseData {
-
-	responseData := ResponseData{Exception: Exceptions{Code: code, Err: err, Message: err.Error()}}
-	return responseData
 }

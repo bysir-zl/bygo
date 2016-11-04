@@ -1,7 +1,6 @@
 package bygo
 
 import (
-	"github.com/bysir-zl/bygo/bean"
 	"github.com/bysir-zl/bygo/cache"
 	"github.com/bysir-zl/bygo/config"
 	"github.com/bysir-zl/bygo/db"
@@ -16,10 +15,9 @@ var _ = log.Blue
 var bConfig = config.Config{}
 
 type ApiHandler struct {
-	AppContainer    byhttp.Container
+	AppContainer byhttp.Container
 
-	Router          byhttp.Router
-	ExceptionHandle func(*byhttp.Context)
+	Router       byhttp.Router
 }
 
 func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,27 +34,9 @@ func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context.Cache = p.AppContainer.Cache
 	context.DbFactory = p.AppContainer.DbFactory
 	context.Config = p.AppContainer.Config
-
-	for k, v := range p.AppContainer.OtherItemMap {
-		context.SetItemByAlias(k, v)
-	}
+	context.Logger = p.AppContainer.Logger
 
 	p.Router.Start(r.URL.String(), &context)
-
-	// 错误处理
-	// todo 这里没有运行中间件,是一个bug
-	if context.Response.Data.Exception.Code != 0 {
-		if p.ExceptionHandle != nil {
-			p.ExceptionHandle(&context)
-		} else {
-			context.Response.Data = byhttp.NewRespDataJson(
-				context.Response.Data.Code,
-				bean.ApiData{
-					Code: context.Response.Data.Exception.Code,
-					Msg:  context.Response.Data.Exception.Message,
-				})
-		}
-	}
 
 	w.Header().Set("Content-Type", context.Response.Data.Type)
 	w.WriteHeader(context.Response.Data.Code)
@@ -68,18 +48,19 @@ func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {
 	p.Router.Init(fun)
 }
 
-func (p *ApiHandler) ConfigExceptHandler(fun func(*byhttp.Context)) {
-	p.ExceptionHandle = fun
+func (p *ApiHandler) ConfigLogger(fun func(*byhttp.Context, byhttp.Logs)) {
+	p.AppContainer.Logger = fun
 }
+
 func Config(files ...string) {
 	for _, file := range files {
 
 		if _, er := os.Stat(file); er == nil || os.IsExist(er) {
-			config, err := config.LoadConfigFromFile(file)
+			c, err := config.LoadConfigFromFile(file)
 			if err != nil {
 				log.Warn(err)
 			}
-			bConfig = config
+			bConfig = c
 			return
 		}
 	}
@@ -102,13 +83,8 @@ func (p *ApiHandler) Init() {
 }
 
 func NewApiHandler() (apiHandle *ApiHandler) {
-	//App 容器
-	appContainer := byhttp.Container{
-		OtherItemMap: make(map[string]interface{}),
-	}
-
 	apiHandle = &ApiHandler{
-		AppContainer: appContainer,
+		AppContainer: byhttp.NewContainer(),
 		Router:       byhttp.NewRouter(),
 	}
 	return

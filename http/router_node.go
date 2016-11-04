@@ -1,7 +1,7 @@
 package http
 
 import (
-	"errors"
+	"github.com/bysir-zl/bygo/bean"
 	"reflect"
 	"strings"
 )
@@ -136,8 +136,9 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 		fun := node.ControllerFunc[method]
 		//没找到类方法,url不正确
 		if fun == nil {
-			response.Data = NewRespDataError(404, errors.New("the method '" + method +
-				"' is undefined in controller '" + reflect.TypeOf(node.Handler).String() + "'!"))
+			msg := "the method '" + method +
+				"' is undefined in controller '" + reflect.TypeOf(node.Handler).String() + "'!"
+			response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: msg})
 			return
 		}
 		fun()
@@ -153,7 +154,7 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 		return
 	} else {
 		//没有配置路由
-		response.Data = NewRespDataError(500, errors.New("u are forget set route? but welcome use bygo . :D"))
+		response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: "u are forget set route? but welcome use bygo . :D"})
 		return
 	}
 

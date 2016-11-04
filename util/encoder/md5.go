@@ -17,5 +17,4 @@ func Md5(in []byte) (out []byte) {
 func Md5String(in string) (out string) {
 	out = string(Md5([]byte(in)))
 	return
-
 }

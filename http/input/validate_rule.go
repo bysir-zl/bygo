@@ -14,7 +14,7 @@ type rule struct {
 type ValidateRule struct {
 	filter []string // only field
 	rules  map[string]rule
-	need []string // need field
+	need   []string // need field
 }
 
 func NewValidateRule() (r *ValidateRule) {

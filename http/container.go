@@ -15,24 +15,24 @@ type Container struct {
 	DbFactory    db.DbFactory
 	Cache        cache.CacheInterface
 	Config       config.Config
+	Logger       func(*Context, Logs)
 
-	OtherItemMap map[string]interface{}
+	otherItemMap map[string]interface{}
 }
 
 func (p *Container) GetItemByClassName(name string) interface{} {
-	return p.OtherItemMap[name]
+	return p.otherItemMap[name]
 }
 
 func (p *Container) GetItemByClass(item interface{}) interface{} {
 	va := reflect.ValueOf(item)
-	return p.OtherItemMap[va.Type().String()]
+	return p.otherItemMap[va.Type().String()]
 }
 
-// 向容器中注册一个Item
-// eg : SetItem(App.User{}) ,这样在使用函数或者方法时使用func(u App.User)会自动注入当前App.User
+// 向容器中添加一个Item
 func (p *Container) SetItem(item interface{}) {
 	va := reflect.ValueOf(item)
-	p.OtherItemMap[va.Type().String()] = item
+	p.otherItemMap[va.Type().String()] = item
 }
 
 //从容器中获取参数类型
@@ -64,9 +64,16 @@ func (s *Container) GetFuncParams(fun reflect.Value) (data []reflect.Value, err 
 	return params, nil
 }
 
+func NewContainer() Container {
+	return Container{
+		otherItemMap: make(map[string]interface{}),
+	}
+}
+
+
 ///////////
 
-// 存储用于依赖注入的容器
+// 一个请求的上下文
 type Context struct {
 	Response     *Response
 	Request      *Request
@@ -74,6 +81,7 @@ type Context struct {
 	DbFactory    db.DbFactory
 	Cache        cache.CacheInterface
 	Config       config.Config
+	Logger       func(*Context, Logs)
 
 	otherItemMap map[string]interface{}
 }
@@ -118,6 +126,15 @@ func (p *Context) Resp(data ResponseData) {
 
 func (p *Context) SetBase(a *Context) {
 	*p = *a
+}
+
+// 用于记录
+func (p *Context) Log(code int, msg string) {
+	if p.Logger != nil {
+		p.Logger(p, Logs{Code:code, Message:msg})
+	} else {
+		log.Debugf("Code : %d , Msg : %s", code, msg)
+	}
 }
 
 func NewContext() Context {

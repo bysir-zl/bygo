@@ -11,7 +11,7 @@ import (
 )
 
 func CreateModelFile(tableName string) {
-	conf, _ := config.LoadConfigFromFile("G:/go_project/src/project.com/bysir-zl/kuaifa-api/config/config.json")
+	conf, _ := config.LoadConfigFromFile("G:/go_project/src/kuaifa.com/kuaifa/kuaifa-api/config/config.json")
 	dbf := db.NewDbFactory(conf.DbConfigs)
 	lis, err := dbf.Model(nil).Query("show columns from " + tableName)
 	if err != nil {
