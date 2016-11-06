@@ -253,7 +253,7 @@ func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 	}
 	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
-		has := false
+		has = false
 		for key, _ := range m {
 			if key == min[minI] {
 				has = true

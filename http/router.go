@@ -8,7 +8,7 @@ import (
 )
 
 type Router struct {
-	RouterNode RouterNode
+	RootNode   RouterNode
 	RouterPath map[string][]RouterNode // 根据router设置解析出来的节点列表
 }
 
@@ -95,10 +95,10 @@ func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]Ro
 }
 
 func (p *Router) Init(fun func(node *RouterNode)) {
-	fun(&p.RouterNode)
+	fun(&p.RootNode)
 
 	nodeList := []RouterNode{}
-	p.ParseToPath("", &p.RouterNode, &nodeList)
+	p.ParseToPath("", &p.RootNode, &nodeList)
 }
 
 func (p *Router) Start(url string, context *Context) {
@@ -130,16 +130,16 @@ func (p *Router) Start(url string, context *Context) {
 	var node RouterNode
 	// 没有匹配到东西
 	if len(currNodeList) == 0 {
-		node = p.RouterNode
+		node = p.RootNode
 	} else {
 		node = currNodeList[len(currNodeList) - 1]
 	}
 
-	otherParam := string(baseUrl[len(matchedUrl):])
+	otherParamUrl := string(baseUrl[len(matchedUrl):])
 
 	//去掉前后多余的/
-	otherParam = strings.TrimLeft(otherParam, "/")
-	otherParam = strings.TrimRight(otherParam, "/")
+	otherParamUrl = strings.TrimLeft(otherParamUrl, "/")
+	otherParamUrl = strings.TrimRight(otherParamUrl, "/")
 
 	//log.Println(baseUrl, matchedUrl, otherParam)
 
@@ -162,7 +162,7 @@ func (p *Router) Start(url string, context *Context) {
 
 	if !stop {
 		// 运行某个node
-		node.run(context, otherParam)
+		node.run(context, otherParamUrl)
 	}
 
 	// 倒着运行中间件
@@ -184,7 +184,7 @@ func NewRouter() Router {
 	node.MiddlewareList = &[]Middleware{}
 	node.HandlerType = "Base"
 	return Router{
-		RouterNode: node,
+		RootNode: node,
 		RouterPath: map[string][]RouterNode{},
 	}
 }

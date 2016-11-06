@@ -48,7 +48,7 @@ func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {
-	p.Router.RouterNode.Root(root)
+	p.Router.RootNode.Root(root)
 	p.Router.Init(fun)
 }
 

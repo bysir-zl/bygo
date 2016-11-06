@@ -139,6 +139,8 @@ func (p *Context) Log(code int, msg string) {
 
 func NewContext() Context {
 	return Context{
+		Request:&Request{},
+		Response:&Response{},
 		otherItemMap: make(map[string]interface{}),
 	}
 }
