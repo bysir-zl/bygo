@@ -52,4 +52,6 @@ func CreateModelFile(tableName string) {
 		log.Warn(err)
 	}
 	file.WriteString(fileContent)
+	log.Print("create success")
+
 }
