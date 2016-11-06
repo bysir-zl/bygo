@@ -48,7 +48,7 @@ func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]inte
 }
 
 // 根据map的key=>value设置Obj的field=>fieldValue
-// 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上
+// 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上,
 // 返回设置成功的Fields列表字段
 func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fields []string) {
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
@@ -117,12 +117,8 @@ func setFieldValue(field reflect.Value, value interface{}) {
 		var intv int64 = 0
 
 		switch value.(type) {
-		case int:
-			intv = int64(value.(int))
-		case int32:
-			intv = int64(value.(int32))
-		case int64:
-			intv = int64(value.(int64))
+		case int, int8, int32, int64:
+			intv = intInterfaceToInt64(value)
 		case float32:
 			intv = int64(value.(float32))
 		case float64:
@@ -153,6 +149,20 @@ func setFieldValue(field reflect.Value, value interface{}) {
 	}
 }
 
+func intInterfaceToInt64(value interface{}) int64 {
+	switch value.(type) {
+	case int:
+		return int64(value.(int))
+	case int8:
+		return int64(value.(int8))
+	case int32:
+		return int64(value.(int32))
+	case int64:
+		return int64(value.(int64))
+	}
+	return 0
+}
+
 func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
 	typer := pointer.Type()
@@ -176,6 +186,7 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 			key = fieldNameToTagName[key]
 			// 如果有逗号 比如 json:"password,omitempty" 则只取逗号前面的第一个
 			key = strings.Split(key, ",")[0]
+			// 有值才填充
 			if key != "" {
 				data[key] = field.Interface()
 			}
@@ -233,10 +244,12 @@ func GetMapKey(m map[string]string) (keys []string) {
 //判断一个array每一个原始是不是都在map的key里
 func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 	if min == nil || len(min) == 0 {
-		return true, ""
+		has = true
+		return
 	}
 	if m == nil {
-		return false, ""
+		has = false
+		return
 	}
 	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
@@ -247,10 +260,12 @@ func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 			}
 		}
 		if !has {
-			return false, min[minI]
+			msg = min[minI]
+			return
 		}
 	}
-	return true, ""
+	has = true
+	return
 }
 
 func ArrayInArray(min []string, max []string) (has bool, msg string) {

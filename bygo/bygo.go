@@ -38,9 +38,13 @@ func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	p.Router.Start(r.URL.String(), &context)
 
-	w.Header().Set("Content-Type", context.Response.Data.Type)
-	w.WriteHeader(context.Response.Data.Code)
-	io.WriteString(w, context.Response.Data.Body)
+	if context.Response.Result == nil {
+		context.Response.Result.Apply(r, w)
+	} else {
+		w.Header().Set("Content-Type", context.Response.Data.Type)
+		w.WriteHeader(context.Response.Data.Code)
+		io.WriteString(w, context.Response.Data.Body)
+	}
 }
 
 func (p *ApiHandler) ConfigRouter(root string, fun func(*byhttp.RouterNode)) {

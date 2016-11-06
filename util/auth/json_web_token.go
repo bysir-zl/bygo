@@ -5,6 +5,7 @@ import (
 	"github.com/bysir-zl/bygo/util"
 	"strings"
 	"time"
+	"github.com/bysir-zl/bygo/util/encoder"
 )
 
 const secret string = "Bqweiopxj293gweG46we7gAfew54"
@@ -38,17 +39,17 @@ func JWTEncode(iss string, exp int64, typ string, sub string, aud string) (out s
 		return
 	}
 
-	payload := util.Base64Encode(string(bs))
+	payload := encoder.Base64Encode(string(bs))
 	if payload == "" {
 		return
 	}
 
-	header := util.Base64Encode("{\"typ\":\"JWT\",\"alg\":\"HS256\"}")
+	header := encoder.Base64Encode("{\"typ\":\"JWT\",\"alg\":\"HS256\"}")
 	if header == "" {
 		return
 	}
 
-	mdStr := util.Sha256(header + payload + secret)
+	mdStr := encoder.Sha256(header + payload + secret)
 
 	return header + "." + payload + "." + mdStr
 }
@@ -72,14 +73,14 @@ func JWTDecode(in string) (jwtData JWTData, errCode int) {
 	header := data[0]
 	payload := data[1]
 	sign := data[2]
-	mdStr := util.Sha256(header + payload + secret)
+	mdStr := encoder.Sha256(header + payload + secret)
 
 	if mdStr != sign {
 		errCode = SignatureError
 		return
 	}
 
-	dataJson := util.Base64Decode(data[1])
+	dataJson := encoder.Base64Decode(data[1])
 
 	err := json.Unmarshal([]byte(dataJson), &jwtData)
 	if err != nil {
