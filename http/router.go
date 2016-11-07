@@ -81,12 +81,12 @@ func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []Ro
 
 func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]RouterNode) {
 
-	matchedUrl = matchedUrl + node.Path
+	matchedUrl = matchedUrl + node.path
 
 	*nodeList = append(*nodeList, *node)
 
-	if node.ChildrenList != nil {
-		for _, children := range *node.ChildrenList {
+	if node.childrenList != nil {
+		for _, children := range *node.childrenList {
 			p.ParseToPath(matchedUrl, &children, nodeList)
 		}
 	} else {
@@ -94,7 +94,8 @@ func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]Ro
 	}
 }
 
-func (p *Router) Init(fun func(node *RouterNode)) {
+func (p *Router) Init(root string ,fun func(node *RouterNode)) {
+	p.RootNode.path = root
 	fun(&p.RootNode)
 
 	nodeList := []RouterNode{}
@@ -105,7 +106,7 @@ func (p *Router) Start(url string, context *Context) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("-----------ERROR---------------")
+			log.Println("----------ERROR----------")
 			log.Println(err)
 			debug.PrintStack()
 		}
@@ -127,12 +128,12 @@ func (p *Router) Start(url string, context *Context) {
 
 	matchedUrl, currNodeList := p.Handler(baseUrl)
 
-	var node RouterNode
-	// 没有匹配到东西
+	var handleNode RouterNode
+	// 没有匹配到东西, 则设置处理器为根节点
 	if len(currNodeList) == 0 {
-		node = p.RootNode
+		handleNode = p.RootNode
 	} else {
-		node = currNodeList[len(currNodeList) - 1]
+		handleNode = currNodeList[len(currNodeList) - 1]
 	}
 
 	otherParamUrl := string(baseUrl[len(matchedUrl):])
@@ -149,8 +150,8 @@ func (p *Router) Start(url string, context *Context) {
 	// 运行中间件
 	stop := false
 	for _, item := range currNodeList {
-		if item.MiddlewareList != nil {
-			for _, item := range *item.MiddlewareList {
+		if item.middlewareList != nil {
+			for _, item := range *item.middlewareList {
 				needStop := item.HandlerBefore(context)
 				if needStop {
 					stop = true
@@ -162,14 +163,14 @@ func (p *Router) Start(url string, context *Context) {
 
 	if !stop {
 		// 运行某个node
-		node.run(context, otherParamUrl)
+		handleNode.run(context, otherParamUrl)
 	}
 
 	// 倒着运行中间件
 	for i := len(currNodeList) - 1; i >= 0; i = i - 1 {
 		item := currNodeList[i]
-		if item.MiddlewareList != nil {
-			for _, item := range *item.MiddlewareList {
+		if item.middlewareList != nil {
+			for _, item := range *item.middlewareList {
 				item.HandlerAfter(context)
 			}
 		}
@@ -180,9 +181,9 @@ func (p *Router) Start(url string, context *Context) {
 
 func NewRouter() Router {
 	node := RouterNode{}
-	node.ChildrenList = &[]RouterNode{}
-	node.MiddlewareList = &[]Middleware{}
-	node.HandlerType = "Base"
+	node.childrenList = &[]RouterNode{}
+	node.middlewareList = &[]Middleware{}
+	node.handlerType = "Base"
 	return Router{
 		RootNode: node,
 		RouterPath: map[string][]RouterNode{},

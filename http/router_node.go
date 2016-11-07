@@ -7,13 +7,13 @@ import (
 )
 
 type RouterNode struct {
-	Path           string            //当前path
-	HandlerType    string            //当前处理程序的类型
-	Handler        interface{}       //当前处理程序
-	MiddlewareList *[]Middleware     //当前的Middleware列表
-	ChildrenList   *[]RouterNode     //下一级
+	path           string            //当前path
+	handlerType    string            //当前处理程序的类型
+	handler        interface{}       //当前处理程序
+	middlewareList *[]Middleware     //当前的Middleware列表
+	childrenList   *[]RouterNode     //下一级
 
-	ControllerFunc map[string]func() // 保存Controller的func，因为每次请求都反射会消耗性能
+	controllerFunc map[string]func() // 保存Controller的func，因为每次请求都反射会消耗性能
 }
 
 func formatPath(path string) string {
@@ -29,11 +29,6 @@ func formatPath(path string) string {
 	return path
 }
 
-func (p *RouterNode) Root(path string) {
-	path = formatPath(path)
-	p.Path = path
-}
-
 // 当前节点添加一个子节点,并传递子节点调用方法
 // 用于嵌套路由
 func (p *RouterNode) Group(path string, call func(*RouterNode)) *RouterNode {
@@ -41,11 +36,11 @@ func (p *RouterNode) Group(path string, call func(*RouterNode)) *RouterNode {
 
 	//新建一个子node
 	routerNode := RouterNode{}
-	routerNode.Path = path
-	routerNode.ChildrenList = &[]RouterNode{}
-	routerNode.MiddlewareList = &[]Middleware{}
-	routerNode.HandlerType = "Group"
-	*p.ChildrenList = append(*p.ChildrenList, routerNode)
+	routerNode.path = path
+	routerNode.childrenList = &[]RouterNode{}
+	routerNode.middlewareList = &[]Middleware{}
+	routerNode.handlerType = "Group"
+	*p.childrenList = append(*p.childrenList, routerNode)
 
 	call(&routerNode)
 	return &routerNode
@@ -53,7 +48,7 @@ func (p *RouterNode) Group(path string, call func(*RouterNode)) *RouterNode {
 
 //向当前节点添加中间件
 func (p *RouterNode) Middleware(middleware Middleware) *RouterNode {
-	*p.MiddlewareList = append(*p.MiddlewareList, middleware)
+	*p.middlewareList = append(*p.middlewareList, middleware)
 
 	return p
 }
@@ -64,11 +59,11 @@ func (p *RouterNode) Controller(path string, controller ControllerInterface) *Ro
 	//新建一个子node
 	routerNode := RouterNode{}
 
-	routerNode.Path = path
-	routerNode.Handler = controller
-	routerNode.HandlerType = "Controller"
-	routerNode.MiddlewareList = &[]Middleware{}
-	routerNode.ControllerFunc = map[string]func(){}
+	routerNode.path = path
+	routerNode.handler = controller
+	routerNode.handlerType = "Controller"
+	routerNode.middlewareList = &[]Middleware{}
+	routerNode.controllerFunc = map[string]func(){}
 	//controller.()
 	stru := reflect.ValueOf(controller)
 	typ := stru.Type()
@@ -79,11 +74,11 @@ func (p *RouterNode) Controller(path string, controller ControllerInterface) *Ro
 		ifun, ok := fun.Interface().(func())
 
 		if ok {
-			routerNode.ControllerFunc[typ.Method(i).Name] = ifun
+			routerNode.controllerFunc[typ.Method(i).Name] = ifun
 		}
 	}
 
-	*p.ChildrenList = append(*p.ChildrenList, routerNode)
+	*p.childrenList = append(*p.childrenList, routerNode)
 	return &routerNode
 }
 
@@ -94,12 +89,12 @@ func (p *RouterNode) Fun(path string, fun func(*Context)) *RouterNode {
 	//新建一个子node
 	routerNode := RouterNode{}
 
-	routerNode.Path = path
-	routerNode.Handler = fun
-	routerNode.HandlerType = "Func"
-	routerNode.MiddlewareList = &[]Middleware{}
+	routerNode.path = path
+	routerNode.handler = fun
+	routerNode.handlerType = "Func"
+	routerNode.middlewareList = &[]Middleware{}
 
-	*p.ChildrenList = append(*p.ChildrenList, routerNode)
+	*p.childrenList = append(*p.childrenList, routerNode)
 	return &routerNode
 }
 
@@ -108,8 +103,8 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 	request := context.Request
 	response := context.Response
 
-	if node.HandlerType == "Controller" {
-		node.Handler.(ControllerInterface).SetBase(context)
+	if node.handlerType == "Controller" {
+		node.handler.(ControllerInterface).SetBase(context)
 		method := "Index"
 
 		// 解析方法与路由参数
@@ -121,7 +116,7 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				// 大写第一个字母
 				method = strings.ToUpper(string(method[0])) + string(method[1:])
 
-				if node.ControllerFunc[method] == nil && node.ControllerFunc["Index"] != nil {
+				if node.controllerFunc[method] == nil && node.controllerFunc["Index"] != nil {
 					method = "Index"
 					request.Router.Params = urlParamsList
 				} else {
@@ -131,24 +126,24 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				}
 			}
 		}
-		request.Router.Handler = reflect.ValueOf(node.Handler).Type().String() + "@" + method
+		request.Router.Handler = reflect.ValueOf(node.handler).Type().String() + "@" + method
 		// 从controller中读取一个方法
-		fun := node.ControllerFunc[method]
+		fun := node.controllerFunc[method]
 		//没找到类方法,url不正确
 		if fun == nil {
 			msg := "the method '" + method +
-				"' is undefined in controller '" + reflect.TypeOf(node.Handler).String() + "'!"
+				"' is undefined in controller '" + reflect.TypeOf(node.handler).String() + "'!"
 			response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: msg})
 			return
 		}
 		fun()
 		return
-	} else if node.HandlerType == "Func" {
+	} else if node.handlerType == "Func" {
 		if otherUrl != "" {
 			request.Router.Params = strings.Split(otherUrl, "/")
 		}
 
-		fun := node.Handler.(func(*Context))
+		fun := node.handler.(func(*Context))
 		request.Router.Handler = "func"
 		fun(context)
 		return
