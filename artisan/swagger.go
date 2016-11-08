@@ -24,14 +24,19 @@ type params struct {
 	Defaults         interface{} `json:"default,omitempty"`
 	CollectionFormat string `json:"collectionFormat,omitempty"`
 }
+
+type Schema struct {
+	Ref string `json:"&ref"`
+	// todo 暂时不支持这种格式
+	//Types string `json:"type,omitempty"`
+	//Items struct {
+	//	      Ref string `json:"$ref,omitempty"`
+	//      } `json:"items,omitempty"`
+}
+
 type response struct {
 	Description string `json:"description"`
-	Schema      struct {
-			    Types string `json:"type,omitempty"`
-			    Items struct {
-					  Ref string `json:"$ref,omitempty"`
-				  } `json:"items,omitempty"`
-		    } `json:"schema,omitempty"`
+	Schema      Schema  `json:"schema,omitempty"`
 }
 type bpi struct {
 	Tags        []string `json:"tags,omitempty"`
@@ -58,13 +63,26 @@ type info struct {
 			    Url  string `json:"url,omitempty"`
 		    }  `json:"license"`
 }
+
+type Propertie struct {
+	Types       string `json:"type"`
+	Ref         string `json:"$ref,omitempty"`
+	Default     string `json:"default"`
+	Description string `json:"description"`
+}
+type Definition struct {
+	Types      string `json:"type"`
+	Properties map[string]Propertie `json:"properties"`
+}
+
 type swagger struct {
-	Info     info `json:"info"`
-	Swagger  string `json:"swagger"`
-	Host     string `json:"host,omitempty"`
-	BasePath string `json:"basePath,omitempty"`
-	Schemes  []string  `json:"schemes,omitempty"`
-	Paths    router `json:"paths"`
+	Info        info `json:"info"`
+	Swagger     string `json:"swagger"`
+	Host        string `json:"host,omitempty"`
+	BasePath    string `json:"basePath,omitempty"`
+	Schemes     []string  `json:"schemes,omitempty"`
+	Paths       router `json:"paths"`
+	Definitions map[string]Definition `json:"definitions"`
 }
 
 type swaggerString map[string][]string
@@ -91,6 +109,8 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 		str := string(bs)
 		str = strings.Replace(str, "\r", "", -1)
 		ss := strings.Split(str, "\n")
+		// 添加最后一个空行,用于结束匹配
+		ss = append(ss, "")
 
 		types := ""
 
@@ -98,7 +118,7 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 		for _, s := range ss {
 			if strings.Index(s, "// @") == 0 {
 				if types != "" {
-					// 非第一行
+					// 非第一行 ,去除空格
 					s = strings.Replace(s, "// @", "", -1)
 					s = strings.Replace(s, " ", "", -1)
 					apiString = apiString + s + "\n"
@@ -110,6 +130,8 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 						types = "BASE"
 					} else if strings.Contains(s, "@INFO ") {
 						types = "INFO"
+					} else if strings.Contains(s, "@DEF ") {
+						types = "DEF"
 					} else {
 						continue
 					}
@@ -119,7 +141,6 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 				}
 			} else if strings.Index(s, "//") != 0 {
 				if types != "" {
-
 					apiString = strings.Replace(apiString, ";\n", ";", -1)
 					apiString = strings.Replace(apiString, ":\n", ":", -1)
 					// 去掉最后一个换行
@@ -145,6 +166,7 @@ func S(root string, output string) (err error) {
 	base := map[string]string{}
 	rou := router{}
 	inf := map[string]string{}
+	defini := map[string]Definition{}
 	if sw["BASE"] != nil {
 		base = parseBase(sw["BASE"])
 	}
@@ -154,14 +176,16 @@ func S(root string, output string) (err error) {
 	if sw["INFO"] != nil {
 		inf = parseInfo(sw["INFO"])
 	}
+	if sw["DEF"] != nil {
+		defini = parseDef(sw["DEF"])
+	}
+
 	title := inf["title"]
 	desc := inf["desc"]
 	version := inf["version"]
 	email := inf["email"]
 	host := inf["host"]
 	basePath := inf["basePath"]
-
-	log.Print(host)
 
 	swagger := swagger{
 		Swagger:"2.0",
@@ -173,6 +197,7 @@ func S(root string, output string) (err error) {
 		Paths:rou,
 		Host:host,
 		BasePath:basePath,
+		Definitions:defini,
 	}
 	swagger.Info.Contact.Email = email
 
@@ -189,16 +214,77 @@ func S(root string, output string) (err error) {
 	defer func(file *os.File) {
 		file.Close()
 	}(file)
-	file.Write(bs)
+
+	s := string(bs)
+	s = strings.Replace(s, `\u0026`, "$", -1)
+
+	file.WriteString(s)
 	return
 }
 
+func parseDef(ss []string) map[string]Definition {
+	defs := map[string]Definition{}
+	for _, item := range ss {
+		row := strings.Split(item, "\n")
+		nameAndType := strings.Split(row[0], ",")
+		name := nameAndType[0]
+		types := "object"
+		if len(nameAndType) > 1 {
+			types = nameAndType[1]
+		}
+		if types == "object" {
+			ps := map[string]Propertie{}
+
+			psList := strings.Split(row[1], ";")
+			for _, s := range psList {
+				if len(strings.Split(s, ":")) < 2 {
+					continue
+				}
+				pname := strings.Split(s, ":")[0]
+				s = strings.Split(s, ":")[1]
+				desc := ""
+				t := "string"
+				defau := ""
+				args := strings.Split(s, ",")
+				if len(args) > 0 {
+					desc = args[0]
+				}
+				if len(args) > 1 {
+					t = args[1]
+				}
+				if len(args) > 2 {
+					defau = args[2]
+				}
+				if t == "ref" {
+					ps[pname] = Propertie{
+						Ref:"#/definitions/" + defau,
+					}
+				} else {
+
+					ps[pname] = Propertie{
+						Default:defau,
+						Description:desc,
+						Types:t,
+					}
+				}
+			}
+
+			defs[name] = Definition{
+				Properties:ps,
+				Types:"object",
+			}
+		}
+
+	}
+
+	return defs
+}
 func parseBase(ss []string) map[string]string {
 	base := map[string]string{}
 	for _, item := range ss {
 		row := strings.Split(item, "\n")
 
-		name := strings.Replace(row[0], "BASE", "", -1)
+		name := row[0]
 		text := strings.Join(row[1:], "\n")
 		base[name] = text
 	}
@@ -301,8 +387,15 @@ func parsePath(apis []string, base map[string]string) router {
 				r = r[pos + 1:]
 				rs := strings.Split(r, ",")
 				desc := rs[0]
+				ref := ""
+				if len(rs) > 1 {
+					ref = "#/definitions/" + rs[1]
+				}
 				res[name] = response{
 					Description:desc,
+					Schema:Schema{
+						Ref:ref,
+					},
 				}
 			}
 			bpii.Responses = res
@@ -320,7 +413,7 @@ func parseInfo(ss []string) map[string]string {
 	s := ss[0]
 	info := map[string]string{}
 	row := strings.Split(s, "\n")
-	title := strings.Replace(row[0], "INFO", "", -1)
+	title := row[0]
 	info["title"] = title
 	info["desc"] = getRowString(row, "desc")
 	info["version"] = getRowString(row, "version")

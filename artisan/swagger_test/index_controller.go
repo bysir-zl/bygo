@@ -22,7 +22,7 @@ package swagger_test
 // @BASE:BaseInfo
 //
 // @responses :
-// @200: 成功 ;
+// @200: 成功,error
 // @400: 失败
 func index() {
 	var name string
@@ -40,3 +40,23 @@ func index() {
 func ind() {
 
 }
+
+// @DEF error,object
+// @code:返回马,string,0为成功|其他code见errorinfo;
+// @errorinfo:错误详情
+
+
+
+// @DEF e,object
+// @x:123
+
+// @DEF gameinfo,object
+// @logLevel:;
+// @uploadLog:;
+// @versionControl:;
+// @version:;
+// @downloadUrl:;
+// @release_note;;
+// @ad_status:;
+// @reserveNotify:;
+// @reserveDialog:,ref,e
