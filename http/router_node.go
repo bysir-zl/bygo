@@ -4,16 +4,24 @@ import (
 	"github.com/bysir-zl/bygo/bean"
 	"reflect"
 	"strings"
+
+	"runtime"
+	"lib.com/deepzz0/go-com/log"
 )
 
-type RouterNode struct {
-	path           string            //当前path
-	handlerType    string            //当前处理程序的类型
-	handler        interface{}       //当前处理程序
-	middlewareList *[]Middleware     //当前的Middleware列表
-	childrenList   *[]RouterNode     //下一级
+var _ = log.Blue
 
-	controllerFunc map[string]func() // 保存Controller的func，因为每次请求都反射会消耗性能
+type RouterNode struct {
+	path           string        //当前path
+	handlerType    string        //当前处理程序的类型
+	handler        handler       //当前处理程序
+	middlewareList *[]Middleware //当前的Middleware列表
+	childrenList   *[]RouterNode //下一级
+}
+type handler struct {
+	item           interface{}
+	controllerFunc map[string]func(*Context) // 保存Controller的func，因为每次请求都反射会消耗性能
+	handlerName    string
 }
 
 func formatPath(path string) string {
@@ -54,16 +62,18 @@ func (p *RouterNode) Middleware(middleware Middleware) *RouterNode {
 }
 
 //在当前节点添加一个处理控制器的子节点
-func (p *RouterNode) Controller(path string, controller ControllerInterface) *RouterNode {
+func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode {
 	path = formatPath(path)
 	//新建一个子node
 	routerNode := RouterNode{}
 
 	routerNode.path = path
-	routerNode.handler = controller
 	routerNode.handlerType = "Controller"
 	routerNode.middlewareList = &[]Middleware{}
-	routerNode.controllerFunc = map[string]func(){}
+	routerNode.handler.item = controller
+	routerNode.handler.controllerFunc = map[string]func(*Context){}
+	routerNode.handler.handlerName = reflect.ValueOf(controller).Type().String()
+
 	//controller.()
 	stru := reflect.ValueOf(controller)
 	typ := stru.Type()
@@ -71,10 +81,10 @@ func (p *RouterNode) Controller(path string, controller ControllerInterface) *Ro
 	// 取出所有的方法, 检查签名, 若签名正确就保存到map里
 	for i := stru.NumMethod() - 1; i >= 0; i-- {
 		fun := stru.Method(i)
-		ifun, ok := fun.Interface().(func())
+		ifun, ok := fun.Interface().(func(*Context))
 
 		if ok {
-			routerNode.controllerFunc[typ.Method(i).Name] = ifun
+			routerNode.handler.controllerFunc[typ.Method(i).Name] = ifun
 		}
 	}
 
@@ -89,10 +99,19 @@ func (p *RouterNode) Fun(path string, fun func(*Context)) *RouterNode {
 	//新建一个子node
 	routerNode := RouterNode{}
 
+	routerNode.handler.item = fun
 	routerNode.path = path
-	routerNode.handler = fun
 	routerNode.handlerType = "Func"
 	routerNode.middlewareList = &[]Middleware{}
+	funcInfo := runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name()
+
+	funcInfo = strings.Replace(funcInfo, "-fm", "", -1)
+	funcInfos := strings.Split(funcInfo, ".")
+	funcInfo = strings.Join(funcInfos[len(funcInfos) - 2:], ".")
+	funcInfo = strings.Replace(funcInfo, ")", "", -1)
+	funcInfo = strings.Replace(funcInfo, "(", "", -1)
+
+	routerNode.handler.handlerName = funcInfo
 
 	*p.childrenList = append(*p.childrenList, routerNode)
 	return &routerNode
@@ -104,7 +123,6 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 	response := context.Response
 
 	if node.handlerType == "Controller" {
-		node.handler.(ControllerInterface).SetBase(context)
 		method := "Index"
 
 		// 解析方法与路由参数
@@ -116,7 +134,7 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				// 大写第一个字母
 				method = strings.ToUpper(string(method[0])) + string(method[1:])
 
-				if node.controllerFunc[method] == nil && node.controllerFunc["Index"] != nil {
+				if node.handler.controllerFunc[method] == nil && node.handler.controllerFunc["Index"] != nil {
 					method = "Index"
 					request.Router.Params = urlParamsList
 				} else {
@@ -126,25 +144,25 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				}
 			}
 		}
-		request.Router.Handler = reflect.ValueOf(node.handler).Type().String() + "@" + method
+		request.Router.Handler = node.handler.handlerName + "." + method
 		// 从controller中读取一个方法
-		fun := node.controllerFunc[method]
+		fun := node.handler.controllerFunc[method]
 		//没找到类方法,url不正确
 		if fun == nil {
 			msg := "the method '" + method +
-				"' is undefined in controller '" + reflect.TypeOf(node.handler).String() + "'!"
+				"' is undefined in controller '" + node.handler.handlerName + "'!"
 			response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: msg})
 			return
 		}
-		fun()
+		fun(context)
 		return
 	} else if node.handlerType == "Func" {
 		if otherUrl != "" {
 			request.Router.Params = strings.Split(otherUrl, "/")
 		}
 
-		fun := node.handler.(func(*Context))
-		request.Router.Handler = "func"
+		fun := node.handler.item.(func(*Context))
+		request.Router.Handler = node.handler.handlerName
 		fun(context)
 		return
 	} else {

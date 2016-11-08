@@ -26,8 +26,8 @@ func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []Ro
 
 	var pathMaxLen = -1
 	for path, nodes := range p.RouterPath {
-		if strings.Index(allUrl, path) >= 0 {
-			pathLen := len(nodes)
+		if strings.Index(allUrl, path) == 0 {
+			pathLen := len(path)
 			if pathLen > pathMaxLen {
 				pathMaxLen = pathLen
 				matchedNodeList = nodes
@@ -80,7 +80,6 @@ func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []Ro
 }
 
 func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]RouterNode) {
-
 	matchedUrl = matchedUrl + node.path
 
 	*nodeList = append(*nodeList, *node)
@@ -90,11 +89,12 @@ func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]Ro
 			p.ParseToPath(matchedUrl, &children, nodeList)
 		}
 	} else {
-		p.RouterPath[matchedUrl + "/"] = *nodeList
+		p.RouterPath[matchedUrl + "/" ] = *nodeList
 	}
 }
 
-func (p *Router) Init(root string ,fun func(node *RouterNode)) {
+func (p *Router) Init(root string, fun func(node *RouterNode)) {
+	root = formatPath(root)
 	p.RootNode.path = root
 	fun(&p.RootNode)
 

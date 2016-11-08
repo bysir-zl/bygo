@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/bysir-zl/bygo/bean"
 	"github.com/bysir-zl/bygo/util"
-	"log"
+	"lib.com/deepzz0/go-com/log"
 	"math"
 	"reflect"
 	"regexp"
@@ -69,6 +69,9 @@ func (p *ModelFactory) Where(condition string, values ...interface{}) *ModelFact
 		p.where = map[string]([]interface{}){}
 	}
 	p.where[condition] = values
+	if strings.Count(condition, "?") != len(values) {
+		log.Warn("where condition params len is not same as values len!")
+	}
 
 	return p
 }
@@ -178,7 +181,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 	}
 
 	if p.debug {
-		log.Println("p query sql is : " + sql, " ", args)
+		log.Print("p query sql is : " + sql, " ", args)
 	}
 
 	dataMap, err2 := p.Query(sql, args...)
@@ -349,7 +352,7 @@ func (p *ModelFactory) Count() (count int64, err error) {
 	}
 
 	if p.debug {
-		log.Println("p query sql is : " + sql, " ", args)
+		log.Print("p query sql is : " + sql, " ", args)
 	}
 
 	data, e := p.Query(sql, args...)
@@ -483,7 +486,7 @@ func (p *ModelFactory) Insert() (err error) {
 	}
 
 	if p.debug {
-		log.Println("p query sql is : " + sql, " ", args)
+		log.Print("p query sql is : " + sql, " ", args)
 	}
 
 	_, _insertId, _err := p.Exec(sql, args...)
@@ -592,7 +595,7 @@ func (p *ModelFactory) Update() (count int64, err error) {
 	}
 
 	if p.debug {
-		log.Println("p query sql is : " + sql, " ", args)
+		log.Print("p query sql is : " + sql, " ", args)
 	}
 
 	c, _, e := p.Exec(sql, args...)
@@ -650,7 +653,7 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 	}
 
 	if p.debug {
-		log.Println("p query sql is : " + sql, " ", args)
+		log.Print("p query sql is : " + sql, " ", args)
 	}
 
 	c, _, e := p.Exec(sql, args...)

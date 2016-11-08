@@ -38,7 +38,7 @@ func (p *ApiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	p.Router.Start(r.URL.String(), &context)
 
-	if context.Response.Result == nil {
+	if context.Response.Result != nil {
 		context.Response.Result.Apply(r, w)
 	} else {
 		w.Header().Set("Content-Type", context.Response.Data.Type)

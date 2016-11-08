@@ -26,5 +26,12 @@ func main() {
 	case "model":
 		table := args[2]
 		artisan.CreateModelFile(table)
+	case "swagger":
+		if len(args) != 4 {
+			args = []string{"", "", "./", "./swagger.json"}
+		}
+		path := args[2]
+		out := args[3]
+		artisan.Swagger(path, out)
 	}
 }
