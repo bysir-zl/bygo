@@ -89,7 +89,7 @@ type swaggerString map[string][]string
 
 func getAllSwaggerString(root string) (sw swaggerString) {
 	sw = swaggerString{}
-	paths, err := util.WalkDir(root, ".go")
+	paths, err := util.WalkDir(root, []string{"go", "proto"})
 	if err != nil {
 		log.Warn(err)
 		return
@@ -260,7 +260,9 @@ func parseDef(ss []string) map[string]Definition {
 						Ref:"#/definitions/" + defau,
 					}
 				} else {
-
+					if defau == "" {
+						defau = desc
+					}
 					ps[pname] = Propertie{
 						Default:defau,
 						Description:desc,

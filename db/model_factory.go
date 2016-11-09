@@ -147,8 +147,9 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 	fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
-	//检查fields是否在Model里
-	if p.fields != nil && len(p.fields) != 0 {
+	// 检查fields是否在Model里
+	// fieldTagMap为空在没有model的时候
+	if p.fields != nil && len(p.fields) != 0 && len(fieldTagMap) != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the model fields")
 			return
@@ -692,7 +693,7 @@ func buildSelectSql(fields []string, tableName string, where map[string]([]inter
 	fieldString := ""
 	if fields == nil || len(fields) == 0 {
 		fieldString = "* "
-	} else {
+	} else if len(fieldMapper) != 0 {
 		//转换字段名
 		for _, value := range fields {
 			fieldString = fieldString + "," + fieldMapper[value]

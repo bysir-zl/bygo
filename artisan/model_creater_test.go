@@ -5,5 +5,7 @@ import (
 )
 
 func Test_CreateMode(b *testing.T) {
-	CreateModelFile("g5_game_channel_notice")
+	//var x float32 =1.2
+	//log.Print(x+1)
+	CreateModelFile("order_ext")
 }

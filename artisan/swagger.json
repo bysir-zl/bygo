@@ -1,0 +1,144 @@
+{
+    "info": {
+        "description": "这是一个",
+        "version": "v0.0.1",
+        "title": "title",
+        "contact": {
+            "email": "zhangliang@kuaifazs.com"
+        },
+        "license": {}
+    },
+    "swagger": "2.0",
+    "basePath": "/v1",
+    "paths": {
+        "/index/": {
+            "post": {
+                "tags": [
+                    "tags"
+                ],
+                "description": "首页信息",
+                "operation_id": "operation",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "formData",
+                        "description": "姓名",
+                        "required": true,
+                        "type": "string",
+                        "items": {},
+                        "default": "123123"
+                    },
+                    {
+                        "name": "sex",
+                        "in": "formData",
+                        "description": "姓名",
+                        "required": true,
+                        "type": "string",
+                        "items": {},
+                        "default": "0"
+                    },
+                    {
+                        "name": "debug",
+                        "in": "formData",
+                        "description": "调试模式",
+                        "required": false,
+                        "type": "boolean",
+                        "items": {},
+                        "default": true
+                    },
+                    {
+                        "name": "debug2",
+                        "in": "formData",
+                        "description": "调试模式",
+                        "required": false,
+                        "type": "boolean",
+                        "items": {},
+                        "default": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/error"
+                        }
+                    }
+                }
+            }
+        },
+        "oauth/request": {
+            "post": {
+                "tags": [
+                    "tags"
+                ],
+                "description": "生成快发的TOKEN,OPENID",
+                "operation_id": "operationId",
+                "parameters": null,
+                "responses": null
+            }
+        }
+    },
+    "definitions": {
+        "error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "default": "0为成功|其他code见errorinfo",
+                    "description": "返回马"
+                },
+                "errorinfo": {
+                    "type": "string",
+                    "default": "",
+                    "description": "错误详情"
+                }
+            }
+        },
+        "gameinfo": {
+            "type": "object",
+            "properties": {
+                "ad_status": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "downloadUrl": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "logLevel": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "reserveDialog": {
+                    "type": "",
+                    "$ref": "#/definitions/e",
+                    "default": "",
+                    "description": ""
+                },
+                "reserveNotify": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "uploadLog": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "version": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                },
+                "versionControl": {
+                    "type": "string",
+                    "default": "",
+                    "description": ""
+                }
+            }
+        }
+    }
+}

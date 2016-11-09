@@ -51,7 +51,7 @@ func ind() {
 // @x:123
 
 // @DEF gameinfo,object
-// @logLevel:;
+// @logLevel:名称,类型,默认值;
 // @uploadLog:;
 // @versionControl:;
 // @version:;
