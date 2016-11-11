@@ -84,7 +84,10 @@ func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode
 		ifun, ok := fun.Interface().(func(*Context))
 
 		if ok {
-			routerNode.handler.controllerFunc[typ.Method(i).Name] = ifun
+			name := typ.Method(i).Name
+			// 省略 OMIT
+			name = strings.TrimPrefix(name,"OMIT")
+			routerNode.handler.controllerFunc[name] = ifun
 		}
 	}
 
