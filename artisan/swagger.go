@@ -120,7 +120,7 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 				if types != "" {
 					// 非第一行 ,去除空格
 					s = strings.Replace(s, "// @", "", -1)
-					s = strings.Replace(s, " ", "", -1)
+					//s = strings.Replace(s, " ", "", -1)
 					apiString = apiString + s + "\n"
 				} else {
 					// 是第一行
@@ -337,8 +337,9 @@ func parsePath(apis []string, base map[string]string) router {
 				if !strings.Contains(p, ":") || !strings.Contains(p, ",") {
 					continue
 				}
-				name := strings.Split(p, ":")[0]
-				p := strings.Split(p, ":")[1]
+				pos:=strings.Index(p,":")
+				name := p[:pos]
+				p := p[pos+1:]
 				ps := strings.Split(p, ",")
 				if len(ps) < 3 {
 					continue
@@ -438,7 +439,7 @@ func Swagger(path, output string) {
 
 func getRowString(row []string, number string) string {
 	for _, st := range row {
-		if strings.Index(st, number + ":") == 0 {
+		if strings.Index(st, number) == 0 {
 			pos := strings.Index(st, ":")
 			s := st[pos + 1:]
 			if s == "-" {

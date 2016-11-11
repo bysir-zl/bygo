@@ -693,12 +693,19 @@ func buildSelectSql(fields []string, tableName string, where map[string]([]inter
 	fieldString := ""
 	if fields == nil || len(fields) == 0 {
 		fieldString = "* "
-	} else if len(fieldMapper) != 0 {
-		//转换字段名
-		for _, value := range fields {
-			fieldString = fieldString + "," + fieldMapper[value]
+	} else {
+		if len(fieldMapper) != 0 {
+			//转换字段名
+			for _, value := range fields {
+				fieldString = fieldString + "," + fieldMapper[value]
+			}
+			fieldString = fieldString[1:]
+		} else {
+			for _, value := range fields {
+				fieldString = fieldString + "," + value
+			}
+			fieldString = fieldString[1:]
 		}
-		fieldString = fieldString[1:]
 	}
 
 	sql = sql + fieldString + " "

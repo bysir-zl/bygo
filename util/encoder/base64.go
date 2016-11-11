@@ -1,6 +1,9 @@
 package encoder
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+	"strings"
+)
 
 func Base64Encode(src []byte) []byte {
 	buf := make([]byte, base64.StdEncoding.EncodedLen(len(src)))
@@ -16,7 +19,6 @@ func Base64Decode(src []byte) (out []byte) {
 	return buf
 }
 
-
 func Base64DecodeString(src string) (out string) {
-	return string(Base64Decode([]byte(src)))
+	return strings.Trim(string(Base64Decode([]byte(src))), "\x00")
 }

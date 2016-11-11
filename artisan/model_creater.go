@@ -39,6 +39,8 @@ func CreateModelFile(tableName string) {
 			tyo = "int"
 		} else if strings.Contains(t, "timestamp") {
 			tyo = "int"
+		}else if strings.Contains(t, "bool") {
+			tyo = "bool"
 		}
 
 		fieldName := string(util.SheXing2TuoFeng([]byte(key)))

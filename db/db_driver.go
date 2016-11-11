@@ -56,10 +56,10 @@ func (p *DbDriverMysql) Query(sql string, args ...interface{}) (data []map[strin
 
 	data = nil
 	stmt, err := p.db.Prepare(sql)
-	defer stmt.Close()
 	if err != nil {
 		return
 	}
+	defer stmt.Close()
 	rows, err := stmt.Query(args...)
 	if err != nil {
 		return
