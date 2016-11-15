@@ -149,7 +149,7 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 
 	// 检查fields是否在Model里
 	// fieldTagMap为空在没有model的时候
-	if p.fields != nil && len(p.fields) != 0 && len(fieldTagMap) != 0 {
+	if p.fields != nil && len(p.fields) != 0 && p.out != 0 {
 		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
 			err = errors.New("filed`s `" + msg + "` is not in the model fields")
 			return
@@ -310,6 +310,7 @@ func (p *ModelFactory) First() (err error) {
 	if err != nil {
 		return
 	}
+
 	if datas == nil || len(datas) == 0 {
 		return
 	}
@@ -406,6 +407,10 @@ func (p *ModelFactory) GetAutoSetField(method string) (needSet map[string]interf
 }
 
 func (p *ModelFactory) Insert() (err error) {
+	if p.out == nil {
+		err = errors.New("Insert func must called with model is not nil")
+		return
+	}
 
 	//字段->数据库字段映射
 	fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
@@ -431,34 +436,29 @@ func (p *ModelFactory) Insert() (err error) {
 			dbConnect = "default"
 		}
 
-		p.connect = p.dbConfigs[dbConnect]
-
-		//没有找到connect配置
-		if p.connect.Port == 0 {
-			err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
-			return
-		}
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
+		return
 	}
 
-	//获取应该存数据库的键值对 数据库字段->值映射
+	// 获取应该存数据库的键值对 数据库字段->值映射
 	saveData := map[string]interface{}{}
 
-	//字段->值映射
+	// 字段->值映射
 	mapper := util.ObjToMap(p.out, "")
 	for key, value := range mapper {
 		k := fieldTagMap[key]
-		//没有 name 属性的字段,说明不是数据库字段 , 比如Table,Connect等配置字段
+		// 没有 name 属性的字段,说明不是数据库字段 , 比如Table,Connect等配置字段
 		if k == "" {
 			continue
 		}
 
-		//指定了fields 就只更新指定字段
+		// 指定了fields 就只更新指定字段
 		if p.fields != nil {
 			if !util.ItemInArray(key, p.fields) {
 				continue
 			}
 		}
-		//在插入的时候过滤空值
+		// 在插入的时候过滤空值
 		if util.IsEmptyValue(value) {
 			continue
 		}
@@ -480,7 +480,7 @@ func (p *ModelFactory) Insert() (err error) {
 		util.MapToObj(p.out, autoSet, "")
 	}
 
-	sql, args, e := buildInsertSql(p.table, saveData, p.where)
+	sql, args, e := buildInsertSql(p.table, saveData)
 	if e != nil {
 		err = e
 		return
@@ -509,7 +509,46 @@ func (p *ModelFactory) Insert() (err error) {
 	return
 }
 
+func (p *ModelFactory) InsertMap(mapper map[string]interface{}) (err error) {
+	saveData := map[string]interface{}{}
+
+	//没有指定链接
+	if p.connect.Port == 0 {
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default"  + "` is undefined in dbConfig")
+		return
+	}
+
+	for key, value := range mapper {
+		// 指定了fields 就只更新指定字段
+		if p.fields != nil {
+			if !util.ItemInArray(key, p.fields) {
+				continue
+			}
+		}
+
+		saveData[key] = value
+	}
+
+	sql, args, e := buildInsertSql(p.table, saveData)
+	if e != nil {
+		err = e
+		return
+	}
+
+	if p.debug {
+		log.Print("p query sql is : " + sql, " ", args)
+	}
+
+	_, _, err = p.Exec(sql, args...)
+	return
+}
+
 func (p *ModelFactory) Update() (count int64, err error) {
+	if p.out == nil {
+		err = errors.New("Insert func must called with model is not nil")
+		return
+	}
+
 	if p.where == nil {
 		err = errors.New("you need set condition in Where()")
 		return
@@ -539,13 +578,8 @@ func (p *ModelFactory) Update() (count int64, err error) {
 			dbConnect = "default"
 		}
 
-		p.connect = p.dbConfigs[dbConnect]
-
-		//没有找到connect配置
-		if p.connect.Port == 0 {
-			err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
-			return
-		}
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
+		return
 	}
 
 	//获取应该存数据库的键值对 数据库字段->值映射
@@ -608,6 +642,52 @@ func (p *ModelFactory) Update() (count int64, err error) {
 
 	return
 }
+
+func (p *ModelFactory) UpdateMap(mapper map[string]interface{}) (count int64, err error) {
+	if p.where == nil {
+		err = errors.New("you need set condition in Where()")
+		return
+	}
+
+	//没有指定链接
+	if p.connect.Port == 0 {
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default"  + "` is undefined in dbConfig")
+		return
+	}
+	saveData := map[string]interface{}{}
+
+	for key, value := range mapper {
+
+		//指定了fields 就只更新指定字段
+		if p.fields != nil {
+			if !util.ItemInArray(key, p.fields) {
+				continue
+			}
+		}
+
+		saveData[key] = value
+	}
+
+	sql, args, e := buildUpdateSql(p.table, saveData, p.where, nil)
+	if e != nil {
+		err = e
+		return
+	}
+
+	if p.debug {
+		log.Print("p query sql is : " + sql, " ", args)
+	}
+
+	c, _, e := p.Exec(sql, args...)
+	if e != nil {
+		err = e
+		return
+	}
+	count = c
+
+	return
+}
+
 func (p *ModelFactory) Delete() (count int64, err error) {
 	if p.where == nil {
 		err = errors.New("you need set condition in Where()")
@@ -617,14 +697,6 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 	//字段->数据库字段映射
 	fieldTagMap := p.modelFieldMap.GetFieldMapByTagName("name")
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
-
-	//检查fields是否在Model里
-	if p.fields != nil && len(p.fields) != 0 {
-		if isOk, msg := util.ArrayInMapKey(p.fields, fieldTagMap); !isOk {
-			err = errors.New("filed`s `" + msg + "` is not in the struct `" + reflect.TypeOf(p.out).String() + "` fields")
-			return
-		}
-	}
 
 	if p.table == "" {
 		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
@@ -638,13 +710,8 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 			dbConnect = "default"
 		}
 
-		p.connect = p.dbConfigs[dbConnect]
-
-		//没有找到connect配置
-		if p.connect.Port == 0 {
-			err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
-			return
-		}
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
+		return
 	}
 
 	sql, args, e := buildDeleteSql(p.table, p.where, fieldTagMap)
@@ -755,7 +822,7 @@ func buildSelectSql(fields []string, tableName string, where map[string]([]inter
 	return
 }
 
-func buildInsertSql(tableName string, saveData map[string]interface{}, where map[string]([]interface{})) (sql string, args []interface{}, err error) {
+func buildInsertSql(tableName string, saveData map[string]interface{}) (sql string, args []interface{}, err error) {
 
 	if len(saveData) == 0 {
 		err = errors.New("no save data on INSERT")
@@ -913,8 +980,14 @@ func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 			modelFactory.modelFieldMap = util.GetTagMapperFromPool(m)
 		}
 
-		modelFactory.table = modelFactory.modelFieldMap.GetFieldMapByTagName("db")["Table"]
-		modelFactory.connect = dbConfig[modelFactory.modelFieldMap.GetFieldMapByTagName("db")["Connect"]]
+		fmdb := modelFactory.modelFieldMap.GetFieldMapByTagName("db")
+		modelFactory.table = fmdb["Table"]
+		c := fmdb["Connect"]
+		if c == "" {
+			c = "default"
+		}
+
+		modelFactory.connect = dbConfig[c]
 	} else {
 		modelFactory.connect = dbConfig["default"]
 	}

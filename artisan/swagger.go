@@ -120,10 +120,11 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 				if types != "" {
 					// 非第一行 ,去除空格
 					s = strings.Replace(s, "// @", "", -1)
-					//s = strings.Replace(s, " ", "", -1)
+					s = strings.Trim(s," ")
 					apiString = apiString + s + "\n"
 				} else {
 					// 是第一行
+					s = strings.Trim(s," ")
 					if strings.Contains(s, "@API ") {
 						types = "API"
 					} else if strings.Contains(s, "@BASE ") {
@@ -298,11 +299,11 @@ func parsePath(apis []string, base map[string]string) router {
 
 	for _, api := range apis {
 		// 替换BASE
-
-		if strings.Contains(api, "BASE:") {
+		coun:=strings.Count(api,"BASE:")
+		for i:=0;i<coun;i++{
 			replaced := strings.Split(api, "BASE:")[1]
 			replaced = strings.Split(strings.Split(replaced, "\n")[0], ";")[0]
-			api = strings.Replace(api, "BASE:" + replaced, base[replaced], -1)
+			api = strings.Replace(api, "BASE:" + replaced, base[replaced],1)
 		}
 
 		row := strings.Split(api, "\n")
@@ -316,10 +317,10 @@ func parsePath(apis []string, base map[string]string) router {
 			return rou
 		}
 		routers := strings.Split(router, ",")
-		url := routers[0]
-		method := routers[1]
-		tags := strings.Split(routers[2], "|")
-		operationId := routers[3]
+		url := strings.Trim(routers[0]," ")
+		method := strings.Trim(routers[1]," ")
+		tags := strings.Split(strings.Replace(routers[2]," ","",-1), "|")
+		operationId := strings.Trim(routers[3]," ")
 
 		bpii := bpi{
 			Description:desc,

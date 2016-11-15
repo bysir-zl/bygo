@@ -11,54 +11,72 @@
     "swagger": "2.0",
     "basePath": "/v1",
     "paths": {
-        "/index/": {
-            "post": {
+        " /index/ ": {
+            " post ": {
                 "tags": [
-                    "tags"
+                    " tags "
                 ],
                 "description": "首页信息",
-                "operation_id": "operation",
+                "operation_id": " operation",
                 "parameters": [
                     {
                         "name": "name",
-                        "in": "formData",
-                        "description": "姓名",
-                        "required": true,
-                        "type": "string",
+                        "in": " formData",
+                        "description": " 姓名",
+                        "required": false,
+                        "type": "string ",
                         "items": {},
                         "default": "123123"
                     },
                     {
                         "name": "sex",
-                        "in": "formData",
-                        "description": "姓名",
-                        "required": true,
-                        "type": "string",
+                        "in": " formData",
+                        "description": " 姓名",
+                        "required": false,
+                        "type": "string ",
                         "items": {},
-                        "default": "0"
+                        "default": "0 "
                     },
                     {
                         "name": "debug",
-                        "in": "formData",
-                        "description": "调试模式",
+                        "in": " formData",
+                        "description": " 调试模式",
                         "required": false,
-                        "type": "boolean",
+                        "type": "boolean ",
                         "items": {},
-                        "default": true
+                        "default": "true "
                     },
                     {
                         "name": "debug2",
-                        "in": "formData",
-                        "description": "调试模式",
+                        "in": " formData",
+                        "description": " 调试模式",
                         "required": false,
-                        "type": "boolean",
+                        "type": "boolean ",
                         "items": {},
-                        "default": true
+                        "default": "true "
+                    },
+                    {
+                        "name": "debug",
+                        "in": " formData",
+                        "description": " 调试模式",
+                        "required": false,
+                        "type": "boolean ",
+                        "items": {},
+                        "default": "true "
+                    },
+                    {
+                        "name": "debug2",
+                        "in": " formData",
+                        "description": " 调试模式",
+                        "required": false,
+                        "type": "boolean ",
+                        "items": {},
+                        "default": "true "
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
+                        "description": " 成功",
                         "schema": {
                             "$ref": "#/definitions/error"
                         }
@@ -66,19 +84,29 @@
                 }
             }
         },
-        "oauth/request": {
-            "post": {
+        " oauth/request": {
+            " post": {
                 "tags": [
-                    "tags"
+                    " tags"
                 ],
                 "description": "生成快发的TOKEN,OPENID",
-                "operation_id": "operationId",
+                "operation_id": " operationId",
                 "parameters": null,
                 "responses": null
             }
         }
     },
     "definitions": {
+        "e": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "string",
+                    "default": "123",
+                    "description": "123"
+                }
+            }
+        },
         "error": {
             "type": "object",
             "properties": {
@@ -89,7 +117,7 @@
                 },
                 "errorinfo": {
                     "type": "string",
-                    "default": "",
+                    "default": "错误详情",
                     "description": "错误详情"
                 }
             }
@@ -108,9 +136,9 @@
                     "description": ""
                 },
                 "logLevel": {
-                    "type": "string",
-                    "default": "",
-                    "description": ""
+                    "type": "类型",
+                    "default": "默认值",
+                    "description": "名称"
                 },
                 "reserveDialog": {
                     "type": "",

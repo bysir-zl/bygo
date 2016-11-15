@@ -9,9 +9,11 @@ package swagger_test
 // @host:-
 // @basePath:/v1
 
+
 // @BASE BaseInfo
 // @debug: 调试模式,boolean , formData,true ,false;
 // @debug2: 调试模式,boolean , formData,true ,false
+
 
 // @API 首页信息
 // @router : /index/ , post , tags , operation
@@ -19,6 +21,7 @@ package swagger_test
 // @parameters :
 // @name: 姓名,string , formData,123123,true ;
 // @sex: 姓名,string , formData,0 ,true ;
+// @BASE:BaseInfo;
 // @BASE:BaseInfo
 //
 // @responses :
