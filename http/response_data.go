@@ -12,7 +12,7 @@ type ResponseData struct {
 	Type   string
 }
 
-func NewRespDataHtml(code int, body string) ResponseData {
+func NewResponseHtml(code int, body string) ResponseData {
 	response := ResponseData{}
 	response.Type = "text/html charset=utf-8"
 
@@ -22,7 +22,7 @@ func NewRespDataHtml(code int, body string) ResponseData {
 	return response
 }
 
-func NewRespDataJsonString(code int, body string) ResponseData {
+func NewResponseJsonString(code int, body string) ResponseData {
 	response := ResponseData{}
 	response.Type = "application/json charset=utf-8"
 
@@ -32,7 +32,7 @@ func NewRespDataJsonString(code int, body string) ResponseData {
 	return response
 }
 
-func NewRespDataJson(code int, jsonObj interface{}) ResponseData {
+func NewResponseJson(code int, jsonObj interface{}) ResponseData {
 	response := ResponseData{}
 	response.Type = "application/json charset=utf-8"
 

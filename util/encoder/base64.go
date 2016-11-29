@@ -3,6 +3,7 @@ package encoder
 import (
 	"encoding/base64"
 	"strings"
+	"github.com/bysir-zl/bygo/util"
 )
 
 func Base64Encode(src []byte) []byte {
@@ -20,5 +21,15 @@ func Base64Decode(src []byte) (out []byte) {
 }
 
 func Base64DecodeString(src string) (out string) {
-	return strings.Trim(string(Base64Decode([]byte(src))), "\x00")
+	if src == "" {
+		return
+	}
+	return strings.Trim(util.B2S(Base64Decode(util.S2B(src))), "\x00")
+}
+
+func Base64EncodeString(src string) (out string) {
+	if src == "" {
+		return
+	}
+	return strings.Trim(util.B2S(Base64Encode(util.S2B(src))), "\x00")
 }

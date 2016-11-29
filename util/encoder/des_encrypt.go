@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/des"
+	"github.com/kataras/go-errors"
 )
 
 func DesEncrypt(origData, key []byte) ([]byte, error) {
@@ -33,7 +34,9 @@ func DesDecrypt(crypted, key []byte) ([]byte, error) {
 	origData := crypted
 	blockMode.CryptBlocks(origData, crypted)
 	//origData = PKCS5UnPadding(origData)
-
+	if len(origData) == 0 {
+		return nil, errors.New("origin data can not be empty")
+	}
 	origData = ZeroUnPadding(origData)
 	return origData, nil
 }

@@ -9,7 +9,7 @@ import (
 
 type Router struct {
 	RootNode   RouterNode
-	RouterPath map[string][]RouterNode // 根据router设置解析出来的节点列表
+	RouterPath map[string][]*RouterNode // 根据router设置解析出来的节点列表
 }
 
 // 根据url匹配路由,
@@ -19,7 +19,7 @@ type Router struct {
 // currNodeList:匹配到的node路径
 // deep:当前递归深度
 // currDeep:匹配到的深度
-func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []RouterNode) {
+func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []*RouterNode) {
 	if allUrl == "" {
 		return
 	}
@@ -79,17 +79,15 @@ func (p *Router) Handler(allUrl string) (matchedUrl string, matchedNodeList []Ro
 	//return true
 }
 
-func (p *Router) ParseToPath(matchedUrl string, node *RouterNode, nodeList *[]RouterNode) {
-	matchedUrl = matchedUrl + node.path
-
-	*nodeList = append(*nodeList, *node)
-
-	if node.childrenList != nil {
-		for _, children := range *node.childrenList {
-			p.ParseToPath(matchedUrl, &children, nodeList)
+func (p *Router) ParseToPath(matchedUrl string, root RouterNode, nodeList []*RouterNode) {
+	matchedUrl = matchedUrl + root.path
+	nodeList = append(nodeList, &root)
+	if root.childrenList != nil && len(root.childrenList) != 0 {
+		for _, children := range root.childrenList {
+			p.ParseToPath(matchedUrl, children, nodeList)
 		}
 	} else {
-		p.RouterPath[matchedUrl + "/" ] = *nodeList
+		p.RouterPath[matchedUrl + "/" ] = nodeList
 	}
 }
 
@@ -98,8 +96,8 @@ func (p *Router) Init(root string, fun func(node *RouterNode)) {
 	p.RootNode.path = root
 	fun(&p.RootNode)
 
-	nodeList := []RouterNode{}
-	p.ParseToPath("", &p.RootNode, &nodeList)
+	nodeList := []*RouterNode{}
+	p.ParseToPath("", p.RootNode, nodeList)
 }
 
 func (p *Router) Start(url string, context *Context) {
@@ -116,8 +114,15 @@ func (p *Router) Start(url string, context *Context) {
 
 	baseUrl := strings.Split(strings.Split(url, "?")[0], "#")[0]
 	// 加上/以匹配"/"根
-	if baseUrl[len(baseUrl) - 1] != '/' {
-		baseUrl = baseUrl + "/"
+	if baseUrl==""{
+		baseUrl = "/"
+	} else {
+		if baseUrl[len(baseUrl) - 1] != '/' {
+			baseUrl = baseUrl + "/"
+		}
+		if baseUrl[0] != '/' {
+			baseUrl = "/" + baseUrl
+		}
 	}
 
 	urs := strings.Split(url, "#")
@@ -128,10 +133,10 @@ func (p *Router) Start(url string, context *Context) {
 
 	matchedUrl, currNodeList := p.Handler(baseUrl)
 
-	var handleNode RouterNode
+	var handleNode *RouterNode
 	// 没有匹配到东西, 则设置处理器为根节点
 	if len(currNodeList) == 0 {
-		handleNode = p.RootNode
+		handleNode = &p.RootNode
 	} else {
 		handleNode = currNodeList[len(currNodeList) - 1]
 	}
@@ -151,11 +156,11 @@ func (p *Router) Start(url string, context *Context) {
 	stop := false
 	for _, item := range currNodeList {
 		if item.middlewareList != nil {
-			for _, item := range *item.middlewareList {
+			for _, item := range item.middlewareList {
 				needStop := item.HandlerBefore(context)
 				if needStop {
 					stop = true
-					request.Router.Handler = reflect.TypeOf(item).Name()
+					request.Router.Handler ="middleware|"+reflect.TypeOf(item).Name()
 				}
 			}
 		}
@@ -170,7 +175,7 @@ func (p *Router) Start(url string, context *Context) {
 	for i := len(currNodeList) - 1; i >= 0; i = i - 1 {
 		item := currNodeList[i]
 		if item.middlewareList != nil {
-			for _, item := range *item.middlewareList {
+			for _, item := range item.middlewareList {
 				item.HandlerAfter(context)
 			}
 		}
@@ -181,11 +186,11 @@ func (p *Router) Start(url string, context *Context) {
 
 func NewRouter() Router {
 	node := RouterNode{}
-	node.childrenList = &[]RouterNode{}
-	node.middlewareList = &[]Middleware{}
+	node.childrenList = []RouterNode{}
+	node.middlewareList = []Middleware{}
 	node.handlerType = "Base"
 	return Router{
 		RootNode: node,
-		RouterPath: map[string][]RouterNode{},
+		RouterPath: map[string][]*RouterNode{},
 	}
 }

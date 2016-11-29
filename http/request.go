@@ -12,6 +12,7 @@ type router struct {
 	Url     string
 	Hash    string
 	Handler string
+	Method string
 }
 
 type Request struct {

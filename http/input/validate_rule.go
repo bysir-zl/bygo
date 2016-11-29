@@ -4,6 +4,7 @@ import (
 	"github.com/bysir-zl/bygo/util"
 	"strconv"
 	"strings"
+	"errors"
 )
 
 type rule struct {
@@ -140,5 +141,34 @@ func (p *ValidateRule) validateValue(value string, rule rule) (isOk bool, notice
 
 	}
 	isOk = true
+	return
+}
+
+func (p *ValidateRule) Validate(m map[string]string) (err error) {
+	if len(p.filter) != 0 {
+		ok, m := util.ArrayInArray(util.GetMapKey(m), p.filter)
+		if !ok {
+			err = errors.New("field :" + m + " is not allowed")
+			return
+		}
+	}
+
+	if len(p.need) != 0 {
+		ok, m := util.ArrayInArray(p.need, util.GetMapKey(m))
+		if !ok {
+			err = errors.New("field :" + m + " must be seted")
+			return
+		}
+	}
+
+	for field, r := range p.rules {
+		value := m[field]
+		ok, m := p.validateValue(value, r)
+		if !ok {
+			err = errors.New(m)
+			return
+		}
+	}
+
 	return
 }

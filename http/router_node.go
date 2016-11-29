@@ -12,11 +12,11 @@ import (
 var _ = log.Blue
 
 type RouterNode struct {
-	path           string        //当前path
-	handlerType    string        //当前处理程序的类型
-	handler        handler       //当前处理程序
-	middlewareList *[]Middleware //当前的Middleware列表
-	childrenList   *[]RouterNode //下一级
+	path           string       //当前path
+	handlerType    string       //当前处理程序的类型
+	handler        handler      //当前处理程序
+	middlewareList []Middleware //当前的Middleware列表
+	childrenList   []RouterNode //下一级
 }
 type handler struct {
 	item           interface{}
@@ -45,10 +45,11 @@ func (p *RouterNode) Group(path string, call func(*RouterNode)) *RouterNode {
 	//新建一个子node
 	routerNode := RouterNode{}
 	routerNode.path = path
-	routerNode.childrenList = &[]RouterNode{}
-	routerNode.middlewareList = &[]Middleware{}
+	routerNode.childrenList = []RouterNode{}
+	routerNode.middlewareList = []Middleware{}
 	routerNode.handlerType = "Group"
-	*p.childrenList = append(*p.childrenList, routerNode)
+
+	p.childrenList = append(p.childrenList, routerNode)
 
 	call(&routerNode)
 	return &routerNode
@@ -56,7 +57,7 @@ func (p *RouterNode) Group(path string, call func(*RouterNode)) *RouterNode {
 
 //向当前节点添加中间件
 func (p *RouterNode) Middleware(middleware Middleware) *RouterNode {
-	*p.middlewareList = append(*p.middlewareList, middleware)
+	p.middlewareList = append(p.middlewareList, middleware)
 
 	return p
 }
@@ -69,7 +70,7 @@ func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode
 
 	routerNode.path = path
 	routerNode.handlerType = "Controller"
-	routerNode.middlewareList = &[]Middleware{}
+	routerNode.middlewareList = []Middleware{}
 	routerNode.handler.item = controller
 	routerNode.handler.controllerFunc = map[string]func(*Context){}
 	routerNode.handler.handlerName = reflect.ValueOf(controller).Type().String()
@@ -86,12 +87,12 @@ func (p *RouterNode) Controller(path string, controller interface{}) *RouterNode
 		if ok {
 			name := typ.Method(i).Name
 			// 省略 OMIT
-			name = strings.TrimPrefix(name,"OMIT")
+			name = strings.TrimPrefix(name, "OMIT")
 			routerNode.handler.controllerFunc[name] = ifun
 		}
 	}
 
-	*p.childrenList = append(*p.childrenList, routerNode)
+	p.childrenList = append(p.childrenList, routerNode)
 	return &routerNode
 }
 
@@ -105,7 +106,7 @@ func (p *RouterNode) Fun(path string, fun func(*Context)) *RouterNode {
 	routerNode.handler.item = fun
 	routerNode.path = path
 	routerNode.handlerType = "Func"
-	routerNode.middlewareList = &[]Middleware{}
+	routerNode.middlewareList = []Middleware{}
 	funcInfo := runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name()
 
 	funcInfo = strings.Replace(funcInfo, "-fm", "", -1)
@@ -116,7 +117,7 @@ func (p *RouterNode) Fun(path string, fun func(*Context)) *RouterNode {
 
 	routerNode.handler.handlerName = funcInfo
 
-	*p.childrenList = append(*p.childrenList, routerNode)
+	p.childrenList = append(p.childrenList, routerNode)
 	return &routerNode
 }
 
@@ -147,14 +148,16 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 				}
 			}
 		}
-		request.Router.Handler = node.handler.handlerName + "." + method
+		request.Router.Handler = "controller|" + node.handler.handlerName + "." + method
+		request.Router.Method = method
+
 		// 从controller中读取一个方法
 		fun := node.handler.controllerFunc[method]
 		//没找到类方法,url不正确
 		if fun == nil {
 			msg := "the method '" + method +
 				"' is undefined in controller '" + node.handler.handlerName + "'!"
-			response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: msg})
+			response.Data = NewResponseJson(404, bean.ApiData{Code: 404, Msg: msg})
 			return
 		}
 		fun(context)
@@ -165,12 +168,12 @@ func (node *RouterNode) run(context *Context, otherUrl string) {
 		}
 
 		fun := node.handler.item.(func(*Context))
-		request.Router.Handler = node.handler.handlerName
+		request.Router.Handler = "func|" + node.handler.handlerName
 		fun(context)
 		return
 	} else {
 		//没有配置路由
-		response.Data = NewRespDataJson(404, bean.ApiData{Code: 404, Msg: "u are forget set route? but welcome use bygo . :D"})
+		response.Data = NewResponseJson(404, bean.ApiData{Code: 404, Msg: "u are forget set route? but welcome use bygo . :D"})
 		return
 	}
 

@@ -10,7 +10,7 @@ func TuoFeng2SheXing(src []byte) (out []byte) {
 				out = append(out, 95)
 			}
 			out = append(out, src[i] + 32)
-		}else {
+		} else {
 			out = append(out, src[i])
 		}
 	}
@@ -47,4 +47,15 @@ func SheXing2TuoFeng(src []byte) (out []byte) {
 	}
 	out = out[0 : l - del]
 	return
+}
+
+func ChunkJoin(str, sub string, l int) string {
+	privateKey := ""
+	for i, l := 0, len(str) / 64; i < l; i++ {
+		privateKey = privateKey + "\n" + str[i * 64:(i + 1) * 64]
+	}
+	if privateKey == "" {
+		return ""
+	}
+	return privateKey[1:]
 }

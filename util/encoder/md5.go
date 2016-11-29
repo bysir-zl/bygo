@@ -3,6 +3,7 @@ package encoder
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"github.com/bysir-zl/bygo/util"
 )
 
 func Md5(in []byte) (out []byte) {
@@ -15,6 +16,6 @@ func Md5(in []byte) (out []byte) {
 	return
 }
 func Md5String(in string) (out string) {
-	out = string(Md5([]byte(in)))
+	out = util.B2S(Md5(util.S2B(in)))
 	return
 }

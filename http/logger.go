@@ -12,7 +12,7 @@ type Logs struct {
 }
 
 func (p *Logs) ToResponseData() ResponseData {
-	return NewRespDataJson(200, bean.ApiData{Code: p.Code, Msg: p.Message})
+	return NewResponseJson(200, bean.ApiData{Code: p.Code, Msg: p.Message})
 }
 func (p Logs) String()string  {
 	return fmt.Sprintf(` "Code :%d , Msg : %s" `,p.Code,p.Message)

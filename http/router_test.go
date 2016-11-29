@@ -10,12 +10,12 @@ func TestRouter_Start(t *testing.T) {
 	router := NewRouter()
 	router.Init("", func(node *RouterNode) {
 		node.Fun("/api/index", func(c *Context) {
-			c.Resp(NewRespDataHtml(200, "123"))
+			c.Resp(NewResponseHtml(200, "123"))
 			log.Print("qwe")
 		})
 		node.Group("v1", func(node *RouterNode) {
 			node.Fun("/api/index", func(c *Context) {
-				c.Resp(NewRespDataHtml(200, "123"))
+				c.Resp(NewResponseHtml(200, "123"))
 				log.Print("qwe")
 			})
 		})
@@ -31,20 +31,20 @@ func BenchmarkRouter(b *testing.B) {
 	router := NewRouter()
 	router.Init("", func(node *RouterNode) {
 		node.Fun("/api/index2", func(c *Context) {
-			c.Resp(NewRespDataHtml(200, "123"))
+			c.Resp(NewResponseHtml(200, "123"))
 			//log.Print("qwe")
 		})
 		node.Fun("/api2/index2", func(c *Context) {
-			c.Resp(NewRespDataHtml(200, "123"))
+			c.Resp(NewResponseHtml(200, "123"))
 			//log.Print("qwe")
 		})
 		node.Fun("/api/index", func(c *Context) {
-			c.Resp(NewRespDataHtml(200, "123"))
+			c.Resp(NewResponseHtml(200, "123"))
 			//log.Print("qwe")
 		})
 		node.Group("v1", func(node *RouterNode) {
 			node.Fun("/api/index", func(c *Context) {
-				c.Resp(NewRespDataHtml(200, "123"))
+				c.Resp(NewResponseHtml(200, "123"))
 				log.Print("qwe")
 			})
 		})

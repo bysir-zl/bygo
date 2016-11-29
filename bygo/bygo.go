@@ -7,6 +7,7 @@ import (
 	byhttp "github.com/bysir-zl/bygo/http"
 	"io"
 	"lib.com/deepzz0/go-com/log"
+	slog "log"
 	"net/http"
 	"os"
 )
@@ -82,7 +83,7 @@ func (p *ApiHandler) Init() {
 	p.AppContainer.DbFactory = dbFactory
 	p.AppContainer.Config = bConfig
 
-	log.Info("apiHandler evn is : " + p.AppContainer.Config.Evn)
+	slog.Print("apiHandler evn is : " + p.AppContainer.Config.Evn)
 }
 
 func NewApiHandler() (apiHandle *ApiHandler) {

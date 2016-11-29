@@ -1,10 +1,12 @@
 package util
 
 import (
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
+	"fmt"
+	"net/url"
+	"lib.com/deepzz0/go-com/log"
 )
 
 func EncodeTag(tag string) (data map[string]string) {
@@ -84,6 +86,14 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 	return
 }
 
+func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (fields []string) {
+	mapper2 := map[string]interface{}{}
+	for k, v := range mapper {
+		mapper2[k] = v
+	}
+	return MapToObj(obj, mapper2, useTag)
+}
+
 func setFieldValue(field reflect.Value, value interface{}) {
 	switch field.Interface().(type) {
 	case bool:
@@ -94,7 +104,7 @@ func setFieldValue(field reflect.Value, value interface{}) {
 
 		case string:
 			s := value.(string)
-			field.SetBool(s == "1" || s == "true")
+			field.SetBool(s == "1" || strings.ToLower(s) == "true")
 			break
 		}
 		break
@@ -108,7 +118,7 @@ func setFieldValue(field reflect.Value, value interface{}) {
 			strv = string(value.([]uint8))
 			break
 		default:
-			log.Println("not case type : " + field.Type().Name() + " is " + reflect.ValueOf(value).Type().Kind().String() + " in db , not " + field.Type().Kind().String())
+			log.Print("not case type : " + field.Type().Name() + " is " + reflect.ValueOf(value).Type().Kind().String() + " in db , not " + field.Type().Kind().String())
 			break
 		}
 		field.SetString(strv)
@@ -308,6 +318,25 @@ func ItemInArray(item string, max []string) (has bool) {
 	return false
 }
 
+// 判断item是否在数组里
+// 如果数组为空则返回false
+func ItemInArrayInt(item int, max []int) (has bool) {
+
+	if max == nil || len(max) == 0 {
+		return false
+	}
+
+	lenMax := len(max)
+
+	for maxI := 0; maxI < lenMax; maxI = maxI + 1 {
+		if max[maxI] == item {
+			return true
+		}
+	}
+
+	return false
+}
+
 func IsEmptyValue(value interface{}) bool {
 	v := reflect.ValueOf(value)
 	switch v.Kind() {
@@ -351,6 +380,66 @@ func EmptyObject(obj interface{}) {
 			break
 		case reflect.Interface, reflect.Ptr:
 			break
+		}
+	}
+}
+
+func MapInterface2MapString(m map[string]interface{}) map[string]string {
+	set := map[string]string{}
+
+	for key, value := range m {
+		switch value.(type) {
+		case int64:
+			i := value.(int64)
+			set[key] = strconv.FormatInt(i, 10)
+		case int32:
+			i := int64(value.(int32))
+			set[key] = strconv.FormatInt(i, 10)
+		case int:
+			i := int64(value.(int))
+			set[key] = strconv.FormatInt(i, 10)
+		case []byte:
+			set[key] = string(value.([]byte))
+		case string:
+			set[key] = value.(string)
+		case float64:
+			set[key] = fmt.Sprintf("%f", value.(float64))
+		default:
+			log.Warn(key, " is not cased! :" + reflect.ValueOf(value).Type().String())
+		}
+	}
+	return set
+
+}
+
+func Map2UrlValues(m map[string]string) url.Values {
+	v := url.Values{}
+	for key, value := range m {
+		v.Add(key, value)
+	}
+	return v
+}
+
+func CopyMapString(m map[string]string) map[string]string {
+	set := map[string]string{}
+	for key, value := range m {
+		set[key] = value
+	}
+	return set
+}
+
+func FilterMapString(m map[string]string, keys ...string) {
+	for k := range m {
+		if !ItemInArray(k, keys) {
+			delete(m, k)
+		}
+	}
+}
+
+func FilterMapByFun(m map[string]string, fun func(s string) string, keys ...string) {
+	for _, k := range keys {
+		if v, ok := m[k]; ok {
+			m[k] = fun(v)
 		}
 	}
 }

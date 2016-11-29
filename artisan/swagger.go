@@ -16,11 +16,12 @@ type params struct {
 	Description      string `json:"description"`
 	Required         bool `json:"required"`
 	Types            string `json:"type"`
+	Format           string `json:"format,omitempty"`
 	Items            struct {
-				 Types    string `json:"type,omitempty"`
-				 Enum     []string `json:"enum,omitempty"`
-				 Defaults string `json:"default,omitempty"`
-			 }   `json:"items"`
+						 Types    string `json:"type,omitempty"`
+						 Enum     []string `json:"enum,omitempty"`
+						 Defaults string `json:"default,omitempty"`
+					 }   `json:"items"`
 	Defaults         interface{} `json:"default,omitempty"`
 	CollectionFormat string `json:"collectionFormat,omitempty"`
 }
@@ -54,14 +55,14 @@ type info struct {
 	Version     string `json:"version"`
 	Title       string `json:"title"`
 	Contact     struct {
-			    Email string `json:"email,omitempty"`
-		    } `json:"contact"`
+					Email string `json:"email,omitempty"`
+				} `json:"contact"`
 
 	// todo licence
 	License     struct {
-			    Name string `json:"name,omitempty"`
-			    Url  string `json:"url,omitempty"`
-		    }  `json:"license"`
+					Name string `json:"name,omitempty"`
+					Url  string `json:"url,omitempty"`
+				}  `json:"license"`
 }
 
 type Propertie struct {
@@ -120,11 +121,11 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 				if types != "" {
 					// 非第一行 ,去除空格
 					s = strings.Replace(s, "// @", "", -1)
-					s = strings.Trim(s," ")
+					s = strings.Trim(s, " ")
 					apiString = apiString + s + "\n"
 				} else {
 					// 是第一行
-					s = strings.Trim(s," ")
+					s = strings.Trim(s, " ")
 					if strings.Contains(s, "@API ") {
 						types = "API"
 					} else if strings.Contains(s, "@BASE ") {
@@ -299,11 +300,11 @@ func parsePath(apis []string, base map[string]string) router {
 
 	for _, api := range apis {
 		// 替换BASE
-		coun:=strings.Count(api,"BASE:")
-		for i:=0;i<coun;i++{
+		coun := strings.Count(api, "BASE:")
+		for i := 0; i < coun; i++ {
 			replaced := strings.Split(api, "BASE:")[1]
 			replaced = strings.Split(strings.Split(replaced, "\n")[0], ";")[0]
-			api = strings.Replace(api, "BASE:" + replaced, base[replaced],1)
+			api = strings.Replace(api, "BASE:" + replaced, base[replaced], 1)
 		}
 
 		row := strings.Split(api, "\n")
@@ -317,10 +318,10 @@ func parsePath(apis []string, base map[string]string) router {
 			return rou
 		}
 		routers := strings.Split(router, ",")
-		url := strings.Trim(routers[0]," ")
-		method := strings.Trim(routers[1]," ")
-		tags := strings.Split(strings.Replace(routers[2]," ","",-1), "|")
-		operationId := strings.Trim(routers[3]," ")
+		url := strings.Trim(routers[0], " ")
+		method := strings.Trim(routers[1], " ")
+		tags := strings.Split(strings.Replace(routers[2], " ", "", -1), "|")
+		operationId := strings.Trim(routers[3], " ")
 
 		bpii := bpi{
 			Description:desc,
@@ -338,22 +339,32 @@ func parsePath(apis []string, base map[string]string) router {
 				if !strings.Contains(p, ":") || !strings.Contains(p, ",") {
 					continue
 				}
-				pos:=strings.Index(p,":")
+				pos := strings.Index(p, ":")
 				name := p[:pos]
-				p := p[pos+1:]
+				p := p[pos + 1:]
 				ps := strings.Split(p, ",")
-				if len(ps) < 3 {
+				if len(ps) < 2 {
 					continue
 				}
 				desc := ps[0]
 				types := ps[1]
-				in := ps[2]
+				in := "formData"
+				format := ""
+				if len(ps) > 2 &&ps[2] != "" {
+					in = ps[2]
+				}
 				var defaults interface{}
 				if len(ps) > 3 {
 					switch types {
 					case "boolean":
 						defaults, _ = strconv.ParseBool(ps[3])
 					case "int":
+						types = "number"
+						format = "int"
+						defaults, _ = strconv.ParseInt(ps[3], 10, 64)
+					case "float":
+						types = "number"
+						format = "double"
 						defaults, _ = strconv.ParseInt(ps[3], 10, 64)
 					case "string":
 						defaults = ps[3]
@@ -372,6 +383,7 @@ func parsePath(apis []string, base map[string]string) router {
 					In:in,
 					Name:name,
 					Types:types,
+					Format:format,
 					Required:required,
 				})
 			}

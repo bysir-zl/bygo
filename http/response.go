@@ -8,7 +8,7 @@ type Response struct {
 	ResponseWrite http.ResponseWriter
 	Data          ResponseData
 
-	// todo  result is coding
+
 	Result Result
 }
 
@@ -20,6 +20,7 @@ func (p *Response) SetCode(code int) {
 	p.ResponseWrite.WriteHeader(code)
 }
 
+// todo  result is coding , now is not use
 type Result interface {
 	Apply(*http.Request, http.ResponseWriter)
 }
