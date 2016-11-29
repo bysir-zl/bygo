@@ -6,7 +6,7 @@ import (
 	"github.com/bysir-zl/bygo/db"
 	byhttp "github.com/bysir-zl/bygo/http"
 	"io"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 	slog "log"
 	"net/http"
 	"os"

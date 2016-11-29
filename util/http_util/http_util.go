@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"bytes"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 	"crypto/tls"
 	"github.com/bysir-zl/bygo/util"
 )

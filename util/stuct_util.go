@@ -6,7 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"net/url"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 )
 
 func EncodeTag(tag string) (data map[string]string) {

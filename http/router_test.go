@@ -2,7 +2,7 @@ package http
 
 import (
 	"testing"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 )
 
 func TestRouter_Start(t *testing.T) {

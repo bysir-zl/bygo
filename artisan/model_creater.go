@@ -5,7 +5,7 @@ import (
 	"github.com/bysir-zl/bygo/config"
 	"github.com/bysir-zl/bygo/db"
 	"github.com/bysir-zl/bygo/util"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 	"os"
 	"strings"
 )

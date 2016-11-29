@@ -2,7 +2,7 @@ package uuid
 
 import (
 	"testing"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 	"math/rand"
 )
 

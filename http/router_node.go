@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"runtime"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 )
 
 var _ = log.Blue

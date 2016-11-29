@@ -3,7 +3,7 @@ package encoder
 import (
 	"testing"
 	"github.com/bysir-zl/bygo/util"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 	"crypto"
 )
 

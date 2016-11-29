@@ -2,7 +2,7 @@ package http
 
 import (
 	"encoding/json"
-	"lib.com/deepzz0/go-com/log"
+	"github.com/deepzz0/go-com/log"
 )
 
 type ResponseData struct {
