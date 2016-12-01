@@ -23,17 +23,29 @@ func (p Response) String() string {
 }
 
 func Get(url string, params url.Values, header map[string]string) (response string, err error) {
-	bs, err := request(url, "GET", params, header)
+	bs, err := request(url, "GET", params, header, nil)
 	response = util.B2S(bs)
 	return
 }
 func Post(url string, params url.Values, header map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", params, header)
+	bs, err := request(url, "POST", params, header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func request(url string, method string, params url.Values, header map[string]string) (result []byte, err error) {
+func PostWithCookie(url string, params url.Values, cookie map[string]string) (response string, err error) {
+	bs, err := request(url, "POST", params, nil, cookie)
+	response = util.B2S(bs)
+	return
+}
+
+func GetWithCookie(url string, params url.Values, cookie map[string]string) (response string, err error) {
+	bs, err := request(url, "GET", params, nil, cookie)
+	response = util.B2S(bs)
+	return
+}
+
+func request(url string, method string, params url.Values, header map[string]string, cookie map[string]string) (result []byte, err error) {
 	var response *http.Response
 
 	// 忽略https证书验证
@@ -61,6 +73,11 @@ func request(url string, method string, params url.Values, header map[string]str
 	if header != nil&&len(header) != 0 {
 		for key, value := range header {
 			req.Header.Add(key, value)
+		}
+	}
+	if cookie != nil&&len(cookie) != 0 {
+		for key, value := range cookie {
+			req.AddCookie(&http.Cookie{Name:key, Value:value})
 		}
 	}
 	response, err = client.Do(req)
@@ -103,7 +120,6 @@ func BuildQueryWithOutEmptyValue(key []string, value []string) string {
 	return s
 }
 
-
 func QueryString2Map(que string) (set map[string]string) {
 	set = map[string]string{}
 	if !strings.Contains(que, "&") {
@@ -120,4 +136,12 @@ func QueryString2Map(que string) (set map[string]string) {
 		}
 	}
 	return
+}
+
+// like php-rawurlencode
+// rawurlencode and urlencode is different form the ' ' will encode to '%20', is not '+'
+func RawUrlEncode(origin string) string {
+	x := url.QueryEscape(origin)
+	x = strings.Replace(x, "+", "%20", -1)
+	return x
 }

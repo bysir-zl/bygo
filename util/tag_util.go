@@ -6,15 +6,12 @@ import (
 )
 
 type FieldTagMapper struct {
-	// [FieldName =>[tagName=>tagValue]]
+	// [tagName =>[FieldName=>tagValue]]
 	mapData map[string]map[string]string
 }
 
 func (p *FieldTagMapper) GetFieldMapByTagName(tag string) (data map[string]string) {
 	data = p.mapData[tag]
-	if data == nil {
-		data = map[string]string{}
-	}
 	return
 }
 

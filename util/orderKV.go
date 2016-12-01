@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"net/url"
+	"sort"
 )
 
 type OrderKV struct {
@@ -27,12 +28,26 @@ func (p *OrderKV) Map() map[string]string {
 	}
 	return set
 }
+
 func (p *OrderKV) Keys() []string {
 	return p.keys
 }
+
 func (p *OrderKV) Values() []string {
 	return p.values
 }
+
+func (p *OrderKV) Sort() {
+	m := p.Map()
+	sort.Strings(p.keys)
+
+	values := []string{}
+	for _, k := range p.keys {
+		values = append(values, m[k])
+	}
+	p.values = values
+}
+
 func (p *OrderKV) QueryString() string {
 	var buf bytes.Buffer
 	for i, k := range p.keys {
@@ -43,6 +58,17 @@ func (p *OrderKV) QueryString() string {
 	}
 	return buf.String()[1:]
 }
+
+func (p *OrderKV) QueryStringWithoutEscape() string {
+	var buf bytes.Buffer
+	for i, k := range p.keys {
+		buf.WriteByte('&')
+		v := p.values[i]
+		buf.WriteString(k + "=" + v)
+	}
+	return buf.String()[1:]
+}
+
 func (p *OrderKV) UrlValue() url.Values {
 	set := url.Values{}
 	for i, k := range p.keys {

@@ -178,7 +178,6 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 	typer := pointer.Type()
 
 	fieldNum := pointer.NumField()
-
 	var fieldNameToTagName map[string]string
 	if useTag != "" {
 		fieldTagMapper := GetTagMapperFromPool(obj)
@@ -243,11 +242,9 @@ func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
 //获取map的keys
 func GetMapKey(m map[string]string) (keys []string) {
 	keys = []string{}
-
-	for key, _ := range m {
+	for key := range m {
 		keys = append(keys, key)
 	}
-
 	return keys
 }
 

@@ -3,6 +3,7 @@ package util
 import (
 	"unsafe"
 	"reflect"
+	"strconv"
 )
 
 // b2s converts byte slice to a string without memory allocation.
@@ -26,4 +27,32 @@ func S2B(s string) []byte {
 		Cap:  sh.Len,
 	}
 	return *(*[]byte)(unsafe.Pointer(&bh))
+}
+
+// Hex string, high nibble first
+func HexStrHead2ByteArr(hexString string) ([]byte, error) {
+	lenString := len(hexString)
+	if lenString % 2 == 1 {
+		hexString = hexString + "0"
+	}
+	length := lenString / 2
+	slice := make([]byte, length)
+	rs := []rune(hexString)
+	for i := 0; i < length; i++ {
+		s := string(rs[i * 2 : i * 2 + 2])
+		value, err := strconv.ParseInt(s, 16, 10)
+		if err != nil {
+			return nil, err
+		}
+		slice[i] = byte(value & 0xFF)
+	}
+	return slice, nil
+}
+
+func HexStrHead2String(hexString string) string {
+	bs, err := HexStrHead2ByteArr(hexString)
+	if err != nil {
+		return ""
+	}
+	return B2S(bs)
 }

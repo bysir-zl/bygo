@@ -2,11 +2,11 @@ package encoder
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto"
 )
 
-func HmacSha1(origin, key []byte) []byte {
-	mac := hmac.New(sha1.New, key)
+func Hmac(origin, key []byte, hash crypto.Hash) []byte {
+	mac := hmac.New(hash.New, key)
 	mac.Write(origin)
 	return mac.Sum(nil)
 }

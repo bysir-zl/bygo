@@ -157,22 +157,19 @@ func (p *ModelFactory) QueryToMap() (data []map[string]interface{}, err error) {
 	}
 
 	if p.table == "" {
-		err = errors.New("the model has not `Table` field or Tag.name")
+		err = errors.New("the model has not `table` field or Tag.name")
 		return
 	}
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"]
+		dbConnect := modelConfig["connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
-		p.connect = p.dbConfigs[dbConnect]
-		//没有找到connect配置
-		if p.connect.Port == 0 {
-			err = errors.New("the connect `" + dbConnect + "` is undefined in dbConfig")
-			return
-		}
+
+		err = errors.New("the connect `" + dbConnect + "` is undefined in dbConfig")
+		return
 	}
 
 	sql, args, e := buildSelectSql(p.fields, p.table, p.where, p.order, p.limit, fieldTagMap)
@@ -327,24 +324,19 @@ func (p *ModelFactory) Count() (count int64, err error) {
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	if p.table == "" {
-		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
+		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `table` field or Tag.name")
 		return
 	}
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"]
+		dbConnect := modelConfig["connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
 
-		p.connect = p.dbConfigs[dbConnect]
-
-		//没有找到connect配置
-		if p.connect.Port == 0 {
-			err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
-			return
-		}
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `" + dbConnect + "` is undefined in dbConfig")
+		return
 	}
 
 	sql, args, e := buildCountSql(p.table, p.where, fieldTagMap)
@@ -425,13 +417,13 @@ func (p *ModelFactory) Insert() (err error) {
 	}
 
 	if p.table == "" {
-		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
+		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `table` field or Tag.name")
 		return
 	}
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"]
+		dbConnect := modelConfig["connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -447,7 +439,7 @@ func (p *ModelFactory) Insert() (err error) {
 	mapper := util.ObjToMap(p.out, "")
 	for key, value := range mapper {
 		k := fieldTagMap[key]
-		// 没有 name 属性的字段,说明不是数据库字段 , 比如Table,Connect等配置字段
+		// 没有 name 属性的字段,说明不是数据库字段 , 比如table,Connect等配置字段
 		if k == "" {
 			continue
 		}
@@ -514,7 +506,7 @@ func (p *ModelFactory) InsertMap(mapper map[string]interface{}) (err error) {
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default"  + "` is undefined in dbConfig")
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default" + "` is undefined in dbConfig")
 		return
 	}
 
@@ -567,13 +559,13 @@ func (p *ModelFactory) Update() (count int64, err error) {
 	}
 
 	if p.table == "" {
-		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
+		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `table` field or Tag.name")
 		return
 	}
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"]
+		dbConnect := modelConfig["connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -592,7 +584,7 @@ func (p *ModelFactory) Update() (count int64, err error) {
 	mapper := util.ObjToMap(p.out, "")
 	for key, value := range mapper {
 		k := fieldTagMap[key]
-		//没有 name 属性的字段,说明不是数据库字段 , 比如Table,Connect等配置字段
+		//没有 name 属性的字段,说明不是数据库字段 , 比如table,Connect等配置字段
 		//如果是主键,则跳过赋值
 		if k == "" || key == pk {
 			continue
@@ -651,7 +643,7 @@ func (p *ModelFactory) UpdateMap(mapper map[string]interface{}) (count int64, er
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default"  + "` is undefined in dbConfig")
+		err = errors.New("the `" + reflect.TypeOf(p.out).String() + "` connect `default" + "` is undefined in dbConfig")
 		return
 	}
 	saveData := map[string]interface{}{}
@@ -699,13 +691,13 @@ func (p *ModelFactory) Delete() (count int64, err error) {
 	modelConfig := p.modelFieldMap.GetFieldMapByTagName("db")
 
 	if p.table == "" {
-		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `Table` field or Tag.name")
+		err = errors.New("the struct `" + reflect.TypeOf(p.out).String() + "` has not `table` field or Tag.name")
 		return
 	}
 
 	//没有指定链接
 	if p.connect.Port == 0 {
-		dbConnect := modelConfig["Connect"]
+		dbConnect := modelConfig["connect"]
 		if dbConnect == "" {
 			dbConnect = "default"
 		}
@@ -764,12 +756,12 @@ func buildSelectSql(fields []string, tableName string, where map[string]([]inter
 		if len(fieldMapper) != 0 {
 			//转换字段名
 			for _, value := range fields {
-				fieldString = fieldString + "," + fieldMapper[value]
+				fieldString = fieldString + ",`" + fieldMapper[value] + "`"
 			}
 			fieldString = fieldString[1:]
 		} else {
 			for _, value := range fields {
-				fieldString = fieldString + "," + value
+				fieldString = fieldString + ",`" + value + "`"
 			}
 			fieldString = fieldString[1:]
 		}
@@ -836,6 +828,8 @@ func buildInsertSql(tableName string, saveData map[string]interface{}) (sql stri
 	holderStr := ""
 
 	for key, value := range saveData {
+		key = "`" + key + "`"
+
 		fieldsStr = fieldsStr + ", " + key
 		holderStr = holderStr + ", ?"
 
@@ -981,8 +975,8 @@ func newModel(dbConfig map[string]DbConfig, m interface{}) *ModelFactory {
 		}
 
 		fmdb := modelFactory.modelFieldMap.GetFieldMapByTagName("db")
-		modelFactory.table = fmdb["Table"]
-		c := fmdb["Connect"]
+		modelFactory.table = fmdb["table"]
+		c := fmdb["connect"]
 		if c == "" {
 			c = "default"
 		}

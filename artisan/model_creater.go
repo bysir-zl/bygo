@@ -21,8 +21,8 @@ func CreateModelFile(tableName string) {
 	modelName := string(util.SheXing2TuoFeng([]byte(tableName)))
 
 	fileContent := "package model \r\n\r\n" + "type " + modelName + "Model struct {\r\n"
-	fileContent = fileContent + "	Table string `db:\"" + tableName + "\" json:\"-\"`\r\n"
-	fileContent = fileContent + "	Connect string `db:\"default\" json:\"-\"`\r\n\r\n"
+	fileContent = fileContent + "	table string `db:\"" + tableName + "\" json:\"-\"`\r\n"
+	fileContent = fileContent + "	connect string `db:\"default\" json:\"-\"`\r\n\r\n"
 	for _, v := range lis {
 		pk := ""
 		if string(v["Key"].([]uint8)) == "PRI" {

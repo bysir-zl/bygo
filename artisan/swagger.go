@@ -71,7 +71,14 @@ type Propertie struct {
 	Default     string `json:"default"`
 	Description string `json:"description"`
 }
+
 type Definition struct {
+	Types      string `json:"type"`
+	Items      interface{} `json:"items,omitempty"`
+	Properties map[string]Propertie `json:"properties,omitempty"`
+}
+
+type DefinitionInner struct {
 	Types      string `json:"type"`
 	Properties map[string]Propertie `json:"properties"`
 }
@@ -277,6 +284,52 @@ func parseDef(ss []string) map[string]Definition {
 				Properties:ps,
 				Types:"object",
 			}
+		} else if types == "array" {
+			ps := map[string]Propertie{}
+
+			psList := strings.Split(row[1], ";")
+			for _, s := range psList {
+				if len(strings.Split(s, ":")) < 2 {
+					continue
+				}
+				pname := strings.Split(s, ":")[0]
+				s = strings.Split(s, ":")[1]
+				desc := ""
+				t := "string"
+				defau := ""
+				args := strings.Split(s, ",")
+				if len(args) > 0 {
+					desc = args[0]
+				}
+				if len(args) > 1 {
+					t = args[1]
+				}
+				if len(args) > 2 {
+					defau = args[2]
+				}
+				if t == "ref" {
+					ps[pname] = Propertie{
+						Ref:"#/definitions/" + defau,
+					}
+				} else {
+					if defau == "" {
+						defau = desc
+					}
+					ps[pname] = Propertie{
+						Default:defau,
+						Description:desc,
+						Types:t,
+					}
+				}
+			}
+			d := Definition{
+				Types:"array",
+			}
+			d.Items = DefinitionInner{
+				Properties:ps,
+				Types:"object",
+			}
+			defs[name] = d
 		}
 
 	}
@@ -359,8 +412,8 @@ func parsePath(apis []string, base map[string]string) router {
 					case "boolean":
 						defaults, _ = strconv.ParseBool(ps[3])
 					case "int":
-						types = "number"
-						format = "int"
+						types = "integer"
+						format = "int32"
 						defaults, _ = strconv.ParseInt(ps[3], 10, 64)
 					case "float":
 						types = "number"
