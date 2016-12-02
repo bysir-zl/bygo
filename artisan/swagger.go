@@ -363,7 +363,11 @@ func parsePath(apis []string, base map[string]string) router {
 		row := strings.Split(api, "\n")
 
 		// desc
-		desc := row[0]
+		sAd := strings.Split(row[0], ",")
+		desc := sAd[0]
+		if len(sAd) == 2 {
+			desc = sAd[1]
+		}
 		// router
 		router := getRowString(row, "router")
 		if len(router) == 0 {
@@ -378,6 +382,7 @@ func parsePath(apis []string, base map[string]string) router {
 
 		bpii := bpi{
 			Description:desc,
+			Summary:sAd[0],
 			Tags:tags,
 			OperationId:operationId,
 		}
@@ -389,18 +394,18 @@ func parsePath(apis []string, base map[string]string) router {
 			paras := strings.Split(para, ";")
 			paList := []params{}
 			for _, p := range paras {
-				if !strings.Contains(p, ":") || !strings.Contains(p, ",") {
+				if !strings.Contains(p, ":") {
 					continue
 				}
 				pos := strings.Index(p, ":")
 				name := p[:pos]
 				p := p[pos + 1:]
 				ps := strings.Split(p, ",")
-				if len(ps) < 2 {
-					continue
-				}
 				desc := ps[0]
-				types := ps[1]
+				types := "string"
+				if len(ps) > 1 {
+					types = ps[1]
+				}
 				in := "formData"
 				format := ""
 				if len(ps) > 2 &&ps[2] != "" {

@@ -96,28 +96,27 @@ func request(url string, method string, params url.Values, header map[string]str
 }
 
 func BuildQuery(key []string, value []string) string {
-	s := ""
+	var bf bytes.Buffer
 	for i, k := range key {
-		s = s + "&" + k + "=" + value[i]
+		if bf.Len() == 0 {
+			bf.WriteByte('&')
+		}
+		bf.WriteString(k + "=" + url.QueryEscape(value[i]))
 	}
-	if s != "" {
-		s = s[1:]
-	}
-	return s
+	return bf.String()
 }
 
 func BuildQueryWithOutEmptyValue(key []string, value []string) string {
-	s := ""
+	var bf bytes.Buffer
 	for i, k := range key {
-		if value[i] == "" {
-			continue
+		if v := value[i]; v != "" {
+			if bf.Len() == 0 {
+				bf.WriteByte('&')
+			}
+			bf.WriteString(k + "=" + url.QueryEscape(v))
 		}
-		s = s + "&" + k + "=" + value[i]
 	}
-	if s != "" {
-		s = s[1:]
-	}
-	return s
+	return bf.String()
 }
 
 func QueryString2Map(que string) (set map[string]string) {
@@ -126,7 +125,7 @@ func QueryString2Map(que string) (set map[string]string) {
 		return
 	}
 	for _, kv := range strings.Split(que, "&") {
-		kAv := strings.Split(kv, "&")
+		kAv := strings.Split(kv, "=")
 		if len(kAv) == 2 {
 			k, err := url.QueryUnescape(kAv[0])
 			v, err2 := url.QueryUnescape(kAv[1])

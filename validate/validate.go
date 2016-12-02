@@ -1,4 +1,4 @@
-package input
+package validate
 
 import (
 	"github.com/bysir-zl/bygo/util"
@@ -36,6 +36,18 @@ func (p *ValidateRule) Need(fields ...string) (r *ValidateRule) {
 }
 
 func (p *ValidateRule) Rule(field string, ru string, msg string) (r *ValidateRule) {
+	p.rules[field] = rule{ru, msg}
+	return p
+}
+
+func Need(fields ...string) (r *ValidateRule) {
+	return NewValidateRule().Need(fields...)
+}
+func Only(fields ...string) (r *ValidateRule) {
+	return NewValidateRule().Only(fields...)
+}
+func Rule(field string, ru string, msg string) (r *ValidateRule) {
+	p := NewValidateRule()
 	p.rules[field] = rule{ru, msg}
 	return p
 }
@@ -144,6 +156,7 @@ func (p *ValidateRule) validateValue(value string, rule rule) (isOk bool, notice
 	return
 }
 
+// to validata this map
 func (p *ValidateRule) Validate(m map[string]string) (err error) {
 	if len(p.filter) != 0 {
 		ok, m := util.ArrayInArray(util.GetMapKey(m), p.filter)
