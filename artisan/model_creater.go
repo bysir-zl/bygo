@@ -21,9 +21,13 @@ func CreateModelFile(tableName string) {
 		},
 	}
 	dbf := orm.New(config)
-	lis, err := dbf.QuerySql("show columns from " + tableName)
+	has, lis, err := dbf.QuerySql("show columns from " + tableName)
 	if err != nil {
 		log.Warn(err)
+	}
+	if !has {
+		log.Info("can not read table")
+		return
 	}
 
 	modelName := string(util.SheXing2TuoFeng([]byte(tableName)))
