@@ -25,3 +25,6 @@ func Map2Arg(mapper map[string]string) *fasthttp.Args {
 func GetPostAll(p *routing.Context) map[string]string {
 	return Arg2Map(p.Request.PostArgs())
 }
+func GetGetAll(p *routing.Context) map[string]string {
+	return Arg2Map(p.QueryArgs())
+}

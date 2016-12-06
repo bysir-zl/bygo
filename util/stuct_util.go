@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"fmt"
-	"net/url"
 	"github.com/deepzz0/go-com/log"
 )
 
@@ -248,7 +246,7 @@ func GetMapKey(m map[string]string) (keys []string) {
 	return keys
 }
 
-//判断一个array每一个原始是不是都在map的key里
+//判断一个array每一个元素是不是都在map的key里
 func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 	if min == nil || len(min) == 0 {
 		has = true
@@ -381,62 +379,43 @@ func EmptyObject(obj interface{}) {
 	}
 }
 
+
+
+func Interface2String(value interface{}) (string, bool) {
+	switch value.(type) {
+	case int64:
+		i := value.(int64)
+		return strconv.FormatInt(i, 10), true
+	case int32:
+		i := int64(value.(int32))
+		return strconv.FormatInt(i, 10), true
+	case int:
+		i := int64(value.(int))
+		return strconv.FormatInt(i, 10), true
+	case []byte:
+		return string(value.([]byte)), true
+	case string:
+		return value.(string), true
+	case float64:
+		return strconv.FormatFloat(value.(float64), 'f', -1, 64), true
+	case float32:
+		return strconv.FormatFloat(float64(value.(float32)), 'f', -1, 64), true
+	case bool:
+		return strconv.FormatBool(value.(bool)), true
+	}
+	return "", false
+}
+
 func MapInterface2MapString(m map[string]interface{}) map[string]string {
 	set := map[string]string{}
 
 	for key, value := range m {
-		switch value.(type) {
-		case int64:
-			i := value.(int64)
-			set[key] = strconv.FormatInt(i, 10)
-		case int32:
-			i := int64(value.(int32))
-			set[key] = strconv.FormatInt(i, 10)
-		case int:
-			i := int64(value.(int))
-			set[key] = strconv.FormatInt(i, 10)
-		case []byte:
-			set[key] = string(value.([]byte))
-		case string:
-			set[key] = value.(string)
-		case float64:
-			set[key] = fmt.Sprintf("%f", value.(float64))
-		default:
-			log.Warn(key, " is not cased! :" + reflect.ValueOf(value).Type().String())
+		v, ok := Interface2String(value)
+		if !ok {
+			log.Print(key, " is not cased! :" + reflect.ValueOf(value).Type().String())
+		} else {
+			set[key] = v
 		}
 	}
 	return set
-
-}
-
-func Map2UrlValues(m map[string]string) url.Values {
-	v := url.Values{}
-	for key, value := range m {
-		v.Add(key, value)
-	}
-	return v
-}
-
-func CopyMapString(m map[string]string) map[string]string {
-	set := map[string]string{}
-	for key, value := range m {
-		set[key] = value
-	}
-	return set
-}
-
-func FilterMapString(m map[string]string, keys ...string) {
-	for k := range m {
-		if !ItemInArray(k, keys) {
-			delete(m, k)
-		}
-	}
-}
-
-func FilterMapByFun(m map[string]string, fun func(s string) string, keys ...string) {
-	for _, k := range keys {
-		if v, ok := m[k]; ok {
-			m[k] = fun(v)
-		}
-	}
 }
