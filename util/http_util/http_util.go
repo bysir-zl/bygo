@@ -1,7 +1,6 @@
 package http_util
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,40 +11,45 @@ import (
 	"github.com/bysir-zl/bygo/util"
 )
 
-type Response string
-
-func (p Response) Json(obj interface{}) {
-	json.Unmarshal([]byte(p), obj)
-}
-
-func (p Response) String() string {
-	return string(p)
-}
-
-func Get(url string, params url.Values, header map[string]string) (response string, err error) {
-	bs, err := request(url, "GET", params, header, nil)
-	response = util.B2S(bs)
-	return
-}
-func Post(url string, params url.Values, header map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", params, header, nil)
+func Get(url string, params util.OrderKV, header map[string]string) (response string, err error) {
+	up := params.EncodeString()
+	if up != "" {
+		if strings.Contains(url, "?") {
+			url = url + "&" + up
+		} else {
+			url = url + "?" + up
+		}
+	}
+	bs, err := request(url, "GET", nil, header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func PostWithCookie(url string, params url.Values, cookie map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", params, nil, cookie)
+func Post(url string, params util.OrderKV, header map[string]string) (response string, err error) {
+	bs, err := request(url, "POST", params.Encode(), header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func GetWithCookie(url string, params url.Values, cookie map[string]string) (response string, err error) {
-	bs, err := request(url, "GET", params, nil, cookie)
+func PostByte(url string, post []byte, header map[string]string) (response string, err error) {
+	bs, err := request(url, "POST", post, header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func request(url string, method string, params url.Values, header map[string]string, cookie map[string]string) (result []byte, err error) {
+func PostWithCookie(url string, params util.OrderKV, cookie map[string]string) (response string, err error) {
+	bs, err := request(url, "POST", params.Encode(), nil, cookie)
+	response = util.B2S(bs)
+	return
+}
+
+func GetWithCookie(url string, params util.OrderKV, cookie map[string]string) (response string, err error) {
+	bs, err := request(url, "GET", params.Encode(), nil, cookie)
+	response = util.B2S(bs)
+	return
+}
+
+func request(url string, method string, post []byte, header map[string]string, cookie map[string]string) (result []byte, err error) {
 	var response *http.Response
 
 	// 忽略https证书验证
@@ -56,17 +60,9 @@ func request(url string, method string, params url.Values, header map[string]str
 	client := &http.Client{Transport: transport}
 	var req *http.Request
 	if method == "GET" {
-		up := params.Encode()
-		if up != "" {
-			if strings.Contains(url, "?") {
-				url = url + "&" + up
-			} else {
-				url = url + "?" + up
-			}
-		}
 		req, _ = http.NewRequest("GET", url, nil)
 	} else if method == "POST" {
-		req, _ = http.NewRequest("POST", url, bytes.NewReader([]byte(params.Encode())))
+		req, _ = http.NewRequest("POST", url, bytes.NewReader(post))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
@@ -137,7 +133,7 @@ func QueryString2Map(que string) (set map[string]string) {
 	return
 }
 
-// like php-rawurlencode
+// like php - rawurlencode
 // rawurlencode and urlencode is different form the ' ' will encode to '%20', is not '+'
 func RawUrlEncode(origin string) string {
 	x := url.QueryEscape(origin)

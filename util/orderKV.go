@@ -8,7 +8,7 @@ import (
 
 type OrderKV struct {
 	keys   []string
-	values []string
+	values [][]string
 }
 
 func (p *OrderKV) Add(key, value string) {
@@ -16,13 +16,57 @@ func (p *OrderKV) Add(key, value string) {
 		p.keys = []string{}
 	}
 	if p.values == nil {
-		p.values = []string{}
+		p.values = [][]string{}
 	}
-	p.keys = append(p.keys, key)
-	p.values = append(p.values, value)
+	if i := ArrayStringIndex(key, p.keys); i != -1 {
+		if p.values[i] == nil {
+			p.values[i] = []string{value}
+		} else {
+			p.values[i] = append(p.values[i], value)
+		}
+	} else {
+		p.keys = append(p.keys, key)
+		p.values = append(p.values, []string{value})
+	}
 }
+
+func (p *OrderKV) Set(key, value string) {
+	if p.keys == nil {
+		p.keys = []string{}
+	}
+	if p.values == nil {
+		p.values = [][]string{}
+	}
+	if i := ArrayStringIndex(key, p.keys); i != -1 {
+		p.values[i] = []string{value}
+	} else {
+		p.keys = append(p.keys, key)
+		p.values = append(p.values, []string{value})
+	}
+}
+
+func ParseOrderKV(m map[string]string) OrderKV {
+	o := OrderKV{}
+	for k, v := range m {
+		o.Set(k, v)
+	}
+	return o
+}
+
 func (p *OrderKV) Map() map[string]string {
 	set := map[string]string{}
+	for i, k := range p.keys {
+		set[k] = p.values[i][0]
+	}
+	return set
+}
+
+func (p OrderKV) String() string {
+	return p.EncodeString()
+}
+
+func (p *OrderKV) MapMulti() map[string][]string {
+	set := map[string][]string{}
 	for i, k := range p.keys {
 		set[k] = p.values[i]
 	}
@@ -34,45 +78,72 @@ func (p *OrderKV) Keys() []string {
 }
 
 func (p *OrderKV) Values() []string {
-	return p.values
+	set := make([]string, len(p.values))
+	for i := range p.values {
+		set[i] = p.values[i][0]
+	}
+	return set
 }
 
 func (p *OrderKV) Sort() {
-	m := p.Map()
+	m := p.MapMulti()
 	sort.Strings(p.keys)
 
-	values := []string{}
+	values := [][]string{}
 	for _, k := range p.keys {
 		values = append(values, m[k])
 	}
 	p.values = values
 }
 
-func (p *OrderKV) QueryString() string {
+// See url.Values.Encode
+func (p *OrderKV) Encode() []byte {
 	var buf bytes.Buffer
 	for i, k := range p.keys {
-		buf.WriteByte('&')
 		k = url.QueryEscape(k)
-		v := url.QueryEscape(p.values[i])
-		buf.WriteString(k + "=" + v)
+		for _, v := range p.values[i] {
+			v = url.QueryEscape(v)
+			buf.WriteByte('&')
+			buf.WriteString(k + "=" + v)
+		}
 	}
-	return buf.String()[1:]
+	return buf.Bytes()[1:]
 }
 
-func (p *OrderKV) QueryStringWithoutEscape() string {
+func (p *OrderKV) EncodePhp() []byte {
 	var buf bytes.Buffer
 	for i, k := range p.keys {
-		buf.WriteByte('&')
-		v := p.values[i]
-		buf.WriteString(k + "=" + v)
+		k = url.QueryEscape(k)
+		multi := len(p.values[i]) != 1
+		for _, v := range p.values[i] {
+			v = url.QueryEscape(v)
+			buf.WriteByte('&')
+			if multi {
+				buf.WriteString(k + "[]=" + v)
+			} else {
+				buf.WriteString(k + "=" + v)
+			}
+		}
+	}
+	return buf.Bytes()[1:]
+}
+
+func (p *OrderKV) EncodeString() string {
+	return B2S(p.Encode())
+}
+
+func (p *OrderKV) EncodeStringWithoutEscape() string {
+	var buf bytes.Buffer
+	for i, k := range p.keys {
+		for _, v := range p.values[i] {
+			buf.WriteByte('&')
+			buf.WriteString(k + "=" + v)
+		}
 	}
 	return buf.String()[1:]
 }
 
 func (p *OrderKV) UrlValue() url.Values {
-	set := url.Values{}
-	for i, k := range p.keys {
-		set.Add(k, p.values[i])
-	}
-	return set
+	u := url.Values(p.MapMulti())
+	return u
 }

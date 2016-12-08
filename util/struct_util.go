@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"github.com/deepzz0/go-com/log"
 )
 
 func EncodeTag(tag string) (data map[string]string) {
@@ -51,36 +50,29 @@ func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]inte
 // 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上,
 // 返回设置成功的Fields列表字段
 func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fields []string) {
+	if mapper == nil || len(mapper) == 0 {
+		return
+	}
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
-	typer := pointer.Type()
-	fieldNum := pointer.NumField()
-
-	var fieldNameToTagName map[string]string
+	var tag2field map[string]string
 	if useTag != "" {
 		fieldTagMapper := GetTagMapperFromPool(obj)
-		fieldNameToTagName = fieldTagMapper.GetFieldMapByTagName(useTag)
+		tag2field = ReverseMap(fieldTagMapper.GetFieldMapByTagName(useTag))
 	}
 
 	fields = []string{}
-	for i := 0; i < fieldNum; i++ {
-		field := pointer.Field(i)
-		fieldName := typer.Field(i).Name
-		key := fieldName
-
+	for fieldName, value := range mapper {
 		if useTag != "" {
-			// 根据指定的tag的key重新映射
-			key = fieldNameToTagName[key]
-			// 如果有逗号 比如 json:"password,omitempty" 则只取逗号前面的第一个
-			key = strings.Split(key, ",")[0]
+			fieldName = tag2field[fieldName]
+			fieldName = strings.Split(fieldName, ",")[0]
 		}
-
-		if value := mapper[key]; value != nil {
-			if field.CanInterface() {
-				setFieldValue(field, value)
-				fields = append(fields, fieldName)
-			}
+		field := pointer.FieldByName(fieldName)
+		if field.IsValid() && field.CanInterface() {
+			setFieldValue(field, value)
+			fields = append(fields, fieldName)
 		}
 	}
+
 	return
 }
 
@@ -95,80 +87,161 @@ func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (f
 func setFieldValue(field reflect.Value, value interface{}) {
 	switch field.Interface().(type) {
 	case bool:
-		switch value.(type) {
-		case bool:
-			field.SetBool(value.(bool))
-			break
-
-		case string:
-			s := value.(string)
-			field.SetBool(s == "1" || strings.ToLower(s) == "true")
-			break
+		b, ok := Interface2Bool(value, false)
+		if ok {
+			field.SetBool(b)
 		}
-		break
 	case string:
-		strv := ""
-		switch value.(type) {
-		case string:
-			strv = value.(string)
-			break
-		case []uint8:
-			strv = string(value.([]uint8))
-			break
-		default:
-			log.Print("not case type : " + field.Type().Name() + " is " + reflect.ValueOf(value).Type().Kind().String() + " in db , not " + field.Type().Kind().String())
-			break
+		s, ok := Interface2String(value, false)
+		if ok {
+			field.SetString(s)
 		}
-		field.SetString(strv)
-		break
 	case int, int8, int16, int32, int64:
-		var intv int64 = 0
-
-		switch value.(type) {
-		case int, int8, int32, int64:
-			intv = intInterfaceToInt64(value)
-		case float32:
-			intv = int64(value.(float32))
-		case float64:
-			intv = int64(value.(float64))
-		case string:
-			intv, _ = strconv.ParseInt(value.(string), 10, 64)
-		case []uint8:
-			intv, _ = strconv.ParseInt(string(value.([]uint8)), 10, 64)
+		i, ok := Interface2Int(value, false)
+		if ok {
+			field.SetInt(i)
 		}
-		field.SetInt(intv)
-		break
 	case float32, float64:
-		var flov float64 = 0
-		switch value.(type) {
-		case float32:
-			flov = float64(value.(float32))
-		case float64:
-			flov = float64(value.(float64))
-		case string:
-			flov, _ = strconv.ParseFloat(value.(string), 64)
-			break
+		f, ok := Interface2Float(value, false)
+		if ok {
+			field.SetFloat(f)
 		}
-		field.SetFloat(flov)
-		break
 	default:
 		println("not case type : " + field.Type().String())
 		break
 	}
 }
 
-func intInterfaceToInt64(value interface{}) int64 {
+func Interface2Int(value interface{}, strict bool) (v int64, ok bool) {
 	switch value.(type) {
 	case int:
-		return int64(value.(int))
+		v, ok = int64(value.(int)), true
 	case int8:
-		return int64(value.(int8))
+		v, ok = int64(value.(int8)), true
 	case int32:
-		return int64(value.(int32))
+		v, ok = int64(value.(int32)), true
 	case int64:
-		return int64(value.(int64))
+		v, ok = int64(value.(int64)), true
 	}
-	return 0
+	if ok {
+		return
+	}
+	if strict {
+		if !ok {
+			return
+		}
+	}
+
+	switch value.(type) {
+	case string, []uint8:
+		s, _ := Interface2String(value, true)
+		i, err := strconv.ParseInt(s, 10, 64)
+		if err == nil {
+			v, ok = i, true
+		}
+	case float32, float64:
+		f, _ := Interface2Float(value, true)
+		v, ok = int64(f), true
+	case bool:
+		if value.(bool) {
+			v = 1
+		} else {
+			v = 0
+		}
+		ok = true
+	}
+	return
+}
+
+func Interface2Bool(value interface{}, strict bool) (v bool, ok bool) {
+	if strict {
+		v, ok = value.(bool)
+		return
+	}
+	switch value.(type) {
+	case bool:
+		v, ok = value.(bool), true
+	case int8, int, int32, int64:
+		i, _ := Interface2Int(value, true)
+		v, ok = i == 1, true
+	case float32, float64:
+		i, _ := Interface2Float(value, true)
+		v, ok = i == 1, true
+	case string, []uint8:
+		s, _ := Interface2String(value, true)
+		s = strings.ToLower(s)
+		v, ok = s == "1" || s == "true", true
+	}
+
+	return
+}
+
+func Interface2Float(value interface{}, strict bool) (v float64, ok bool) {
+	switch value.(type) {
+	case float32:
+		v, ok = float64(value.(float32)), true
+	case float64:
+		v, ok = float64(value.(float64)), true
+	}
+	if ok {
+		return
+	}
+	if strict {
+		if !ok {
+			return
+		}
+	}
+
+	switch value.(type) {
+	case int, int8, int32, int64:
+		i, ok := Interface2Int(value, true)
+		if ok {
+			v, ok = float64(i), true
+		}
+	case string:
+		f, err := strconv.ParseFloat(value.(string), 64)
+		if err != nil {
+			return 0, false
+		}
+		return f, true
+	case []uint8:
+		f, err := strconv.ParseFloat(string(value.([]uint8)), 64)
+		if err != nil {
+			return 0, false
+		}
+		return f, true
+	}
+	return
+}
+
+func Interface2String(value interface{}, strict bool) (v string, ok bool) {
+	switch value.(type) {
+	case string:
+		v, ok = value.(string), true
+	case []uint8:
+		v, ok = string(value.([]uint8)), true
+	}
+
+	if ok {
+		return
+	}
+	if strict {
+		if !ok {
+			return
+		}
+	}
+
+	switch value.(type) {
+	case int64, int8, int32, int:
+		i, _ := Interface2Int(value, true)
+		v, ok = strconv.FormatInt(i, 10), true
+	case float64, float32:
+		f, _ := Interface2Float(value, true)
+		v, ok = strconv.FormatFloat(f, 'f', -1, 64), true
+	case bool:
+		v, ok = strconv.FormatBool(value.(bool)), true
+	}
+	return
 }
 
 func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
@@ -206,16 +279,6 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 	return data
 }
 
-//将map[string'key']string'value'  转换为map[value]key
-func ReverseMap(ma map[string]string) (data map[string]string) {
-	data = map[string]string{}
-
-	for key, value := range ma {
-		data[value] = key
-	}
-
-	return
-}
 
 //判断一个array每一个原始是不是都在map的value里
 func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
@@ -224,12 +287,7 @@ func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
 	}
 	lenMin := len(min)
 	for minI := 0; minI < lenMin; minI = minI + 1 {
-		has := false
-		for _, value := range m {
-			if value == min[minI] {
-				has = true
-			}
-		}
+		_, has = m[min[minI]]
 		if !has {
 			return false, min[minI]
 		}
@@ -257,13 +315,8 @@ func ArrayInMapKey(min []string, m map[string]string) (has bool, msg string) {
 		return
 	}
 	lenMin := len(min)
-	for minI := 0; minI < lenMin; minI = minI + 1 {
-		has = false
-		for key, _ := range m {
-			if key == min[minI] {
-				has = true
-			}
-		}
+	for minI := 0; minI < lenMin; minI++ {
+		_, has = m[min[minI]]
 		if !has {
 			msg = min[minI]
 			return
@@ -297,20 +350,21 @@ func ArrayInArray(min []string, max []string) (has bool, msg string) {
 // 判断item是否在数组里
 // 如果数组为空则返回false
 func ItemInArray(item string, max []string) (has bool) {
+	return ArrayStringIndex(item, max) != -1
+}
 
+func ArrayStringIndex(item string, max []string) (index int) {
+	index = -1
 	if max == nil || len(max) == 0 {
-		return false
+		return
 	}
-
-	lenMax := len(max)
-
-	for maxI := 0; maxI < lenMax; maxI = maxI + 1 {
-		if max[maxI] == item {
-			return true
+	for i, l := 0, len(max); i < l; i++ {
+		if max[i] == item {
+			index = i
+			return
 		}
 	}
-
-	return false
+	return
 }
 
 // 判断item是否在数组里
@@ -379,41 +433,12 @@ func EmptyObject(obj interface{}) {
 	}
 }
 
-
-
-func Interface2String(value interface{}) (string, bool) {
-	switch value.(type) {
-	case int64:
-		i := value.(int64)
-		return strconv.FormatInt(i, 10), true
-	case int32:
-		i := int64(value.(int32))
-		return strconv.FormatInt(i, 10), true
-	case int:
-		i := int64(value.(int))
-		return strconv.FormatInt(i, 10), true
-	case []byte:
-		return string(value.([]byte)), true
-	case string:
-		return value.(string), true
-	case float64:
-		return strconv.FormatFloat(value.(float64), 'f', -1, 64), true
-	case float32:
-		return strconv.FormatFloat(float64(value.(float32)), 'f', -1, 64), true
-	case bool:
-		return strconv.FormatBool(value.(bool)), true
-	}
-	return "", false
-}
-
 func MapInterface2MapString(m map[string]interface{}) map[string]string {
 	set := map[string]string{}
 
 	for key, value := range m {
-		v, ok := Interface2String(value)
-		if !ok {
-			log.Print(key, " is not cased! :" + reflect.ValueOf(value).Type().String())
-		} else {
+		v, ok := Interface2String(value, false)
+		if ok {
 			set[key] = v
 		}
 	}

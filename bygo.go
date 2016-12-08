@@ -20,9 +20,6 @@ func main() {
 	command := args[1]
 
 	switch command {
-	case "create":
-		projectName := args[2]
-		artisan.CreateProject(projectName)
 	case "model":
 		table := args[2]
 		artisan.CreateModelFile(table)

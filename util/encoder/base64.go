@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"github.com/bysir-zl/bygo/util"
 	"strings"
+	"bytes"
 )
 
 func Base64Encode(src []byte) []byte {
@@ -13,9 +14,15 @@ func Base64Encode(src []byte) []byte {
 }
 
 func Base64Decode(src []byte) (out []byte) {
-	buf := make([]byte, base64.StdEncoding.DecodedLen(len(src)))
-	base64.StdEncoding.Decode(buf, src)
-	return buf
+	var encoder *base64.Encoding
+	if bytes.Contains(src, []byte{'-'}) {
+		encoder = base64.URLEncoding
+	} else {
+		encoder = base64.StdEncoding
+	}
+	out = make([]byte, encoder.DecodedLen(len(src)))
+	encoder.Decode(out, src)
+	return
 }
 
 // 在go中, 如果解码的字符串缺少最后的=号, 将不能解码, 所以先填补缺少的=
@@ -27,7 +34,13 @@ func Base64DecodeString(src string) (out string) {
 	if a != 0 {
 		src = src + strings.Repeat("=", 3 - a)
 	}
-	bs, err := base64.StdEncoding.DecodeString(src)
+	var encoder *base64.Encoding
+	if strings.Contains(src,  "-") {
+		encoder = base64.URLEncoding
+	} else {
+		encoder = base64.StdEncoding
+	}
+	bs, err := encoder.DecodeString(src)
 	if err != nil {
 		return
 	}

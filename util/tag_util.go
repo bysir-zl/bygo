@@ -20,30 +20,19 @@ var tagMapLock sync.RWMutex
 // 从struct 取出 [tagName =>[fieldName=>tagValue]]
 func newFieldTagMapper(i interface{}) (fieldTagMapper FieldTagMapper) {
 	v := reflect.Indirect(reflect.ValueOf(i))
-
 	fieldNum := v.NumField()
-
 	reData := map[string]map[string]string{}
 
-	for index := 0; index < fieldNum; index = index + 1 {
+	for index := 0; index < fieldNum; index++ {
 		f := v.Type().Field(index)
 		x := EncodeTag(string(f.Tag))
 
 		for tagKey, tagValue := range x {
-			tagMapLock.RLock()
-			if s := reData[tagKey]; s == nil {
-				tagMapLock.RUnlock()
-				tagMapLock.Lock()
-				if s := reData[tagKey]; s == nil {
-					reData[tagKey] = map[string]string{}
-				}
-				tagMapLock.Unlock()
-			} else {
-				tagMapLock.RUnlock()
+			if _, ok := reData[tagKey]; !ok {
+				reData[tagKey] = map[string]string{}
 			}
 			reData[tagKey][f.Name] = tagValue
 		}
-
 	}
 
 	fieldTagMapper = FieldTagMapper{}
@@ -56,12 +45,13 @@ var tagMapPoolLock sync.RWMutex
 var mapperPool map[string]FieldTagMapper = map[string]FieldTagMapper{}
 
 func GetTagMapperFromPool(i interface{}) FieldTagMapper {
+	//return newFieldTagMapper(i)
 	key := reflect.ValueOf(i).String()
 	tagMapPoolLock.RLock()
 	if s := mapperPool[key]; s.mapData == nil {
 		tagMapPoolLock.RUnlock()
 		tagMapPoolLock.Lock()
-		if s := mapperPool[key]; s.mapData == nil {
+		if _, ok := mapperPool[key]; !ok {
 			mapperPool[key] = newFieldTagMapper(i)
 		}
 		tagMapPoolLock.Unlock()

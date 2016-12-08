@@ -23,7 +23,6 @@ func FilterEmpty(m map[string]string) {
 	}
 }
 
-
 func Map2UrlValues(m map[string]string) url.Values {
 	v := url.Values{}
 	for key, value := range m {
@@ -54,4 +53,19 @@ func FilterMapByFun(m map[string]string, fun func(s string) string, keys ...stri
 			m[k] = fun(v)
 		}
 	}
+}
+
+
+//将map[string'key']string'value'  转换为map[value]key
+func ReverseMap(ma map[string]string) (data map[string]string) {
+	if ma == nil {
+		return
+	}
+	data = map[string]string{}
+
+	for key, value := range ma {
+		data[value] = key
+	}
+
+	return
 }
