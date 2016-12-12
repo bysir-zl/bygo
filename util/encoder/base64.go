@@ -30,9 +30,9 @@ func Base64DecodeString(src string) (out string) {
 	if src == "" {
 		return
 	}
-	a := len(src) % 3
+	a := len(src) % 4
 	if a != 0 {
-		src = src + strings.Repeat("=", 3 - a)
+		src = src + strings.Repeat("=", 4 - a)
 	}
 	var encoder *base64.Encoding
 	if strings.Contains(src,  "-") {

@@ -4,6 +4,8 @@ import (
 	"github.com/bysir-zl/bygo/artisan"
 	"github.com/deepzz0/go-com/log"
 	"os"
+	"flag"
+	"golang.org/x/crypto/scrypt"
 )
 
 func main() {
@@ -31,4 +33,6 @@ func main() {
 		out := args[3]
 		artisan.Swagger(path, out)
 	}
+
+
 }

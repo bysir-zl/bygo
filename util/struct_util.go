@@ -54,17 +54,19 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 		return
 	}
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
-	var tag2field map[string]string
+	var tag2field = map[string]string{}
 	if useTag != "" {
 		fieldTagMapper := GetTagMapperFromPool(obj)
-		tag2field = ReverseMap(fieldTagMapper.GetFieldMapByTagName(useTag))
+		for k, v := range fieldTagMapper.GetFieldMapByTagName(useTag) {
+			v = strings.Split(v, ",")[0]
+			tag2field[v] = k
+		}
 	}
 
 	fields = []string{}
 	for fieldName, value := range mapper {
 		if useTag != "" {
 			fieldName = tag2field[fieldName]
-			fieldName = strings.Split(fieldName, ",")[0]
 		}
 		field := pointer.FieldByName(fieldName)
 		if field.IsValid() && field.CanInterface() {

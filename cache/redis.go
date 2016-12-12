@@ -7,6 +7,9 @@ type bRedis  struct {
 }
 
 func NewRedis(ip string) *bRedis {
+	if ip == "" {
+		return nil
+	}
 	var pool = &redis.Pool{
 		MaxIdle:   80,
 		MaxActive: 12000, // max number of connections
