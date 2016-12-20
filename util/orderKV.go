@@ -47,8 +47,9 @@ func (p *OrderKV) Set(key, value string) {
 
 func ParseOrderKV(m map[string]string) OrderKV {
 	o := OrderKV{}
-	for k, v := range m {
-		o.Set(k, v)
+	ks,vs:=SortMap(m)
+	for i, k := range ks {
+		o.Set(k, vs[i])
 	}
 	return o
 }

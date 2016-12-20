@@ -2,10 +2,8 @@ package main
 
 import (
 	"github.com/bysir-zl/bygo/artisan"
-	"github.com/deepzz0/go-com/log"
+	"github.com/bysir-zl/bygo/log"
 	"os"
-	"flag"
-	"golang.org/x/crypto/scrypt"
 )
 
 func main() {
@@ -15,7 +13,7 @@ func main() {
 	//}
 
 	if len(args) == 1 {
-		log.Print("error args")
+		log.Error("Bygo", "error args")
 		return
 	}
 
@@ -33,6 +31,5 @@ func main() {
 		out := args[3]
 		artisan.Swagger(path, out)
 	}
-
 
 }

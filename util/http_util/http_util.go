@@ -1,17 +1,16 @@
 package http_util
 
 import (
+	"bytes"
+	"crypto/tls"
+	"github.com/bysir-zl/bygo/util"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	"bytes"
-	"github.com/deepzz0/go-com/log"
-	"crypto/tls"
-	"github.com/bysir-zl/bygo/util"
 )
 
-func Get(url string, params util.OrderKV, header map[string]string) (response string, err error) {
+func Get(url string, params util.OrderKV, header map[string]string) (code int, response string, err error) {
 	up := params.EncodeString()
 	if up != "" {
 		if strings.Contains(url, "?") {
@@ -20,36 +19,36 @@ func Get(url string, params util.OrderKV, header map[string]string) (response st
 			url = url + "?" + up
 		}
 	}
-	bs, err := request(url, "GET", nil, header, nil)
+	code, bs, err := request(url, "GET", nil, header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func Post(url string, params util.OrderKV, header map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", params.Encode(), header, nil)
+func Post(url string, params util.OrderKV, header map[string]string) (code int, response string, err error) {
+	code, bs, err := request(url, "POST", params.Encode(), header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func PostByte(url string, post []byte, header map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", post, header, nil)
+func PostByte(url string, post []byte, header map[string]string) (code int, response string, err error) {
+	code, bs, err := request(url, "POST", post, header, nil)
 	response = util.B2S(bs)
 	return
 }
 
-func PostWithCookie(url string, params util.OrderKV, cookie map[string]string) (response string, err error) {
-	bs, err := request(url, "POST", params.Encode(), nil, cookie)
+func PostWithCookie(url string, params util.OrderKV, cookie map[string]string) (code int, response string, err error) {
+	code, bs, err := request(url, "POST", params.Encode(), nil, cookie)
 	response = util.B2S(bs)
 	return
 }
 
-func GetWithCookie(url string, params util.OrderKV, cookie map[string]string) (response string, err error) {
-	bs, err := request(url, "GET", params.Encode(), nil, cookie)
+func GetWithCookie(url string, params util.OrderKV, cookie map[string]string) (code int, response string, err error) {
+	code, bs, err := request(url, "GET", params.Encode(), nil, cookie)
 	response = util.B2S(bs)
 	return
 }
 
-func request(url string, method string, post []byte, header map[string]string, cookie map[string]string) (result []byte, err error) {
+func request(url string, method string, post []byte, header map[string]string, cookie map[string]string) (code int, result []byte, err error) {
 	var response *http.Response
 
 	// 忽略https证书验证
@@ -78,13 +77,10 @@ func request(url string, method string, post []byte, header map[string]string, c
 	}
 	response, err = client.Do(req)
 	if err != nil {
-		log.Warn("http request error : ", err)
 		return
 	}
-	//if response.StatusCode != 200 {
-	//	err = errors.New("request stausCode is " + strconv.Itoa(response.StatusCode))
-	//	return
-	//}
+
+	code = response.StatusCode
 	body, _ := ioutil.ReadAll(response.Body)
 	result = body
 	return

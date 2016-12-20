@@ -1,13 +1,13 @@
 package artisan
 
 import (
-	"os"
-	"io/ioutil"
-	"github.com/deepzz0/go-com/log"
-	"strings"
-	"strconv"
-	"github.com/bysir-zl/bygo/util"
 	"encoding/json"
+	"github.com/bysir-zl/bygo/log"
+	"github.com/bysir-zl/bygo/util"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type params struct {
@@ -99,18 +99,18 @@ func getAllSwaggerString(root string) (sw swaggerString) {
 	sw = swaggerString{}
 	paths, err := util.WalkDir(root, []string{"go", "proto"})
 	if err != nil {
-		log.Warn(err)
+		log.Warn("Swagger",err)
 		return
 	}
 
 	for _, fileName := range paths {
 		file, err := os.OpenFile(fileName, os.O_APPEND, 0666)
 		if err != nil {
-			log.Warn(err)
+			log.Warn("Swagger",err)
 		}
 		bs, err := ioutil.ReadAll(file)
 		if err != nil {
-			log.Warn(err)
+			log.Warn("Swagger",err)
 		}
 		// 遍历每一行
 		// 是否包含 // @
@@ -371,7 +371,7 @@ func parsePath(apis []string, base map[string]string) router {
 		// router
 		router := getRowString(row, "router")
 		if len(router) == 0 {
-			log.Warn(row)
+			log.Warn("Swagger",row)
 			return rou
 		}
 		routers := strings.Split(router, ",")
@@ -505,7 +505,7 @@ func Swagger(path, output string) {
 		panic(err)
 		return
 	}
-	log.Info("SUCCESS")
+	log.Info("Swagger","SUCCESS")
 }
 
 func getRowString(row []string, number string) string {

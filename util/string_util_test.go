@@ -1,14 +1,14 @@
 package util
 
 import (
-	"github.com/deepzz0/go-com/log"
+	"github.com/bysir-zl/bygo/log"
 	"testing"
 )
 
 func Test_Conv(b *testing.T) {
 	sr := []byte("asg_as_bf")
 	bs := SheXing2TuoFeng(sr)
-	log.Print(string(bs))
+	log.Info("Test",string(bs))
 	bs = TuoFeng2SheXing(bs)
-	log.Print(string(bs))
+	log.Info("Test",string(bs))
 }

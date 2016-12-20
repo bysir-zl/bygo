@@ -3,10 +3,10 @@ package artisan
 import (
 	"fmt"
 	"github.com/bysir-zl/bygo/util"
-	"github.com/deepzz0/go-com/log"
 	"os"
 	"strings"
 	"github.com/bysir-zl/orm"
+	"github.com/bysir-zl/bygo/log"
 )
 
 func CreateModelFile(tableName string) {
@@ -23,10 +23,11 @@ func CreateModelFile(tableName string) {
 	dbf := orm.New(config)
 	has, lis, err := dbf.QuerySql("show columns from " + tableName)
 	if err != nil {
-		log.Warn(err)
+		log.Error("CreateModel",err)
+		return
 	}
 	if !has {
-		log.Info("can not read table")
+		log.Info("CreateModel","can not read table")
 		return
 	}
 

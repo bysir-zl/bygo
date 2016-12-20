@@ -1,8 +1,8 @@
 package util
 
 import (
-	"testing"
 	"log"
+	"testing"
 )
 
 func TestNumber(t *testing.T) {

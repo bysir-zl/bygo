@@ -56,7 +56,7 @@ func AesEcbEncrypt(origData, key []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ecb := NewECBEncrypter(block)
+	ecb := newECBEncrypter(block)
 	origData = PKCS5Padding(origData, block.BlockSize())
 	crypted := make([]byte, len(origData))
 	ecb.CryptBlocks(crypted, origData)
@@ -98,7 +98,7 @@ type ecbEncrypter ecb
 
 // NewECBEncrypter returns a BlockMode which encrypts in electronic code book
 // mode, using the given Block.
-func NewECBEncrypter(b cipher.Block) cipher.BlockMode {
+func newECBEncrypter(b cipher.Block) cipher.BlockMode {
 	return (*ecbEncrypter)(newECB(b))
 }
 func (x *ecbEncrypter) BlockSize() int {

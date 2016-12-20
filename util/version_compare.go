@@ -6,7 +6,7 @@ import (
 )
 
 func VersionCompareBigger(big, small string) bool {
-	maxCountPoint := 0;
+	maxCountPoint := 0
 	bigCountPoint := strings.Count(big, ".")+1
 	smallCountPoint := strings.Count(small, ".")+1
 	if bigCountPoint > smallCountPoint {

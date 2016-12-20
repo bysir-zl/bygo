@@ -17,7 +17,7 @@ func RouterController(r *routing.RouteGroup, path string, controller interface{}
 
 		if ok {
 			name := typ.Method(i).Name
-			// when url like this "user/360", but "360" can not ues to function name, u can add "OMIT" prefix on function name, like "user/OMIT360".
+			// when url like "user/360", but "360" can not ues to function name, u can add "OMIT" prefix on function name, like "user/OMIT360".
 			if strings.Index(name, "OMIT") == 0 {
 				name = name[4:]
 			}

@@ -1,8 +1,8 @@
 package util
 
 import (
+	"github.com/bysir-zl/bygo/log"
 	"testing"
-	"kuaifa.com/kuaifa/kuaifa-api-service/tool/log"
 )
 
 func TestOrderKV(t *testing.T) {
@@ -16,5 +16,5 @@ func TestOrderKV(t *testing.T) {
 
 	o.Sort()
 
-	log.Print(string(o.Encode())) // a=1&a=2&b=2&c=1&c=2
+	log.Verbose("Test",string(o.Encode())) // a=1&a=2&b=2&c=1&c=2
 }

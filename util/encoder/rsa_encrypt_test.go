@@ -1,10 +1,10 @@
 package encoder
 
 import (
-	"testing"
-	"github.com/bysir-zl/bygo/util"
-	"github.com/deepzz0/go-com/log"
 	"crypto"
+	"github.com/bysir-zl/bygo/log"
+	"github.com/bysir-zl/bygo/util"
+	"testing"
 )
 
 func TestRsaSignWithSHA1(t *testing.T) {
@@ -33,7 +33,7 @@ Tkwt7ECSYKOvXVPRv+TPy+My6HpSEsY4jE2HniYWv8z4
 
 	data := "appIdkqyzN5TtaUdUmutzualismIdKF_TEST01234mutualismUserId8e10bd9630c8efa62cc73acecb5e8da8time243"
 	si, _ := RsaSign(util.S2B(data), util.S2B(pk), crypto.SHA1)
-	log.Info(util.B2S(si))
+	log.Info("Test",util.B2S(si))
 }
 
 var pubkey = `-----BEGIN PUBLIC KEY-----
@@ -66,13 +66,13 @@ func Test_RsapubDec(t *testing.T) {
 
 	enc, err := RsaPriEncrypt(data, []byte(prikey))
 	if err != nil {
-		log.Warn(err)
+		log.Warn("Test",err)
 	}
 
 	dec, err := RsaPubDecrypt(enc, []byte(pubkey))
 	if err != nil {
-		log.Warn(err)
+		log.Warn("Test",err)
 	}
 
-	log.Print(string(dec)) // 123456asd
+	log.Info("Test",string(dec)) // 123456asd
 }

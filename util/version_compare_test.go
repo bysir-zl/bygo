@@ -1,11 +1,11 @@
 package util
 
 import (
+	"github.com/bysir-zl/bygo/log"
 	"testing"
-	"github.com/deepzz0/go-com/log"
 )
 
 func TestVersionCompare(t *testing.T) {
-	log.Print(VersionCompareBigger("4.1.6566","4.1.3"))
+	log.Debug("Test",VersionCompareBigger("4.1.6566","4.1.3"))
 }
 
