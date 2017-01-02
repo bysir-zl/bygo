@@ -263,6 +263,10 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 		field := pointer.Field(i)
 		key := typer.Field(i).Name
 
+		if !field.CanInterface(){
+			continue
+		}
+
 		if useTag != "" {
 			// 根据指定的tag的key重新映射
 			key = fieldNameToTagName[key]
