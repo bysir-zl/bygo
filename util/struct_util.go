@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/bysir-zl/bygo/log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -24,7 +25,6 @@ func EncodeTag(tag string) (data map[string]string) {
 }
 
 func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) {
-
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
 	typer := pointer.Type().Elem()
 
@@ -69,8 +69,8 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 			fieldName = tag2field[fieldName]
 		}
 		field := pointer.FieldByName(fieldName)
-		if field.IsValid() && field.CanInterface() {
-			setFieldValue(field, value)
+		if field.IsValid() && field.CanInterface() && field.CanSet() {
+			setValue(field, value)
 			fields = append(fields, fieldName)
 		}
 	}
@@ -86,30 +86,40 @@ func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (f
 	return MapToObj(obj, mapper2, useTag)
 }
 
-func setFieldValue(field reflect.Value, value interface{}) {
-	switch field.Interface().(type) {
-	case bool:
+func setValue(v reflect.Value, value interface{}) {
+	switch v.Kind() {
+	case reflect.Bool:
 		b, ok := Interface2Bool(value, false)
 		if ok {
-			field.SetBool(b)
+			v.SetBool(b)
 		}
-	case string:
+	case reflect.String:
 		s, ok := Interface2String(value, false)
 		if ok {
-			field.SetString(s)
+			v.SetString(s)
 		}
-	case int, int8, int16, int32, int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		i, ok := Interface2Int(value, false)
 		if ok {
-			field.SetInt(i)
+			v.SetInt(i)
 		}
-	case float32, float64:
+	case reflect.Float32, reflect.Float64:
 		f, ok := Interface2Float(value, false)
 		if ok {
-			field.SetFloat(f)
+			v.SetFloat(f)
+		}
+	case reflect.Slice:
+		vv := reflect.ValueOf(value)
+		if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
+			l := vv.Len()
+			newV := reflect.MakeSlice(v.Type(), l, l)
+			for i := 0; i < l; i++ {
+				setValue(newV.Index(i), vv.Index(i).Interface())
+			}
+			v.Set(newV)
 		}
 	default:
-		println("not case type : " + field.Type().String())
+		log.Info("setValue", "not case "+v.Type().String())
 		break
 	}
 }
@@ -263,7 +273,7 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 		field := pointer.Field(i)
 		key := typer.Field(i).Name
 
-		if !field.CanInterface(){
+		if !field.CanInterface() {
 			continue
 		}
 
@@ -284,7 +294,6 @@ func ObjToMap(obj interface{}, useTag string) map[string]interface{} {
 
 	return data
 }
-
 
 //判断一个array每一个原始是不是都在map的value里
 func ArrayInMapValue(min []string, m map[string]string) (has bool, msg string) {
