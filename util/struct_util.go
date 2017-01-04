@@ -119,7 +119,13 @@ func setValue(v reflect.Value, value interface{}) {
 			v.Set(newV)
 		}
 	default:
-		log.Info("setValue", "not case "+v.Type().String())
+		defer func() {
+			e:=recover()
+			if e!=nil{
+				log.Info("setValue", v.Type().String(),e)
+			}
+		}()
+		v.Set(reflect.ValueOf(value))
 		break
 	}
 }
