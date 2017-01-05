@@ -1,7 +1,7 @@
 package util
 
 import (
-	"github.com/bysir-zl/bygo/log"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -24,36 +24,25 @@ func EncodeTag(tag string) (data map[string]string) {
 	return
 }
 
-func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) {
+func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) (errInfo string) {
 	pointer := reflect.Indirect(reflect.ValueOf(obj))
 	typer := pointer.Type().Elem()
-
+	var e string
 	for _, mapper := range mappers {
 		item := reflect.New(typer)
-		MapToObj(item.Interface(), mapper, useTag)
+		_, e = MapToObj(item.Interface(), mapper, useTag)
 		pointer.Set(reflect.Append(pointer, reflect.Indirect(item)))
 	}
+	return e
 }
 
-func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]interface{}) {
-	mappers = []map[string]interface{}{}
-
-	value := reflect.ValueOf(obj)
-	for i := 0; i < value.Len(); i = i + 1 {
-		item := value.Index(i)
-		mappers = append(mappers, ObjToMap(item.Interface(), useTag))
-	}
-	return
-}
-
-// 根据map的key=>value设置Obj的field=>fieldValue
-// 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上,
-// 返回设置成功的Fields列表字段
-func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fields []string) {
+func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fields []string, errInfo string) {
 	if mapper == nil || len(mapper) == 0 {
 		return
 	}
-	pointer := reflect.Indirect(reflect.ValueOf(obj))
+	//log.Info("x2", reflect.TypeOf(obj))
+	objValue := indirect(reflect.ValueOf(obj), false)
+	//log.Info("x", objValue.Type())
 	var tag2field = map[string]string{}
 	if useTag != "" {
 		fieldTagMapper := GetTagMapperFromPool(obj)
@@ -68,17 +57,77 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 		if useTag != "" {
 			fieldName = tag2field[fieldName]
 		}
-		field := pointer.FieldByName(fieldName)
+		field := objValue.FieldByName(fieldName)
 		if field.IsValid() && field.CanInterface() && field.CanSet() {
-			setValue(field, value)
-			fields = append(fields, fieldName)
+			err := setValue(field, value)
+			if err != nil {
+				errInfo = "field(" + fieldName + ") " + err.Error()
+			} else {
+				fields = append(fields, fieldName)
+			}
 		}
 	}
 
 	return
 }
 
-func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (fields []string) {
+// copy from decode.go, i can't understand ...
+//
+// indirect walks down v allocating pointers as needed,
+// until it gets to a non-pointer.
+// if it encounters an Unmarshaler, indirect stops and returns that.
+// if decodingNull is true, indirect stops at the last pointer so it can be set to nil.
+func indirect(v reflect.Value, decodingNull bool) ( reflect.Value) {
+	// If v is a named type and is addressable,
+	// start with its address, so that if the type has pointer methods,
+	// we find them.
+	if v.Kind() != reflect.Ptr && v.Type().Name() != "" && v.CanAddr() {
+		v = v.Addr()
+	}
+	for {
+		// Load value from interface, but only if the result will be
+		// usefully addressable.
+		if v.Kind() == reflect.Interface && !v.IsNil() {
+			e := v.Elem()
+			if e.Kind() == reflect.Ptr && !e.IsNil() && (!decodingNull || e.Elem().Kind() == reflect.Ptr) {
+				v = e
+				continue
+			}
+		}
+
+		if v.Kind() != reflect.Ptr {
+			break
+		}
+
+		if v.Elem().Kind() != reflect.Ptr && decodingNull && v.CanSet() {
+			break
+		}
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		if v.Type().NumMethod() > 0 {
+
+		}
+		v = v.Elem()
+	}
+	return v
+}
+
+// 根据map的key=>value设置Obj的field=>fieldValue
+// 如果传了useTag,那么就会根据obj的Tag的useTag的值获取mapValue并填充到field上,
+// 返回设置成功的Fields列表字段
+func ObjListToMapList(obj interface{}, useTag string) (mappers []map[string]interface{}) {
+	mappers = []map[string]interface{}{}
+
+	value := reflect.ValueOf(obj)
+	for i := 0; i < value.Len(); i = i + 1 {
+		item := value.Index(i)
+		mappers = append(mappers, ObjToMap(item.Interface(), useTag))
+	}
+	return
+}
+
+func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (fields []string, errInfo string) {
 	mapper2 := map[string]interface{}{}
 	for k, v := range mapper {
 		mapper2[k] = v
@@ -86,7 +135,7 @@ func MapStringToObj(obj interface{}, mapper map[string]string, useTag string) (f
 	return MapToObj(obj, mapper2, useTag)
 }
 
-func setValue(v reflect.Value, value interface{}) {
+func setValue(v reflect.Value, value interface{}) (err error) {
 	switch v.Kind() {
 	case reflect.Bool:
 		b, ok := Interface2Bool(value, false)
@@ -108,26 +157,28 @@ func setValue(v reflect.Value, value interface{}) {
 		if ok {
 			v.SetFloat(f)
 		}
-	case reflect.Slice:
-		vv := reflect.ValueOf(value)
-		if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
-			l := vv.Len()
-			newV := reflect.MakeSlice(v.Type(), l, l)
-			for i := 0; i < l; i++ {
-				setValue(newV.Index(i), vv.Index(i).Interface())
-			}
-			v.Set(newV)
-		}
+	//case reflect.Slice:
+	//	vv := reflect.ValueOf(value)
+	//	if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
+	//		l := vv.Len()
+	//		newV := reflect.MakeSlice(v.Type(), l, l)
+	//		for i := 0; i < l; i++ {
+	//			setValue(newV.Index(i), vv.Index(i).Interface())
+	//		}
+	//		v.Set(newV)
+	//	}
 	default:
+		// 非基本类型
 		defer func() {
-			e:=recover()
-			if e!=nil{
-				log.Info("setValue", v.Type().String(),e)
+			e := recover()
+			if e != nil {
+				err = fmt.Errorf("%s %v", v.Type().String(), e)
 			}
 		}()
 		v.Set(reflect.ValueOf(value))
 		break
 	}
+	return
 }
 
 func Interface2Int(value interface{}, strict bool) (v int64, ok bool) {
