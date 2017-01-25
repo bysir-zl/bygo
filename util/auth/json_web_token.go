@@ -2,10 +2,9 @@ package auth
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/util"
+	"github.com/bysir-zl/bygo/util/encoder"
 	"strings"
 	"time"
-	"github.com/bysir-zl/bygo/util/encoder"
 )
 
 const secret string = "Bqweiopxj293gweG46we7gAfew54"
@@ -39,12 +38,12 @@ func JWTEncode(iss string, exp int64, typ string, sub string, aud string) (out s
 		return
 	}
 
-	payload := encoder.Base64Encode(string(bs))
+	payload := encoder.Base64EncodeString(string(bs))
 	if payload == "" {
 		return
 	}
 
-	header := encoder.Base64Encode("{\"typ\":\"JWT\",\"alg\":\"HS256\"}")
+	header := encoder.Base64EncodeString("{\"typ\":\"JWT\",\"alg\":\"HS256\"}")
 	if header == "" {
 		return
 	}
@@ -80,7 +79,7 @@ func JWTDecode(in string) (jwtData JWTData, errCode int) {
 		return
 	}
 
-	dataJson := encoder.Base64Decode(data[1])
+	dataJson := encoder.Base64DecodeString(data[1])
 
 	err := json.Unmarshal([]byte(dataJson), &jwtData)
 	if err != nil {

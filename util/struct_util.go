@@ -25,13 +25,13 @@ func EncodeTag(tag string) (data map[string]string) {
 }
 
 func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) (errInfo string) {
-	pointer := reflect.Indirect(reflect.ValueOf(obj))
-	typer := pointer.Type().Elem()
+	objValue := indirect(reflect.ValueOf(obj), false)
+	item := GetElemInterface(reflect.ValueOf(obj))
 	var e string
 	for _, mapper := range mappers {
-		item := reflect.New(typer)
-		_, e = MapToObj(item.Interface(), mapper, useTag)
-		pointer.Set(reflect.Append(pointer, reflect.Indirect(item)))
+		iv:=reflect.New(reflect.TypeOf(item))
+		_, e = MapToObj(iv.Interface(), mapper, useTag)
+		objValue.Set(reflect.Append(objValue, iv.Elem()))
 	}
 	return e
 }
@@ -77,7 +77,7 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 // until it gets to a non-pointer.
 // if it encounters an Unmarshaler, indirect stops and returns that.
 // if decodingNull is true, indirect stops at the last pointer so it can be set to nil.
-func indirect(v reflect.Value, decodingNull bool) ( reflect.Value) {
+func indirect(v reflect.Value, decodingNull bool) (reflect.Value) {
 	// If v is a named type and is addressable,
 	// start with its address, so that if the type has pointer methods,
 	// we find them.
@@ -111,6 +111,19 @@ func indirect(v reflect.Value, decodingNull bool) ( reflect.Value) {
 		v = v.Elem()
 	}
 	return v
+}
+
+func GetElemInterface(v reflect.Value) interface{} {
+	xx := indirect(v, false).Type()
+
+	if xx.Kind() == reflect.Ptr {
+		xx = xx.Elem()
+	}
+	if xx.Kind() == reflect.Slice {
+		xx = xx.Elem()
+	}
+
+	return reflect.New(xx).Elem().Interface()
 }
 
 // 根据map的key=>value设置Obj的field=>fieldValue
@@ -309,6 +322,36 @@ func Interface2String(value interface{}, strict bool) (v string, ok bool) {
 		v, ok = strconv.FormatFloat(f, 'f', -1, 64), true
 	case bool:
 		v, ok = strconv.FormatBool(value.(bool)), true
+	}
+	return
+}
+
+func Interface2StringWithType(value interface{}, strict bool) (v string, ok bool) {
+	switch value.(type) {
+	case string:
+		v, ok = "string:" + value.(string), true
+	case []uint8:
+		v, ok = "[]uint8:" + string(value.([]uint8)), true
+	}
+
+	if ok {
+		return
+	}
+	if strict {
+		if !ok {
+			return
+		}
+	}
+
+	switch value.(type) {
+	case int64, int8, int32, int:
+		i, _ := Interface2Int(value, true)
+		v, ok = "int:" + strconv.FormatInt(i, 10), true
+	case float64, float32:
+		f, _ := Interface2Float(value, true)
+		v, ok = "float:" + strconv.FormatFloat(f, 'f', -1, 64), true
+	case bool:
+		v, ok = "bool:" + strconv.FormatBool(value.(bool)), true
 	}
 	return
 }
