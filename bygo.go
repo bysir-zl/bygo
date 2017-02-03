@@ -21,8 +21,8 @@ func main() {
 
 	switch command {
 	case "model":
-		table := args[2]
-		artisan.CreateModelFile(table)
+		//table := args[2]
+		//artisan.CreateModelFile(table)
 	case "swagger":
 		if len(args) != 4 {
 			args = []string{"", "", "./", "./swagger.json"}
