@@ -1,8 +1,8 @@
 package artisan
 
 import (
-	"testing"
 	"github.com/bysir-zl/bygo/log"
+	"testing"
 )
 
 func TestSwagger(t *testing.T) {
