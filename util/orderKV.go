@@ -47,7 +47,7 @@ func (p *OrderKV) Set(key, value string) {
 
 func ParseOrderKV(m map[string]string) OrderKV {
 	o := OrderKV{}
-	ks,vs:=SortMap(m)
+	ks, vs := SortMap(m)
 	for i, k := range ks {
 		o.Set(k, vs[i])
 	}
@@ -99,6 +99,9 @@ func (p *OrderKV) Sort() {
 
 // See url.Values.Encode
 func (p *OrderKV) Encode() []byte {
+	if len(p.keys) == 0 {
+		return []byte{}
+	}
 	var buf bytes.Buffer
 	for i, k := range p.keys {
 		k = url.QueryEscape(k)
