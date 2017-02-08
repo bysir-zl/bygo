@@ -5,7 +5,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"github.com/bysir-zl/bygo/log"
 )
+
+var _ = log.LInfo
 
 func EncodeTag(tag string) (data map[string]string) {
 	data = map[string]string{}
@@ -29,7 +32,7 @@ func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag 
 	item := GetElemInterface(reflect.ValueOf(obj))
 	var e string
 	for _, mapper := range mappers {
-		iv:=reflect.New(reflect.TypeOf(item))
+		iv := reflect.New(reflect.TypeOf(item))
 		_, e = MapToObj(iv.Interface(), mapper, useTag)
 		objValue.Set(reflect.Append(objValue, iv.Elem()))
 	}
@@ -40,14 +43,18 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 	if mapper == nil || len(mapper) == 0 {
 		return
 	}
-	//log.Info("x2", reflect.TypeOf(obj))
 	objValue := indirect(reflect.ValueOf(obj), false)
-	//log.Info("x", objValue.Type())
 	var tag2field = map[string]string{}
 	if useTag != "" {
 		fieldTagMapper := GetTagMapperFromPool(obj)
 		for k, v := range fieldTagMapper.GetFieldMapByTagName(useTag) {
 			v = strings.Split(v, ",")[0]
+			// 特殊处理json tag
+			if useTag == "json" {
+				if v == "-" {
+					continue
+				}
+			}
 			tag2field[v] = k
 		}
 	}
@@ -55,7 +62,11 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 	fields = []string{}
 	for fieldName, value := range mapper {
 		if useTag != "" {
-			fieldName = tag2field[fieldName]
+			_fieldName, has := tag2field[fieldName]
+			if !has {
+				continue
+			}
+			fieldName = _fieldName
 		}
 		field := objValue.FieldByName(fieldName)
 		if field.IsValid() && field.CanInterface() && field.CanSet() {
@@ -329,9 +340,9 @@ func Interface2String(value interface{}, strict bool) (v string, ok bool) {
 func Interface2StringWithType(value interface{}, strict bool) (v string, ok bool) {
 	switch value.(type) {
 	case string:
-		v, ok = "string:" + value.(string), true
+		v, ok = "string:"+value.(string), true
 	case []uint8:
-		v, ok = "[]uint8:" + string(value.([]uint8)), true
+		v, ok = "[]uint8:"+string(value.([]uint8)), true
 	}
 
 	if ok {
@@ -346,12 +357,12 @@ func Interface2StringWithType(value interface{}, strict bool) (v string, ok bool
 	switch value.(type) {
 	case int64, int8, int32, int:
 		i, _ := Interface2Int(value, true)
-		v, ok = "int:" + strconv.FormatInt(i, 10), true
+		v, ok = "int:"+strconv.FormatInt(i, 10), true
 	case float64, float32:
 		f, _ := Interface2Float(value, true)
-		v, ok = "float:" + strconv.FormatFloat(f, 'f', -1, 64), true
+		v, ok = "float:"+strconv.FormatFloat(f, 'f', -1, 64), true
 	case bool:
-		v, ok = "bool:" + strconv.FormatBool(value.(bool)), true
+		v, ok = "bool:"+strconv.FormatBool(value.(bool)), true
 	}
 	return
 }

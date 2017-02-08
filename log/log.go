@@ -3,6 +3,7 @@ package log
 import (
 	"log"
 	"fmt"
+	"strings"
 	"os"
 )
 
@@ -61,7 +62,25 @@ func OutPutStd(callDepth,level int, tag string, v ...interface{}) {
 		}
 		tag = "[" + tag + "] "
 		Logger.SetPrefix(l+" ")
-		Logger.Output(callDepth, fmt.Sprintln(append([]interface{}{tag}, v...)...))
+
+		var arg []interface{}
+		var format string
+
+		// 支持format
+		if len(v)>=2{
+			if _format,ok:=v[0].(string);ok{
+				if strings.Contains(_format,"%"){
+					format = _format
+				}
+			}
+		}
+
+		if format==""{
+			arg =append([]interface{}{tag}, v...)
+			format =strings.Repeat("%+v ",len(arg))
+		}
+
+		Logger.Output(callDepth, fmt.Sprintf(format,arg...))
 	}
 }
 
