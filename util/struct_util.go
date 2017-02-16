@@ -559,6 +559,29 @@ func EmptyObject(obj interface{}) {
 	}
 }
 
+
+// 获取不为空的在inFields中的 结构体中的字段
+func GetNotEmptyFields(obj interface{}, inFields ...string) (fields []string) {
+	fields = []string{}
+	pointer := reflect.Indirect(reflect.ValueOf(obj))
+	types := pointer.Type()
+	fieldNum := pointer.NumField()
+	for i := 0; i < fieldNum; i++ {
+		v := pointer.Field(i)
+		name := types.Field(i).Name
+		if inFields != nil && len(inFields) != 0 {
+			if !ItemInArray(name, inFields) {
+				continue
+			}
+		}
+		if IsEmptyValue(v.Interface()) {
+			continue
+		}
+		fields = append(fields, name)
+	}
+	return
+}
+
 func MapInterface2MapString(m map[string]interface{}) map[string]string {
 	set := map[string]string{}
 
@@ -569,4 +592,37 @@ func MapInterface2MapString(m map[string]interface{}) map[string]string {
 		}
 	}
 	return set
+}
+
+// 求交集
+func IntersectionSlice(s1 []interface{}, s2 []interface{}) []interface{} {
+	temp := []interface{}{}
+	for _, v1 := range s1 {
+		inS2 := false
+		for _, v2 := range s2 {
+			if v1 == v2 {
+				inS2 = true
+			}
+		}
+		if inS2 {
+			temp = append(temp, v1)
+		}
+	}
+
+	UnDuplicatesSlice(&temp)
+	return temp
+}
+
+// 去重
+func UnDuplicatesSlice(is *[]interface{}) {
+	t := map[interface{}]bool{}
+	temp := []interface{}{}
+	for _, i := range *is {
+		if t[i] == true {
+			continue
+		}
+		t[i] = true
+		temp = append(temp, i)
+	}
+	*is = temp
 }

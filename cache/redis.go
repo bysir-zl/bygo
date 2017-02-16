@@ -2,7 +2,7 @@ package cache
 
 import "github.com/garyburd/redigo/redis"
 
-type bRedis  struct {
+type bRedis struct {
 	*redis.Pool
 }
 
@@ -28,7 +28,7 @@ func NewRedis(ip string) *bRedis {
 	return &cache
 }
 
-func (p *bRedis)HGETALL(key string) (mapper map[string]interface{}, err error) {
+func (p *bRedis) HGETALL(key string) (mapper map[string]interface{}, err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -43,13 +43,13 @@ func (p *bRedis)HGETALL(key string) (mapper map[string]interface{}, err error) {
 	kvs := reply.([]interface{})
 
 	for i := len(kvs) - 1; i >= 0; i = i - 2 {
-		key := string(kvs[i - 1].([]uint8))
+		key := string(kvs[i-1].([]uint8))
 		mapper[key] = kvs[i]
 	}
 	return
 }
 
-func (p *bRedis)MHSET(key string, mapper map[string]interface{}, expire int) error {
+func (p *bRedis) MHSET(key string, mapper map[string]interface{}, expire int) error {
 	params := []interface{}{}
 	for key, value := range mapper {
 		params = append(params, key, value)
@@ -73,7 +73,7 @@ func (p *bRedis)MHSET(key string, mapper map[string]interface{}, expire int) err
 	return nil
 }
 
-func (p *bRedis)HMGETOne(tableName string, key string) (value string, err error) {
+func (p *bRedis) HMGETOne(tableName string, key string) (value string, err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -90,7 +90,7 @@ func (p *bRedis)HMGETOne(tableName string, key string) (value string, err error)
 	return
 }
 
-func (p *bRedis)HMSET(tableName string, key string, value interface{}, expire int) (err error) {
+func (p *bRedis) HMSET(tableName string, key string, value interface{}, expire int) (err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -106,7 +106,7 @@ func (p *bRedis)HMSET(tableName string, key string, value interface{}, expire in
 	return
 }
 
-func (p *bRedis)SET(key string, value interface{}, expire int) (err error) {
+func (p *bRedis) SET(key string, value interface{}, expire int) (err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -121,7 +121,7 @@ func (p *bRedis)SET(key string, value interface{}, expire int) (err error) {
 	return
 }
 
-func (p *bRedis)GET(key string) (str string, err error) {
+func (p *bRedis) GET(key string) (str string, err error) {
 	c := p.Get()
 
 	defer func() {
@@ -137,7 +137,7 @@ func (p *bRedis)GET(key string) (str string, err error) {
 	return
 }
 
-func (p *bRedis)RPUSH(key string, value interface{}) (err error) {
+func (p *bRedis) RPUSH(key string, value interface{}) (err error) {
 	c := p.Get()
 
 	defer func() {
@@ -148,7 +148,7 @@ func (p *bRedis)RPUSH(key string, value interface{}) (err error) {
 	return
 }
 
-func (p *bRedis)DEL(key string) (err error) {
+func (p *bRedis) DEL(key string) (err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()

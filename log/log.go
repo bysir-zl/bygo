@@ -1,10 +1,10 @@
 package log
 
 import (
-	"log"
 	"fmt"
-	"strings"
+	"log"
 	"os"
+	"strings"
 )
 
 const (
@@ -71,6 +71,7 @@ func OutPutStd(callDepth,level int, tag string, v ...interface{}) {
 			if _format,ok:=v[0].(string);ok{
 				if strings.Contains(_format,"%"){
 					format = _format
+					arg = v[1:]
 				}
 			}
 		}
