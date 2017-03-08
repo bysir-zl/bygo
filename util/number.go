@@ -1,8 +1,8 @@
 package util
 
 import (
-	"strconv"
 	"math"
+	"strconv"
 )
 
 // 两个字串的float值是否相同

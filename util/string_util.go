@@ -49,10 +49,10 @@ func SheXing2TuoFeng(src []byte) (out []byte) {
 	return
 }
 
-func ChunkJoin(str, sub string, l int) string {
+func ChunkJoin(str, sub string, length int) string {
 	privateKey := ""
-	for i, l := 0, len(str) / 64; i < l; i++ {
-		privateKey = privateKey + "\n" + str[i * 64:(i + 1) * 64]
+	for i, l := 0, len(str) / length; i < l; i++ {
+		privateKey = privateKey + sub + str[i * length:(i + 1) * length]
 	}
 	if privateKey == "" {
 		return ""
