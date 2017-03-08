@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const secret string = "Bqweiopxj293gweG46we7gAfew54"
-
 type JWTData struct {
 	Iss string
 	Iat int64 // iat(issued at): 在什么时候签发的
@@ -24,7 +22,7 @@ func (j JWTData) IsEmpty() bool {
 
 // 加密数据
 // iss: 该JWT的签发者 ,exp(expires): 什么时候过期，这里是一个Unix时间戳 ,typ:用户类型(组),如admin/user ,sub: 该JWT所面向的用户 ,aud: 接收该JWT的一方
-func JWTEncode(iss string, exp int64, typ string, sub string, aud string) (out string) {
+func JWTEncode(secret,iss string, exp int64, typ string, sub string, aud string) (out string) {
 	mapper := JWTData{}
 	mapper.Iss = iss
 	mapper.Iat = time.Now().Unix()
@@ -55,13 +53,23 @@ func JWTEncode(iss string, exp int64, typ string, sub string, aud string) (out s
 
 // errCode 1:格式不正确 2:签名错误 3:payload错误 4:过期
 const (
-	FormatError = 1 + iota
+	FormatError    = 1 + iota
 	SignatureError
 	PayloadError
 	ExpiredError
 )
 
-func JWTDecode(in string) (jwtData JWTData, errCode int) {
+func ErrcodeString(code int) string {
+	return map[int]string{
+		0: "success",
+		1: "FormatError",
+		2: "SignatureError",
+		3: "PayloadError",
+		4: "ExpiredError",
+	}[code]
+}
+
+func JWTDecode(secret,in string) (jwtData JWTData, errCode int) {
 	data := strings.Split(in, ".")
 	jwtData = JWTData{}
 
