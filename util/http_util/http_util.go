@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func Get(url string, params util.OrderKV, header map[string]string) (code int, response string, err error) {
@@ -56,7 +57,7 @@ func request(url string, method string, post []byte, header map[string]string, c
 		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 		DisableCompression: true,
 	}
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: transport, Timeout: 5 * time.Second}
 	var req *http.Request
 	if method == "GET" {
 		req, _ = http.NewRequest("GET", url, nil)
@@ -65,14 +66,14 @@ func request(url string, method string, post []byte, header map[string]string, c
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 
-	if header != nil&&len(header) != 0 {
+	if header != nil && len(header) != 0 {
 		for key, value := range header {
 			req.Header.Add(key, value)
 		}
 	}
-	if cookie != nil&&len(cookie) != 0 {
+	if cookie != nil && len(cookie) != 0 {
 		for key, value := range cookie {
-			req.AddCookie(&http.Cookie{Name:key, Value:value})
+			req.AddCookie(&http.Cookie{Name: key, Value: value})
 		}
 	}
 	response, err = client.Do(req)
