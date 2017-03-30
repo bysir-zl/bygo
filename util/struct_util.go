@@ -2,10 +2,10 @@ package util
 
 import (
 	"fmt"
+	"github.com/bysir-zl/bygo/log"
 	"reflect"
 	"strconv"
 	"strings"
-	"github.com/bysir-zl/bygo/log"
 )
 
 var _ = log.LInfo
@@ -181,16 +181,16 @@ func setValue(v reflect.Value, value interface{}) (err error) {
 		if ok {
 			v.SetFloat(f)
 		}
-	//case reflect.Slice:
-	//	vv := reflect.ValueOf(value)
-	//	if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
-	//		l := vv.Len()
-	//		newV := reflect.MakeSlice(v.Type(), l, l)
-	//		for i := 0; i < l; i++ {
-	//			setValue(newV.Index(i), vv.Index(i).Interface())
-	//		}
-	//		v.Set(newV)
-	//	}
+		//case reflect.Slice:
+		//	vv := reflect.ValueOf(value)
+		//	if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
+		//		l := vv.Len()
+		//		newV := reflect.MakeSlice(v.Type(), l, l)
+		//		for i := 0; i < l; i++ {
+		//			setValue(newV.Index(i), vv.Index(i).Interface())
+		//		}
+		//		v.Set(newV)
+		//	}
 	default:
 		// 非基本类型
 		defer func() {
@@ -559,7 +559,6 @@ func EmptyObject(obj interface{}) {
 	}
 }
 
-
 // 获取不为空的在inFields中的 结构体中的字段
 func GetNotEmptyFields(obj interface{}, inFields ...string) (fields []string) {
 	fields = []string{}
@@ -625,4 +624,64 @@ func UnDuplicatesSlice(is *[]interface{}) {
 		temp = append(temp, i)
 	}
 	*is = temp
+}
+
+// 完整版的字段判断工具
+type FieldsUtil struct {
+	obj    interface{}
+	fields []string
+}
+
+func NewFieldsUtil(obj interface{}) *FieldsUtil {
+	return &FieldsUtil{
+		obj:    obj,
+		fields: []string{},
+	}
+}
+
+func (p *FieldsUtil) GetNotEmptyFields() *FieldsUtil {
+	fields := GetNotEmptyFields(p.obj)
+	p.fields = fields
+	return p
+}
+
+func (p *FieldsUtil) Exclude(fields ...string) *FieldsUtil {
+	if len(p.fields) == 0 {
+		return p
+	}
+	temp := []string{}
+	for _, v := range p.fields {
+		if !ItemInArray(v, fields) {
+			temp = append(temp, v)
+		}
+	}
+	p.fields = temp
+	return p
+}
+
+func (p *FieldsUtil) Filter(fields ...string) *FieldsUtil {
+	if len(p.fields) == 0 {
+		return p
+	}
+	temp := []string{}
+	for _, v := range p.fields {
+		if ItemInArray(v, fields) {
+			temp = append(temp, v)
+		}
+	}
+	p.fields = temp
+	return p
+}
+
+func (p *FieldsUtil) Must(fields ...string) *FieldsUtil {
+	for _, v := range fields {
+		if !ItemInArray(v, p.fields) {
+			p.fields = append(p.fields, v)
+		}
+	}
+	return p
+}
+
+func (p *FieldsUtil) Fields() []string {
+	return p.fields
 }

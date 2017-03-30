@@ -49,25 +49,23 @@ func (p *bRedis) HGETALL(key string) (mapper map[string]interface{}, err error) 
 	return
 }
 
-func (p *bRedis) MHSET(key string, mapper map[string]interface{}, expire int) error {
+func (p *bRedis) MHSET(table string, mapper map[string]interface{}, expire int) error {
 	params := []interface{}{}
 	for key, value := range mapper {
 		params = append(params, key, value)
 	}
 
-	params = append([]interface{}{key}, params...)
+	params = append([]interface{}{table}, params...)
 	c := p.Get()
 
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
 
 	_, err := c.Do("HMSET", params...)
 	if err != nil {
 		return err
 	}
 	if expire != 0 {
-		c.Do("expire", key, expire)
+		c.Do("expire", table, expire)
 	}
 
 	return nil
