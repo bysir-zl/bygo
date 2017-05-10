@@ -79,7 +79,7 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 			if _format, ok := v[0].(string); ok {
 				if strings.Contains(_format, "%") {
 					format = _format
-					arg = v[1:]
+					arg = append([]interface{}{tag}, v[1:]...)
 				}
 			}
 		}
