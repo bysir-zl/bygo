@@ -124,10 +124,6 @@ func SetLogLevel(level int) {
 	defLogger.SetLogLevel(level)
 }
 
-func SetCallDepth(d int) {
-	defLogger.SetLogLevel(d)
-}
-
 func init() {
 	defLogger = NewLogger()
 }
