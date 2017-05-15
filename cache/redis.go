@@ -28,12 +28,12 @@ func NewRedis(ip string) *bRedis {
 	return &cache
 }
 
-func (p *bRedis) HGETALL(key string) (mapper map[string]interface{}, err error) {
+func (p *bRedis) HGETALL(tableName string) (mapper map[string]interface{}, err error) {
 	c := p.Get()
 	defer func() {
 		c.Close()
 	}()
-	reply, err := c.Do("HGETALL", key)
+	reply, err := c.Do("HGETALL", tableName)
 	if err != nil {
 		return
 	}
@@ -152,6 +152,25 @@ func (p *bRedis) DEL(key string) (err error) {
 		c.Close()
 	}()
 	_, err = c.Do("DEL", key)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
+	c := p.Get()
+	defer func() {
+		c.Close()
+	}()
+
+	ps := make([]interface{}, len(keys)+1)
+	ps[0] = tableName
+	for i,v:=range keys{
+		ps[i+1] = v
+	}
+
+	_, err = c.Do("HDEL", ps...)
 	if err != nil {
 		return
 	}
