@@ -28,13 +28,18 @@ func EncodeTag(tag string) (data map[string]string) {
 }
 
 func MapListToObjList(obj interface{}, mappers []map[string]interface{}, useTag string) (errInfo string) {
-	objValue := indirect(reflect.ValueOf(obj), false)
-	item := GetElemInterface(reflect.ValueOf(obj))
+	v := reflect.ValueOf(obj)
+	v = indirect(v, false)
+	if v.Len() != 0 {
+		v.Set(reflect.New(v.Type()).Elem())
+	}
+	item := GetElemInterface(v)
+	itemT := reflect.TypeOf(item)
 	var e string
 	for _, mapper := range mappers {
-		iv := reflect.New(reflect.TypeOf(item))
+		iv := reflect.New(itemT)
 		_, e = MapToObj(iv.Interface(), mapper, useTag)
-		objValue.Set(reflect.Append(objValue, iv.Elem()))
+		v.Set(reflect.Append(v, iv.Elem()))
 	}
 	return e
 }

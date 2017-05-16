@@ -22,6 +22,21 @@ func TestMapToObj(t *testing.T) {
 	log.Printf("%+v", s)
 }
 
+func TestMapList(t *testing.T) {
+	m := []map[string]interface{}{{
+		"name":"bysir",
+		"sex":true,
+		"age":21,
+	}}
+	s := []*struct {
+		Name string `json:"name"`
+		Sex  int `json:"sex"`
+		Age  int `json:"age"`
+	}{{Name:"1"}}
+	MapListToObjList(&s, m, "json")
+	log.Printf("%+v", s)
+}
+
 func BenchmarkMapToObj(b *testing.B) {
 	m := map[string]interface{}{
 		"Name":"bysir",
