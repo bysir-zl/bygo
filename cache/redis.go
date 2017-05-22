@@ -1,6 +1,10 @@
 package cache
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"errors"
+	"github.com/garyburd/redigo/redis"
+	"time"
+)
 
 type bRedis struct {
 	*redis.Pool
@@ -166,7 +170,7 @@ func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
 
 	ps := make([]interface{}, len(keys)+1)
 	ps[0] = tableName
-	for i,v:=range keys{
+	for i, v := range keys {
 		ps[i+1] = v
 	}
 
@@ -174,5 +178,39 @@ func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
 	if err != nil {
 		return
 	}
+	return
+}
+
+// 同步锁
+func (p *bRedis) Lock(key string) (err error) {
+	startTime := time.Now()
+	for {
+		s, e := p.GET(key)
+		if e != nil {
+			err = e
+			return
+		}
+		// 没有值则说明没锁
+		if s == "" {
+			// 上锁
+			p.SET(key, 1, 10)
+			return
+		}
+
+		// 有值就锁上
+		// 如果一直有值 并且超时4s,则说明这个锁有问题,应该删除
+		if time.Now().Sub(startTime) >= time.Second*4 {
+			p.DEL(key)
+			err = errors.New("deadlock")
+			return
+		}
+
+		time.Sleep(time.Millisecond * 10)
+	}
+}
+
+// 解锁
+func (p *bRedis) UnLock(key string) (err error) {
+	err = p.DEL(key)
 	return
 }
