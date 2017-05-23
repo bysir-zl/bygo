@@ -4,8 +4,8 @@ import "testing"
 
 func TestBbnpay(t *testing.T) {
 	c := BbnPayConfig{
-		Key:   "2b80219bf2123dc7dc72751de4fffa6e",
-		AppId: "1332017051111958",
+		Key:   "",
+		AppId: "",
 	}
 	p := NewBbnPay(c)
 	i := BbnPayPlaceOrder{
