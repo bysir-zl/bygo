@@ -2,9 +2,9 @@ package huyi_sms
 
 import (
 	"errors"
+	"github.com/bysir-zl/bjson"
 	"github.com/bysir-zl/bygo/util"
 	"github.com/bysir-zl/bygo/util/http_util"
-	"strings"
 )
 
 type Config struct {
@@ -31,18 +31,19 @@ func (p *Sms) Send(phone, content string) (err error) {
 	ps.Add("password", p.c.ApiKey)
 	ps.Add("mobile", phone)
 	ps.Add("content", content)
+	ps.Add("format", "json")
 	_, rsp, err := http_util.Get(ApiHost, ps, nil)
 	if err != nil {
 		return
 	}
 
-	if !strings.Contains(rsp, "<code>2</code>") {
-		errInfo := rsp
-		msg := strings.Split(rsp, "</msg>")[0]
-		if strings.Contains(msg, "<msg>") {
-			errInfo = strings.Split(msg, "<msg>")[1]
-		}
-		err = errors.New(errInfo)
+	bj, err := bjson.New([]byte(rsp))
+	if err != nil {
+		err = errors.New(rsp)
+		return
+	}
+	if bj.Pos("code").Int() != 2 {
+		err = errors.New(bj.Pos("msg").String())
 		return
 	}
 
