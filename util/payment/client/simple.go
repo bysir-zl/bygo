@@ -1,4 +1,4 @@
-package simple
+package client
 
 // 简易支付客户端
 
