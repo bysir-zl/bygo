@@ -1,17 +1,19 @@
-package payment
+package simple
 
 // 简易支付客户端
 
 import (
 	"errors"
+	"github.com/bysir-zl/bygo/util/payment"
 	"strconv"
+	"strings"
 )
 
 var (
 	aliPayNotifyUrl = ""
 	bbnPayNotifyUrl = ""
 
-	bbnPay        *BbnPay
+	bbnPay        *payment.BbnPay
 	bbnPayGoodsId = 0
 )
 
@@ -29,14 +31,12 @@ type BbnPayNotifyClient struct {
 	Type string // 类型: recharge
 }
 
-const (
-	Type_Buy = "re_"
-)
+var typeSp = "@.@"
 
 // 支付宝调起支付准备
-func CreateAliPayPayInfo(tradeNo, subject, totalFee, body string) string {
-	q := NewAPPayReqForApp()
-	q.OutTradeNO = Type_Buy + tradeNo
+func CreateAliPayPayInfo(tradeNo, subject, totalFee, body, types string) string {
+	q := payment.NewAPPayReqForApp()
+	q.OutTradeNO = types + typeSp + tradeNo
 	q.Subject = subject
 	q.TotalFee = totalFee
 	q.Body = body
@@ -47,41 +47,39 @@ func CreateAliPayPayInfo(tradeNo, subject, totalFee, body string) string {
 }
 
 func CheckAliPayNotify(request []byte) (data AliPayNotifyClient, err error) {
-	q, err := NewAPPayResultNotifyArgs(request)
+	q, err := payment.NewAPPayResultNotifyArgs(request)
 	if err != nil {
 		return
 	}
 	amount, _ := strconv.ParseFloat(q.TotalFee, 64)
-	t := ""
-	myTradeNo := q.OutTradeNO[3:]
-	switch q.OutTradeNO[:3] {
-	case Type_Buy:
-		t = Type_Buy
-	default:
-		err = errors.New("error type," + q.OutTradeNO[:3])
+	ps := strings.Split(q.OutTradeNO, typeSp)
+	if len(ps) != 2 {
+		err = errors.New("outTradeNo format error: " + q.OutTradeNO)
 		return
 	}
+	types := ps[0]
+	myTradeNo := ps[1]
 
 	data = AliPayNotifyClient{
 		TradeNO:    q.TradeNO,
 		Amount:     amount,
 		OutTradeNO: myTradeNo,
-		Type:       t,
+		Type:       types,
 	}
 
 	return
 }
 
 // 微信调起支付准备
-func CreateBbnPayInfo(GoodsName, PcorderId, PcuserId string, money string) (payInfo string, err error) {
+func CreateBbnPayInfo(GoodsName, PcorderId, PcuserId string, money, types string) (payInfo string, err error) {
 	m, _ := strconv.ParseFloat(money, 64)
 	mInt := int(m * 100)
 
-	i := BbnPayPlaceOrder{
+	i := payment.BbnPayPlaceOrder{
 		Money:     mInt,
 		GoodsId:   bbnPayGoodsId,
 		GoodsName: GoodsName,
-		PcorderId: Type_Buy + PcorderId,
+		PcorderId: types + typeSp + PcorderId,
 		NotifyUrl: bbnPayNotifyUrl,
 		PcuserId:  PcuserId,
 	}
@@ -94,47 +92,45 @@ func CreateBbnPayInfo(GoodsName, PcorderId, PcuserId string, money string) (payI
 }
 
 func CheckBbnPayNotify(data, sign string) (response BbnPayNotifyClient, err error) {
-	bp, err := bbnPay.Notify(data, sign)
+	q, err := bbnPay.Notify(data, sign)
 	if err != nil {
 		return
 	}
 
-	t := ""
-	myTradeNo := bp.Cporderid[3:]
-	switch bp.Cporderid[:3] {
-	case Type_Buy:
-		t = Type_Buy
-	default:
-		err = errors.New("error type," + bp.Cporderid[:3])
+	ps := strings.Split(q.Cporderid, typeSp)
+	if len(ps) != 2 {
+		err = errors.New("outTradeNo format error: " + q.Cporderid)
 		return
 	}
+	types := ps[0]
+	myTradeNo := ps[1]
 
-	response.TradeNO = bp.Transid
+	response.TradeNO = q.Transid
 	response.OutTradeNO = myTradeNo
-	response.Type = t
-	response.Amount = float64(bp.Money) / 100
+	response.Type = types
+	response.Amount = float64(q.Money) / 100
 	return
 }
 
-func IninBbn(key, appid, notifyUrl string, goodsId int) {
+func InitBbn(key, appid string, goodsId int, notifyUrl string) {
 	bbnPayNotifyUrl = notifyUrl
 	bbnPayGoodsId = goodsId
-	c := BbnPayConfig{
+	c := payment.BbnPayConfig{
 		Key:   key,
 		AppId: appid,
 	}
-	bbnPay = NewBbnPay(c)
+	bbnPay = payment.NewBbnPay(c)
 }
 
 func InitAli(alipay_key, alipay_partner, alipay_seller_email, privateKey, publicKey, notifyUrl string) {
 	aliPayNotifyUrl = notifyUrl
 
-	config := APKeyConfig{
+	config := payment.APKeyConfig{
 		ALIPAY_KEY:          alipay_key,
 		PARTNER_ID:          alipay_partner,
 		SELLER_EMAIL:        alipay_seller_email,
 		PARTNET_PRIVATE_KEY: privateKey,
 		ALIPAY_PUBLIC_KEY:   publicKey,
 	}
-	InitAPKey(config)
+	payment.InitAPKey(config)
 }
