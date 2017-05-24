@@ -1,4 +1,4 @@
-package util
+package beeorm
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 )
 
 // 封装一层 getAll 获取列表 ,方便使用
-func GetAll(c beego.Controller, model interface{}, contains interface{}, defaultLimit int64) (err error) {
+func GetAll(c *beego.Controller, model interface{}, contains interface{}, defaultLimit int64) (err error) {
 	f, err := BuildFilter(c, defaultLimit)
 	if err != nil {
 		return
@@ -17,7 +17,7 @@ func GetAll(c beego.Controller, model interface{}, contains interface{}, default
 	err = GetAllByFilter(model, contains, f)
 	return
 }
-func GetAllWithTotal(c beego.Controller, model interface{}, contains interface{}, defaultLimit int64) (total int64, err error) {
+func GetAllWithTotal(c *beego.Controller, model interface{}, contains interface{}, defaultLimit int64) (total int64, err error) {
 	f, err := BuildFilter(c, defaultLimit)
 	if err != nil {
 		return
@@ -36,7 +36,7 @@ type Filter struct {
 
 // 根据输入生成过滤条件
 // query=id:1;type:in1,3,5 & order=-ascId,descType & limit=0 & offset=0
-func BuildFilter(c beego.Controller, defaultLimit int64) (f *Filter, err error) {
+func BuildFilter(c *beego.Controller, defaultLimit int64) (f *Filter, err error) {
 	var fields []string
 	var order []string
 	var query = make(map[string]string)
