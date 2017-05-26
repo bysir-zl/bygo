@@ -31,7 +31,7 @@ type BbnPayNotifyClient struct {
 	Type string // 类型: recharge
 }
 
-var typeSp = "@.@"
+var typeSp = "_"
 
 // 支付宝调起支付准备
 func CreateAliPayPayInfo(tradeNo, subject, totalFee, body, types string) string {
