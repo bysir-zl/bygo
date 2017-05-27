@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"github.com/garyburd/redigo/redis"
+	"github.com/bysir-zl/bygo/log"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func NewRedis(ip string) *bRedis {
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", ip)
 			if err != nil {
-				panic(err.Error())
+				log.Error("cache-redis",err)
 			}
 			return c, err
 		},
