@@ -8,6 +8,7 @@ import (
 
 type bRedis struct {
 	*redis.Pool
+	prefix string
 }
 
 func NewRedis(ip string) *bRedis {
@@ -29,7 +30,13 @@ func NewRedis(ip string) *bRedis {
 	return &cache
 }
 
+// 设置一个Key前缀
+func (p *bRedis) SetPrefix(prefix string){
+	p.prefix = prefix
+}
+
 func (p *bRedis) HGETALL(tableName string) (mapper map[string]interface{}, err error) {
+	tableName = p.prefix + tableName
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -51,6 +58,7 @@ func (p *bRedis) HGETALL(tableName string) (mapper map[string]interface{}, err e
 }
 
 func (p *bRedis) MHSET(table string, mapper map[string]interface{}, expire int) error {
+	table = p.prefix + table
 	params := []interface{}{}
 	for key, value := range mapper {
 		params = append(params, key, value)
@@ -73,6 +81,7 @@ func (p *bRedis) MHSET(table string, mapper map[string]interface{}, expire int) 
 }
 
 func (p *bRedis) HMGETOne(tableName string, key string) (value string, err error) {
+	tableName = p.prefix + tableName
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -90,6 +99,7 @@ func (p *bRedis) HMGETOne(tableName string, key string) (value string, err error
 }
 
 func (p *bRedis) HMSET(tableName string, key string, value interface{}, expire int) (err error) {
+	tableName = p.prefix + tableName
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -106,6 +116,7 @@ func (p *bRedis) HMSET(tableName string, key string, value interface{}, expire i
 }
 
 func (p *bRedis) SET(key string, value interface{}, expire int) (err error) {
+	key = p.prefix + key
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -121,6 +132,7 @@ func (p *bRedis) SET(key string, value interface{}, expire int) (err error) {
 }
 
 func (p *bRedis) GET(key string) (str string, err error) {
+	key = p.prefix + key
 	c := p.Get()
 
 	defer func() {
@@ -137,6 +149,7 @@ func (p *bRedis) GET(key string) (str string, err error) {
 }
 
 func (p *bRedis) RPUSH(key string, value interface{}) (err error) {
+	key = p.prefix + key
 	c := p.Get()
 
 	defer func() {
@@ -148,6 +161,7 @@ func (p *bRedis) RPUSH(key string, value interface{}) (err error) {
 }
 
 func (p *bRedis) DEL(key string) (err error) {
+	key = p.prefix + key
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -160,6 +174,7 @@ func (p *bRedis) DEL(key string) (err error) {
 }
 
 func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
+	tableName = p.prefix + tableName
 	c := p.Get()
 	defer func() {
 		c.Close()
@@ -180,6 +195,7 @@ func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
 
 // 同步锁
 func (p *bRedis) Lock(key string) (err error) {
+	key = p.prefix + key
 	startTime := time.Now()
 	for {
 		s, e := p.GET(key)
@@ -208,6 +224,7 @@ func (p *bRedis) Lock(key string) (err error) {
 
 // 解锁
 func (p *bRedis) UnLock(key string) (err error) {
+	key = p.prefix + key
 	err = p.DEL(key)
 	return
 }
