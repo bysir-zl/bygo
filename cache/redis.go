@@ -16,8 +16,9 @@ func NewRedis(ip string) *bRedis {
 		return nil
 	}
 	var pool = &redis.Pool{
-		MaxIdle:   80,
-		MaxActive: 12000, // max number of connections
+		MaxIdle:     80,
+		MaxActive:   12000, // max number of connections
+		IdleTimeout: 180 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", ip)
 			return c, err
@@ -31,16 +32,15 @@ func NewRedis(ip string) *bRedis {
 }
 
 // 设置一个Key前缀
-func (p *bRedis) SetPrefix(prefix string){
+func (p *bRedis) SetPrefix(prefix string) {
 	p.prefix = prefix
 }
 
 func (p *bRedis) HGETALL(tableName string) (mapper map[string]interface{}, err error) {
 	tableName = p.prefix + tableName
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
+
 	reply, err := c.Do("HGETALL", tableName)
 	if err != nil {
 		return
@@ -66,7 +66,6 @@ func (p *bRedis) MHSET(table string, mapper map[string]interface{}, expire int) 
 
 	params = append([]interface{}{table}, params...)
 	c := p.Get()
-
 	defer c.Close()
 
 	_, err := c.Do("HMSET", params...)
@@ -83,9 +82,7 @@ func (p *bRedis) MHSET(table string, mapper map[string]interface{}, expire int) 
 func (p *bRedis) HMGETOne(tableName string, key string) (value string, err error) {
 	tableName = p.prefix + tableName
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
 	reply, err := c.Do("HMGET", tableName, key)
 	if err != nil {
 		return
@@ -101,9 +98,7 @@ func (p *bRedis) HMGETOne(tableName string, key string) (value string, err error
 func (p *bRedis) HMSET(tableName string, key string, value interface{}, expire int) (err error) {
 	tableName = p.prefix + tableName
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
 	_, err = c.Do("HMSET", tableName, key, value)
 	if err != nil {
 		return
@@ -118,9 +113,8 @@ func (p *bRedis) HMSET(tableName string, key string, value interface{}, expire i
 func (p *bRedis) SET(key string, value interface{}, expire int) (err error) {
 	key = p.prefix + key
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
+
 	_, err = c.Do("SET", key, value)
 	if err != nil {
 		return
@@ -135,9 +129,8 @@ func (p *bRedis) GET(key string) (str string, err error) {
 	key = p.prefix + key
 	c := p.Get()
 
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
+
 	value, err := c.Do("GET", key)
 	if err != nil {
 		return
@@ -151,10 +144,7 @@ func (p *bRedis) GET(key string) (str string, err error) {
 func (p *bRedis) RPUSH(key string, value interface{}) (err error) {
 	key = p.prefix + key
 	c := p.Get()
-
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
 
 	_, err = c.Do("RPUSH", key, value)
 	return
@@ -163,9 +153,8 @@ func (p *bRedis) RPUSH(key string, value interface{}) (err error) {
 func (p *bRedis) DEL(key string) (err error) {
 	key = p.prefix + key
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
+
 	_, err = c.Do("DEL", key)
 	if err != nil {
 		return
@@ -176,9 +165,7 @@ func (p *bRedis) DEL(key string) (err error) {
 func (p *bRedis) HDEL(tableName string, keys ...string) (err error) {
 	tableName = p.prefix + tableName
 	c := p.Get()
-	defer func() {
-		c.Close()
-	}()
+	defer c.Close()
 
 	ps := make([]interface{}, len(keys)+1)
 	ps[0] = tableName
