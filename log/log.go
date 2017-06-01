@@ -18,6 +18,7 @@ const (
 
 type Logger struct {
 	l         *log.Logger
+	lErr      *log.Logger
 	callDepth int
 	maxLevel  int
 }
@@ -26,7 +27,8 @@ var defLogger *Logger
 
 func NewLogger() *Logger {
 	return &Logger{
-		l:         log.New(os.Stderr, "", log.Ltime|log.Ldate|log.Lshortfile),
+		lErr:      log.New(os.Stderr, "", log.Ltime|log.Ldate|log.Lshortfile),
+		l:         log.New(os.Stdout, "", log.Ltime|log.Ldate|log.Lshortfile),
 		callDepth: 3,
 		maxLevel:  0,
 	}
@@ -69,7 +71,6 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 			l = "[A]"
 		}
 		tag = "[" + tag + "] "
-		p.l.SetPrefix(l + " ")
 
 		var arg []interface{}
 		var format string
@@ -79,17 +80,23 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 			if _format, ok := v[0].(string); ok {
 				if strings.Contains(_format, "%") {
 					format = "%s " + _format
-					arg = append([]interface{}{tag}, v[1:]...)
+					arg = append([]interface{}{l}, v[1:]...)
 				}
 			}
 		}
 
 		if format == "" {
-			arg = append([]interface{}{tag}, v...)
+			arg = append([]interface{}{l}, v...)
 			format = strings.Repeat("%+v ", len(arg))
 		}
 
-		p.l.Output(p.callDepth, fmt.Sprintf(format, arg...))
+		if level == LError {
+			p.lErr.SetPrefix(tag)
+			p.lErr.Output(p.callDepth, fmt.Sprintf(format, arg...))
+		} else {
+			p.l.SetPrefix(tag)
+			p.l.Output(p.callDepth, fmt.Sprintf(format, arg...))
+		}
 	}
 }
 
