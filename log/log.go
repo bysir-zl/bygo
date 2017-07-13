@@ -70,7 +70,9 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 		case LAssert:
 			l = "[A]"
 		}
-		tag = "[" + tag + "] "
+		l += " "
+
+		tag = "[" + tag + "]"
 
 		var arg []interface{}
 		var format string
@@ -80,21 +82,21 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 			if _format, ok := v[0].(string); ok {
 				if strings.Contains(_format, "%") {
 					format = "%s " + _format
-					arg = append([]interface{}{l}, v[1:]...)
+					arg = append([]interface{}{tag}, v[1:]...)
 				}
 			}
 		}
 
 		if format == "" {
-			arg = append([]interface{}{l}, v...)
+			arg = append([]interface{}{tag}, v...)
 			format = strings.Repeat("%+v ", len(arg))
 		}
 
 		if level == LError {
-			p.lErr.SetPrefix(tag)
+			p.lErr.SetPrefix(l)
 			p.lErr.Output(p.callDepth, fmt.Sprintf(format, arg...))
 		} else {
-			p.l.SetPrefix(tag)
+			p.l.SetPrefix(l)
 			p.l.Output(p.callDepth, fmt.Sprintf(format, arg...))
 		}
 	}
