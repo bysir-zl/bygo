@@ -3,6 +3,7 @@ package util
 import (
 	"log"
 	"testing"
+	"github.com/bysir-zl/sync-chess/chess"
 )
 
 func TestMapToObj(t *testing.T) {
@@ -15,6 +16,25 @@ func TestMapToObj(t *testing.T) {
 	s := struct {
 		Name string `json:"name"`
 		Sex  int `json:"sex"`
+		Age  int `json:"age"`
+	}{}
+
+	MapToObj(&s, m, "json")
+	log.Printf("%+v", s)
+}
+
+func TestMapToObj2(t *testing.T) {
+	m := map[string]interface{}{
+		"name":"bysir",
+		"sex":1,
+		"age":21,
+	}
+
+	type INT chess.ActionType
+
+	s := struct {
+		Name string `json:"name"`
+		Sex  INT `json:"sex"`
 		Age  int `json:"age"`
 	}{}
 

@@ -73,6 +73,7 @@ func MapToObj(obj interface{}, mapper map[string]interface{}, useTag string) (fi
 			}
 			fieldName = _fieldName
 		}
+
 		field := objValue.FieldByName(fieldName)
 		if field.IsValid() && field.CanInterface() && field.CanSet() {
 			err := setValue(field, value)
@@ -181,6 +182,12 @@ func setValue(v reflect.Value, value interface{}) (err error) {
 		if ok {
 			v.SetInt(i)
 		}
+
+	case reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint:
+		i, ok := Interface2UInt(value, false)
+		if ok {
+			v.SetUint(i)
+		}
 	case reflect.Float32, reflect.Float64:
 		f, ok := Interface2Float(value, false)
 		if ok {
@@ -204,6 +211,7 @@ func setValue(v reflect.Value, value interface{}) (err error) {
 				err = fmt.Errorf("%s %v", v.Type().String(), e)
 			}
 		}()
+
 		v.Set(reflect.ValueOf(value))
 		break
 	}
@@ -216,6 +224,8 @@ func Interface2Int(value interface{}, strict bool) (v int64, ok bool) {
 		v, ok = int64(value.(int)), true
 	case int8:
 		v, ok = int64(value.(int8)), true
+	case int16:
+		v, ok = int64(value.(int16)), true
 	case int32:
 		v, ok = int64(value.(int32)), true
 	case int64:
@@ -251,6 +261,52 @@ func Interface2Int(value interface{}, strict bool) (v int64, ok bool) {
 	return
 }
 
+func Interface2UInt(value interface{}, strict bool) (v uint64, ok bool) {
+	switch value.(type) {
+	case uint:
+		v, ok = uint64(value.(uint)), true
+	case uint8:
+		v, ok = uint64(value.(uint8)), true
+	case uint16:
+		v, ok = uint64(value.(uint16)), true
+	case uint32:
+		v, ok = uint64(value.(uint32)), true
+	case uint64:
+		v, ok = uint64(value.(uint64)), true
+	}
+	if ok {
+		return
+	}
+	if strict {
+		if !ok {
+			return
+		}
+	}
+
+	switch value.(type) {
+	case string, []uint8:
+		s, _ := Interface2String(value, true)
+		i, err := strconv.ParseUint(s, 10, 64)
+		if err == nil {
+			v, ok = i, true
+		}
+	case int, int8, int16, int32, int64:
+		s, _ := Interface2Int(value, true)
+		v, ok = uint64(s), true
+	case float32, float64:
+		f, _ := Interface2Float(value, true)
+		v, ok = uint64(f), true
+	case bool:
+		if value.(bool) {
+			v = 1
+		} else {
+			v = 0
+		}
+		ok = true
+	}
+	return
+}
+
 func Interface2Bool(value interface{}, strict bool) (v bool, ok bool) {
 	if strict {
 		v, ok = value.(bool)
@@ -259,7 +315,8 @@ func Interface2Bool(value interface{}, strict bool) (v bool, ok bool) {
 	switch value.(type) {
 	case bool:
 		v, ok = value.(bool), true
-	case int8, int, int32, int64:
+	case int8, int, int32, int64,
+	uint8, uint, uint32, uint64:
 		i, _ := Interface2Int(value, true)
 		v, ok = i == 1, true
 	case float32, float64:
@@ -293,6 +350,11 @@ func Interface2Float(value interface{}, strict bool) (v float64, ok bool) {
 	switch value.(type) {
 	case int, int8, int32, int64:
 		i, ok := Interface2Int(value, true)
+		if ok {
+			v, ok = float64(i), true
+		}
+	case uint, uint8, uint32, uint64:
+		i, ok := Interface2UInt(value, true)
 		if ok {
 			v, ok = float64(i), true
 		}
@@ -333,6 +395,9 @@ func Interface2String(value interface{}, strict bool) (v string, ok bool) {
 	case int64, int8, int32, int:
 		i, _ := Interface2Int(value, true)
 		v, ok = strconv.FormatInt(i, 10), true
+	case uint64, uint8, uint32, uint:
+		i, _ := Interface2UInt(value, true)
+		v, ok = strconv.FormatUint(i, 10), true
 	case float64, float32:
 		f, _ := Interface2Float(value, true)
 		v, ok = strconv.FormatFloat(f, 'f', -1, 64), true
@@ -363,6 +428,9 @@ func Interface2StringWithType(value interface{}, strict bool) (v string, ok bool
 	case int64, int8, int32, int:
 		i, _ := Interface2Int(value, true)
 		v, ok = "int:"+strconv.FormatInt(i, 10), true
+	case uint64, uint8, uint32, uint:
+		i, _ := Interface2UInt(value, true)
+		v, ok = "int:"+strconv.FormatUint(i, 10), true
 	case float64, float32:
 		f, _ := Interface2Float(value, true)
 		v, ok = "float:"+strconv.FormatFloat(f, 'f', -1, 64), true
