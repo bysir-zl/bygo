@@ -110,6 +110,8 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 					format = "%s " + _format
 					if tag != "" {
 						arg = append([]interface{}{tag}, v[1:]...)
+					}else{
+						arg = v[1:]
 					}
 				}
 			}
@@ -118,6 +120,8 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 		if format == "" {
 			if tag != "" {
 				arg = append([]interface{}{tag}, v...)
+			}else{
+				arg = v
 			}
 			format = strings.Repeat("%+v ", len(arg))
 		}
