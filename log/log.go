@@ -9,11 +9,11 @@ import (
 
 const (
 	LVerbose = iota + 1
-	LDebug
-	LInfo
-	LWarn
-	LError
-	LAssert
+	LDebug   
+	LInfo    
+	LWarn    
+	LError   
+	LAssert  
 )
 
 type Logger struct {
@@ -94,11 +94,6 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 		case LAssert:
 			l = "[A]"
 		}
-		l += " "
-
-		if tag != "" {
-			tag = "[" + tag + "]"
-		}
 
 		var arg []interface{}
 		var format string
@@ -107,27 +102,29 @@ func (p *Logger) OutPutStd(level int, tag string, v ...interface{}) {
 		if len(v) >= 2 {
 			if _format, ok := v[0].(string); ok {
 				if strings.Contains(_format, "%") {
-					format = "%s " + _format
-					if tag != "" {
-						arg = append([]interface{}{tag}, v[1:]...)
-					}
+					format = _format
+					arg = v[1:]
 				}
 			}
 		}
 
 		if format == "" {
-			if tag != "" {
-				arg = append([]interface{}{tag}, v...)
-			}
+			arg = v
 			format = strings.Repeat("%+v ", len(arg))
 		}
 
+		prefix := ""
+		if tag != "" {
+			prefix += "[" + tag + "] "
+		}
+		if l != "" {
+			prefix += l + " "
+		}
+
 		if level == LError {
-			p.lErr.SetPrefix(l)
-			p.lErr.Output(p.callDepth, fmt.Sprintf(format, arg...))
+			p.lErr.Output(p.callDepth, prefix+fmt.Sprintf(format, arg...))
 		} else {
-			p.l.SetPrefix(l)
-			p.l.Output(p.callDepth, fmt.Sprintf(format, arg...))
+			p.l.Output(p.callDepth, prefix+fmt.Sprintf(format, arg...))
 		}
 	}
 }
