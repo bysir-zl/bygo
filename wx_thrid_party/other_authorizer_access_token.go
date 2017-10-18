@@ -1,11 +1,10 @@
-package token
+package wx_thrid_party
 
 import (
     "github.com/bysir-zl/bygo/wx_thrid_party/util"
     "encoding/json"
     "github.com/bysir-zl/bygo/wx_thrid_party/config"
     "github.com/pkg/errors"
-    "github.com/bysir-zl/bygo/wx_thrid_party/errs"
 )
 
 // 获取（刷新）授权公众号或小程序的接口调用凭据（令牌）
@@ -38,7 +37,6 @@ func GetOrRefreshAccessToken(componentAppid, authorizerAppid, refreshToken strin
         AuthorizerAppid:        authorizerAppid,
     }
     reqData, _ := json.Marshal(req)
-
 
     componentAccessToken, err := GetComponentAccessToken()
     if err != nil {

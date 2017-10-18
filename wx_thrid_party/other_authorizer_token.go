@@ -1,11 +1,10 @@
-package token
+package wx_thrid_party
 
 import (
     "encoding/json"
     "github.com/bysir-zl/bygo/wx_thrid_party/config"
     "github.com/bysir-zl/bygo/wx_thrid_party/util"
     "github.com/pkg/errors"
-    "github.com/bysir-zl/bygo/wx_thrid_party/errs"
 )
 
 // 该API用于使用授权码换取授权公众号或小程序的授权信息，并换取authorizer_access_token和authorizer_refresh_token。

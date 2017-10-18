@@ -1,9 +1,11 @@
-package token
+package wx_thrid_party
 
 import (
     "github.com/bysir-zl/bygo/wx_thrid_party/config"
     "github.com/bysir-zl/bygo/wx_thrid_party/util"
     "encoding/xml"
+    "time"
+    "github.com/schollz/jsonstore"
 )
 
 // component_verify_ticket
@@ -17,8 +19,8 @@ type ComponentVerifyTicketReq struct {
     AuthorizationCode     string `xml:"AuthorizationCode"`
 }
 
-// 根据微信回调解析出VerifyTicket
-func DecodeComponentVerifyTicket(msg_signature, timeStamp, nonce string, body []byte) (ticket string, err error) {
+// 处理微信VerifyTicket回调
+func HandleComponentVerifyTicketReq(msg_signature, timeStamp, nonce string, body []byte) (err error) {
     c := util.NewCrypt(config.Token, config.AesKey, config.AppId)
 
     bs, err := c.Decrypt(msg_signature, timeStamp, nonce, body)
@@ -28,11 +30,50 @@ func DecodeComponentVerifyTicket(msg_signature, timeStamp, nonce string, body []
 
     var t ComponentVerifyTicketReq
     err = xml.Unmarshal(bs, &t)
-    ticket = t.ComponentVerifyTicket
+    if err != nil {
+        return
+    }
+    ticket := t.ComponentVerifyTicket
+    err = SaveVerifyTicket(ticket)
     return
+}
+
+type SavedVerifyTicket struct {
+    VerifyTicket string `json:"verify_ticket"`
+    SaveAt       int64  `json:"save_at"`
 }
 
 // 获取上一次的ticket, 存储在文件
 func GetLastVerifyTicket() (ticket string, ok bool) {
-    return "xx", true
+    ks, err := jsonstore.Open("verify_ticket.json")
+    if err != nil {
+        return
+    }
+
+    s := SavedVerifyTicket{}
+    err = ks.Get("verify_ticket", &s)
+    if err != nil {
+        return
+    }
+
+    return s.VerifyTicket, true
+}
+
+// 存储在文件
+func SaveVerifyTicket(ticket string) (err error) {
+    ks := new(jsonstore.JSONStore)
+    s := SavedVerifyTicket{
+        VerifyTicket: ticket,
+        SaveAt:       time.Now().Unix(),
+    }
+
+    err = ks.Set("verify_ticket", s)
+    if err != nil {
+        return
+    }
+    err = jsonstore.Save(ks, "verify_ticket.json")
+    if err != nil {
+        return
+    }
+    return
 }

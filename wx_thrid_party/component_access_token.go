@@ -1,4 +1,4 @@
-package token
+package wx_thrid_party
 
 import (
     "github.com/bysir-zl/bygo/wx_thrid_party/config"
