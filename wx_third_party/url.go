@@ -1,4 +1,4 @@
-package wx_thrid_party
+package wx_third_party
 
 const (
     URL_ComponentToken = "https://api.weixin.qq.com/cgi-bin/component/api_component_token"

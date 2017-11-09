@@ -1,0 +1,20 @@
+{
+	"ImportPath": "github.com/bysir-zl/bygo",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gomydodo/wxencrypter",
+			"Rev": "1c9dbf231866081a8db948d893f50b7c161b3fa9"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-7-gf15c970",
+			"Rev": "f15c970de5b76fac0b59abb32d62c17cc7bed265"
+		},
+		{
+			"ImportPath": "github.com/schollz/jsonstore",
+			"Rev": "3d705d8bcd6da69136a4e66e5181d654c0234439"
+		}
+	]
+}

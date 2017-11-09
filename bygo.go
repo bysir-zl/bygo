@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
 	"github.com/bysir-zl/bygo/artisan"
 	"github.com/bysir-zl/bygo/log"
-	"os"
+	_ "github.com/bysir-zl/bygo/wx_thrid_party"
 )
 
 func main() {
