@@ -1,9 +1,10 @@
-package wx_third_party
+package third_party
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_third_party/util"
+	"github.com/bysir-zl/bygo/wx_open/util"
 	"github.com/pkg/errors"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 // 该API用于使用授权码换取授权公众号或小程序的授权信息，并换取authorizer_access_token和authorizer_refresh_token。
@@ -30,7 +31,7 @@ type AuthorizerTokenReq struct {
 
 func GetAuthorizerToken(authorizationCode string) (authorizerTokenRsp *AuthorizerTokenRsp, err error) {
 	req := &AuthorizerTokenReq{
-		ComponentAppid:    AppId,
+		ComponentAppid:    wx_open.AppId,
 		AuthorizationCode: authorizationCode,
 	}
 	reqData, _ := json.Marshal(req)
@@ -39,14 +40,19 @@ func GetAuthorizerToken(authorizationCode string) (authorizerTokenRsp *Authorize
 	if err != nil {
 		return
 	}
-	rsp, err := util.Post(URL_OtherAuthToken+componentAccessToken, reqData)
+	rsp, err := util.Post(URLOtherAuthToken+componentAccessToken, reqData)
 	if err != nil {
 		err = errors.Wrap(err, "GetAuthorizerToken")
 		return
 	}
 
+	authorizerTokenRsp = &AuthorizerTokenRsp{}
 	err = json.Unmarshal(rsp, authorizerTokenRsp)
 	if err != nil {
+		return
+	}
+	if authorizerTokenRsp.AuthorizationInfo.AuthorizerAppid == "" {
+		err = errors.New(string(rsp))
 		return
 	}
 

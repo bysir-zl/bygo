@@ -1,4 +1,4 @@
-package wx_third_party
+package wx_open
 
 var (
 	Token     string

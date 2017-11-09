@@ -1,4 +1,4 @@
-package wx_third_party
+package third_party
 
 import "testing"
 

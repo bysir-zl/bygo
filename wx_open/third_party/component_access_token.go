@@ -1,10 +1,11 @@
-package wx_third_party
+package third_party
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_third_party/util"
+	"github.com/bysir-zl/bygo/wx_open/util"
 	"github.com/pkg/errors"
-	"github.com/bysir-zl/bygo/wx_third_party/errs"
+	"github.com/bysir-zl/bygo/wx_open/errs"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 // 第三方平台component_access_token是第三方平台的下文中接口的调用凭据，也叫做令牌（component_access_token）。
@@ -35,12 +36,12 @@ func GetComponentAccessToken() (componentAccessToken string, err error) {
 
 	req := &ComponentAccessTokenReq{
 		ComponentVerifyTicket: ticket,
-		ComponentAppid:        AppId,
-		ComponentAppsecret:    AppSecret,
+		ComponentAppid:        wx_open.AppId,
+		ComponentAppsecret:    wx_open.AppSecret,
 	}
 	reqData, _ := json.Marshal(req)
 
-	rsp, err := util.Post(URL_ComponentToken, reqData)
+	rsp, err := util.Post(URLComponentToken, reqData)
 	if err != nil {
 		err = errors.Wrap(err, "GetComponentAccessToken")
 		return
@@ -48,6 +49,10 @@ func GetComponentAccessToken() (componentAccessToken string, err error) {
 	var componentAccessTokenRsp ComponentAccessTokenRsp
 	err = json.Unmarshal(rsp, &componentAccessTokenRsp)
 	if err != nil {
+		return
+	}
+	if componentAccessTokenRsp.ComponentAccessToken == "" {
+		err = errors.New(string(rsp))
 		return
 	}
 

@@ -1,9 +1,10 @@
-package wx_third_party
+package third_party
 
 import (
-	"github.com/bysir-zl/bygo/wx_third_party/util"
+	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 // 获取（刷新）授权公众号或小程序的接口调用凭据（令牌）
@@ -32,7 +33,7 @@ func GetOrRefreshAccessToken(componentAppid, authorizerAppid, refreshToken strin
 
 	req := &AuthorizedInfoReq{
 		AuthorizerRefreshToken: refreshToken,
-		ComponentAppid:         AppId,
+		ComponentAppid:         wx_open.AppId,
 		AuthorizerAppid:        authorizerAppid,
 	}
 	reqData, _ := json.Marshal(req)
@@ -42,7 +43,7 @@ func GetOrRefreshAccessToken(componentAppid, authorizerAppid, refreshToken strin
 		return
 	}
 
-	rsp, err := util.Post(URL_RefreshOtherAuthToken+componentAccessToken, reqData)
+	rsp, err := util.Post(URLRefreshOtherAuthToken+componentAccessToken, reqData)
 	if err != nil {
 		err = errors.Wrap(err, "RefreshAccessToken")
 		return

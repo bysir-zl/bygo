@@ -1,9 +1,10 @@
-package wx_third_party
+package third_party
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_third_party/util"
+	"github.com/bysir-zl/bygo/wx_open/util"
 	"github.com/pkg/errors"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 // 该API用于获取预授权码。预授权码用于公众号或小程序授权时的第三方平台方安全验证。
@@ -24,7 +25,7 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	}
 
 	req := &PreAuthCodeReq{
-		ComponentAppid: AppId,
+		ComponentAppid: wx_open.AppId,
 	}
 	reqData, _ := json.Marshal(req)
 
@@ -32,7 +33,7 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	if err != nil {
 		return
 	}
-	rsp, err := util.Post(URL_PreAuthcode+componentAccessToken, reqData)
+	rsp, err := util.Post(URLPreAuthCode+componentAccessToken, reqData)
 	if err != nil {
 		err = errors.Wrap(err, "GetPreAuthCode")
 		return
