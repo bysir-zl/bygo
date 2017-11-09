@@ -49,7 +49,8 @@ var mapperPool map[string]FieldTagMapper = map[string]FieldTagMapper{}
 
 func GetTagMapperFromPool(i interface{}) FieldTagMapper {
 	//return newFieldTagMapper(i)
-	key := reflect.ValueOf(i).String()
+	t:=reflect.TypeOf(i)
+	key := t.PkgPath()+t.String()
 	tagMapPoolLock.RLock()
 	if s := mapperPool[key]; s.mapData == nil {
 		tagMapPoolLock.RUnlock()
