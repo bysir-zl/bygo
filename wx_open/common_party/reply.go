@@ -4,7 +4,7 @@ package common_party
 
 import (
 	"encoding/xml"
-	"github.com/bysir-zl/bygo/wx_open"
+	"github.com/bysir-zl/bygo/wx_open/util"
 )
 
 type MessageReply struct {
@@ -23,6 +23,6 @@ type MessageReplyText struct {
 // 请传入上面定义的结构体
 func DecodeMessageReply(m interface{}) (bs []byte, err error) {
 	rspBs, _ := xml.Marshal(m)
-	bs, err = wx_open.Encrypt(rspBs)
+	bs, err = util.Encrypt(rspBs)
 	return
 }

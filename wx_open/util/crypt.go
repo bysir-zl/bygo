@@ -1,7 +1,8 @@
-package wx_open
+package util
 
 import (
 	"github.com/gomydodo/wxencrypter"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 type Crypt struct {
@@ -39,7 +40,7 @@ func (c *Crypt) Decrypt(msgSignature, timestamp, nonce string, data []byte) (bs 
 }
 
 func Decrypt(msgSignature, timestamp, nonce string, data []byte) (bs []byte, err error) {
-	c, err := NewCrypt(Token, AesKey, AppId)
+	c, err := NewCrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId)
 	if err != nil {
 		return
 	}
@@ -47,7 +48,7 @@ func Decrypt(msgSignature, timestamp, nonce string, data []byte) (bs []byte, err
 }
 
 func Encrypt(replyMsg []byte) (bs []byte, err error) {
-	c, err := NewCrypt(Token, AesKey, AppId)
+	c, err := NewCrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId)
 	if err != nil {
 		return
 	}

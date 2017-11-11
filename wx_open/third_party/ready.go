@@ -1,14 +1,13 @@
-package ready
+package third_party
 
 import (
 	"github.com/bysir-zl/bygo/wx_open/common_party"
 	"time"
 	"strings"
-	"github.com/bysir-zl/bygo/wx_open/third_party"
 )
 
 // 1. 模拟粉丝触发专用测试公众号的事件，并推送事件消息到专用测试公众号，第三方平台方开发者需要提取推送XML信息中的event值，并在5秒内立即返回按照下述要求组装的文本消息给粉丝。
-func ResponseMock1(req common_party.MessageReq) (bs []byte, err error) {
+func responseMock1(req common_party.MessageReq) (bs []byte, err error) {
 	rsp := common_party.MessageReplyText{
 		MessageReply: common_party.MessageReply{
 			MsgType:      "text",
@@ -25,7 +24,7 @@ func ResponseMock1(req common_party.MessageReq) (bs []byte, err error) {
 }
 
 // 2. 模拟粉丝发送文本消息给专用测试公众号，第三方平台方需根据文本消息的内容进行相应的响应：
-func ResponseMock2(req common_party.MessageReq) (bs []byte, err error) {
+func responseMock2(req common_party.MessageReq) (bs []byte, err error) {
 	rsp := common_party.MessageReplyText{
 		MessageReply: common_party.MessageReply{
 			MsgType:      "text",
@@ -41,13 +40,13 @@ func ResponseMock2(req common_party.MessageReq) (bs []byte, err error) {
 }
 
 // 3. 模拟粉丝发送文本消息给专用测试公众号，第三方平台方需在5秒内返回空串表明暂时不回复，然后再立即使用客服消息接口发送消息回复粉丝
-func ResponseMock3(req common_party.MessageReq) (err error) {
+func responseMock3(req common_party.MessageReq) (err error) {
 	if !strings.Contains(req.Content, "QUERY_AUTH_CODE") {
 		return
 	}
 
 	authCode := strings.Replace(req.Content, "QUERY_AUTH_CODE:", "", -1)
-	t, err := third_party.GetAuthorizerToken(authCode)
+	t, err := GetAuthorizerToken(authCode)
 	if err != nil {
 		return
 	}
@@ -69,15 +68,15 @@ func FilterReady(appId string, req common_party.MessageReq) (stop bool, response
 	stop = true
 	switch req.MsgType {
 	case "event":
-		response, err = ResponseMock1(req)
+		response, err = responseMock1(req)
 		return
 	case "text":
 		if req.Content == "TESTCOMPONENT_MSG_TYPE_TEXT" {
-			response, err = ResponseMock2(req)
+			response, err = responseMock2(req)
 			return
 		}
 		if strings.Contains(req.Content, "QUERY_AUTH_CODE") {
-			err = ResponseMock3(req)
+			err = responseMock3(req)
 			return
 		}
 	}

@@ -1,8 +1,8 @@
 package common_party
 
 import (
-	"github.com/bysir-zl/bygo/wx_open"
 	"encoding/xml"
+	"github.com/bysir-zl/bygo/wx_open/util"
 )
 
 // 更多资料请看微信公众平台文档: https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140454
@@ -13,7 +13,7 @@ type MessageReq struct {
 	CreateTime   string `xml:"CreateTime"`
 	MsgType      string `xml:"MsgType"`   // 消息类型: event, text ....
 	Event        string `xml:"Event"`     // 事件类型
-	EventKey     string `xml:"EventKey"`  // 事件KEY值，qrscene_为前缀，后面为二维码的参数值
+	EventKey     string `xml:"EventKey"`  // 事件KEY值
 	Ticket       string `xml:"Ticket"`    // 二维码的ticket，可用来换取二维码图片
 	Latitude     string `xml:"Latitude"`  // 地理位置纬度
 	Longitude    string `xml:"Longitude"` // 地理位置经度
@@ -25,7 +25,7 @@ type MessageReq struct {
 
 // 处理消息/事件推送
 func DecodeMessage(msgSignature, timeStamp, nonce string, body []byte) (t MessageReq, err error) {
-	bs, err := wx_open.Decrypt(msgSignature, timeStamp, nonce, body)
+	bs, err := util.Decrypt(msgSignature, timeStamp, nonce, body)
 	if err != nil {
 		return
 	}

@@ -1,11 +1,23 @@
-## 微信第三方平台 所使用到的部分公共代码
+## 准备
+- 全网发布
 
+### usage
+```
+msg, err := common_party.DecodeMessage(msgSignature, timestamp, nonce, body)
+if err != nil {
+    log.Errorf("Decrypt err:%v", err)
+    ctx.String(500, "Decrypt err:%v", err)
+    return
+}
 
-- 加解密
-
-
-### usage 
-先初始化 配置app信息
-```go
-wx_thrid_party.Init(token, aeskey, appid, appSecret)
+stop, rsp, err := ready.FilterReady(appId, msg)
+if err != nil {
+    log.Errorf("FilterReady err:%v", err)
+    ctx.String(500, "FilterReady err:%v", err)
+    return
+}
+if stop {
+    ctx.Writer.Write(rsp)
+    return
+}
 ```
