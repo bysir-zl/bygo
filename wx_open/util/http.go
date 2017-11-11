@@ -11,7 +11,7 @@ func Post(url string, body []byte) (rsp []byte, err error) {
         return
     }
     if code != 200 {
-        err = errors.New("request error,url: " + url)
+        err = errors.New("request error,url: " + url+" rsp: "+rspStr)
         return
     }
     rsp = []byte(rspStr)
