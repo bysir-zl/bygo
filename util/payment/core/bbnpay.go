@@ -1,4 +1,4 @@
-package payment
+package core
 
 import (
 	"encoding/json"
@@ -30,9 +30,9 @@ type BbnPayConfig struct {
 
 type BbnPayPlaceOrder struct {
 	AppId     string `json:"appid"`
-	GoodsId   int `json:"goodsid"`      // 应用中的商品编号
+	GoodsId   int    `json:"goodsid"`   // 应用中的商品编号
 	PcorderId string `json:"pcorderid"` // 商户生成的订单号，需要保证系统唯一
-	Money     int `json:"money"`        // 支付金额
+	Money     int    `json:"money"`     // 支付金额
 	Currency  string `json:"currency"`  // 货币类型以及单位： CHY – 人民币（单位：分）
 	PcuserId  string `json:"pcuserid"`  // 用户在商户应用的唯一标识，建议为用户帐号。
 	NotifyUrl string `json:"notifyurl"` // 商户服务端接收支付结果通知的地址
@@ -42,22 +42,22 @@ type BbnPayPlaceOrder struct {
 type BbnPayNotify struct {
 	Appid      string `json:"appid,omitempty"`
 	Goodsid    string `json:"goodsid,omitempty"`
-	TransType  int8 `json:"transtype,omitempty"`      // 交易类型：0–支付交易；
+	TransType  int8   `json:"transtype,omitempty"`    // 交易类型：0–支付交易；
 	Cporderid  string `json:"cporderid,omitempty"`    // 商户订单号
 	Transid    string `json:"transid,omitempty"`      // 交易流水号
 	Pcuserid   string `json:"pcuserid,omitempty"`     // 用户在商户应用 的唯一标识
-	Feetype    int8 `json:"feetype,omitempty"`        // 计费方式
-	Money      int `json:"money,omitempty"`           // 本次交易的金额（请务必严格校验商品金额与交易的金额是否一致）
-	FactMoney  int `json:"fact_money,omitempty"`      // 实际付款金额
-	Result     int `json:"result,omitempty"`          // 交易结果： 1–支付成功 2–支付失败
-	Paytype    string `json:"paytype,omitempty"`        // 支付方式
+	Feetype    int8   `json:"feetype,omitempty"`      // 计费方式
+	Money      int    `json:"money,omitempty"`        // 本次交易的金额（请务必严格校验商品金额与交易的金额是否一致）
+	FactMoney  int    `json:"fact_money,omitempty"`   // 实际付款金额
+	Result     int    `json:"result,omitempty"`       // 交易结果： 1–支付成功 2–支付失败
+	Paytype    string `json:"paytype,omitempty"`      // 支付方式
 	Currency   string `json:"currency,omitempty"`     // 货币类型
 	Transtime  string `json:"transtime,omitempty"`    // 交易完成时间
 	PcPrivInfo string `json:"pc_priv_info,omitempty"` // 商户私有信息
-	err error
+	err        error
 }
 
-func (p BbnPayNotify)IsError()error{
+func (p BbnPayNotify) IsError() error {
 	return p.err
 }
 
@@ -123,10 +123,10 @@ func (p *BbnPay) Notify(data, sign string) (resp BbnPayNotify, err error) {
 	signKv.Add("appid", resp.Appid)
 	signKv.Add("goodsid", resp.Goodsid)
 	signKv.Add("feetype", strconv.Itoa(int(resp.Feetype)))
-	signKv.Add("money",  strconv.Itoa(resp.Money))
+	signKv.Add("money", strconv.Itoa(resp.Money))
 	signKv.Add("fact_money", strconv.Itoa(resp.FactMoney))
 	signKv.Add("currency", resp.Currency)
-	signKv.Add("result",  strconv.Itoa(resp.Result))
+	signKv.Add("result", strconv.Itoa(resp.Result))
 	signKv.Add("transtime", resp.Transtime)
 	signKv.Add("pc_priv_info", resp.PcPrivInfo)
 	signKv.Add("paytype", resp.Paytype)
@@ -135,7 +135,7 @@ func (p *BbnPay) Notify(data, sign string) (resp BbnPayNotify, err error) {
 	signStr := signKv.EncodeStringWithoutEscape() + "&key=" + p.Key
 	signT := encoder.Md5String(signStr)
 
-	if sign!=signT{
+	if sign != signT {
 		resp.err = errors.New("sign error")
 		err = errors.New("sign error")
 		return

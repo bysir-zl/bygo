@@ -4,7 +4,7 @@ import (
 	"os"
 	"github.com/bysir-zl/bygo/artisan"
 	"github.com/bysir-zl/bygo/log"
-	_ "github.com/bysir-zl/bygo/wx_thrid_party"
+	_ "github.com/bysir-zl/bygo/wx_open/third_party"
 )
 
 func main() {

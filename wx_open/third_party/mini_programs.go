@@ -27,7 +27,7 @@ const (
 // https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=open1489140610_Uavc4&token=ac82903f643036d2ee5b069f276a6b140a7ab75f&lang=zh_CN
 
 // 为授权的小程序帐号上传小程序代码
-// 请注意其中ext_json必须是json的字符串, 而且里面的参数不能乱配置, 比如page参数一定要是小程序模板里有的
+// 请注意其中ext_json必须是json的字符串, 而且里面的参数不能乱配置, 比如page参数的路径一定要是小程序模板里有的
 func CommitCode(accessToken string, templateId int, extJson string, userVersion string, userDesc string) (err error) {
 	req := struct {
 		TemplateId  int    `json:"template_id"`
@@ -222,7 +222,8 @@ type AuthResponse struct {
 
 // 微信登陆
 // code 换取 session_key
-// 第三方平台开发者的服务器使用登录凭证 code 以及第三方平台的component_access_token 获取 session_key 和 openid。其中 session_key 是对用户数据进行加密签名的密钥。为了自身应用安全，session_key 不应该在网络上传输。
+// 第三方平台开发者的服务器使用登录凭证 code 以及第三方平台的component_access_token 获取 session_key 和 openid。其中 session_key 是对用户数据进行加密签名的密钥。
+// 为了自身应用安全，session_key 不应该在网络上传输。
 // appId: 小程序id
 func GetSessionKeyByCode(appId string, code string) (r AuthResponse, err error) {
 	t, err := GetComponentAccessToken()

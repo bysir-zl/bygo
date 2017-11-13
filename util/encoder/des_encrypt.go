@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/cipher"
 	"crypto/des"
-	"github.com/kataras/go-errors"
+	"errors"
 )
 
 func DesEncrypt(origData, key []byte) ([]byte, error) {
