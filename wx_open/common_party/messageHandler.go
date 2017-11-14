@@ -21,6 +21,7 @@ type MessageReq struct {
 
 	Content string `xml:"Content"` // 消息内容
 	MsgId   string `xml:"MsgId"`
+	Reason string `xml:"Reason"`
 }
 
 // 处理消息/事件推送

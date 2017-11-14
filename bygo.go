@@ -31,6 +31,13 @@ func main() {
 		path := args[2]
 		out := args[3]
 		artisan.Swagger(path, out)
+	case "json2go":
+		err := artisan.Json2Go()
+		if err != nil {
+			log.ErrorT("bygo", err.Error())
+		} else {
+			log.InfoT("bygo", "gen go struct from clipboard success")
+		}
 	}
 
 }
