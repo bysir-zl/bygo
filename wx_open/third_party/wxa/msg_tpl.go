@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
+	"log"
 )
+var _ = log.Ldate
 
 // 消息模板管理
 
@@ -95,7 +97,7 @@ type WxTplTitle struct {
 func GetWxTplTitleList(accessToken string, offset int, count int) (tplList []WxTplTitle, total int64, err error) {
 	req := []byte(fmt.Sprintf(`{"offset":%d,"count":%d}`, offset, count))
 
-	rsp, err := util.Post(UrlGetWxTplList+accessToken, req)
+	rsp, err := util.Post(UrlGetWxMsgTplList+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -131,7 +133,7 @@ type Keyword struct {
 func GetWxTplKV(accessToken string, tplTitleId string) (kvs []Keyword, err error) {
 	req := []byte(fmt.Sprintf(`{"id":"%s"}`, tplTitleId))
 
-	rsp, err := util.Post(UrlGetWxTplKV+accessToken, req)
+	rsp, err := util.Post(UrlGetWxMsgTplKV+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -164,7 +166,7 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 	}
 	req, _ := json.Marshal(reqB)
 
-	rsp, err := util.Post(UrlGetWxTplKV+accessToken, req)
+	rsp, err := util.Post(UrlAddMsgTplToSelf+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -173,7 +175,6 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 		WxResponse
 		TemplateId string `json:"template_id"`
 	}{}
-
 	err = json.Unmarshal(rsp, &r)
 	if err != nil {
 		return
@@ -182,6 +183,7 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 	if err != nil {
 		return
 	}
+
 
 	templateId = r.TemplateId
 	return
