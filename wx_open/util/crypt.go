@@ -2,7 +2,6 @@ package util
 
 import (
 	"github.com/gomydodo/wxencrypter"
-	"github.com/bysir-zl/bygo/wx_open"
 )
 
 type Crypt struct {
@@ -24,10 +23,8 @@ func NewCrypt(token string, aesKey string, appid string) (c *Crypt, err error) {
 // replyMsg 公众平台待回复用户的消息，xml格式的字符串,
 // bs 包括msg_signature, timestamp, nonce, encrypt的xml格式的字符串.
 func (c *Crypt) Encrypt(replyMsg []byte) (bs []byte, err error) {
-
 	// timestamp, nonce 在内部自动生成.
 	bs, err = c.e.Encrypt(replyMsg)
-
 	return
 }
 
@@ -39,16 +36,16 @@ func (c *Crypt) Decrypt(msgSignature, timestamp, nonce string, data []byte) (bs 
 	return
 }
 
-func Decrypt(msgSignature, timestamp, nonce string, data []byte) (bs []byte, err error) {
-	c, err := NewCrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId)
+func Decrypt(token, aesKey, appId string, msgSignature, timestamp, nonce string, data []byte) (bs []byte, err error) {
+	c, err := NewCrypt(token, aesKey, appId)
 	if err != nil {
 		return
 	}
 	return c.Decrypt(msgSignature, timestamp, nonce, data)
 }
 
-func Encrypt(replyMsg []byte) (bs []byte, err error) {
-	c, err := NewCrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId)
+func Encrypt(token, aesKey, appId string, replyMsg []byte) (bs []byte, err error) {
+	c, err := NewCrypt(token, aesKey, appId)
 	if err != nil {
 		return
 	}

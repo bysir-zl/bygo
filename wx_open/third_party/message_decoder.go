@@ -1,0 +1,21 @@
+package third_party
+
+import (
+	"encoding/xml"
+	"github.com/bysir-zl/bygo/wx_open/util"
+	"github.com/bysir-zl/bygo/wx_open"
+)
+
+// 处理消息/事件推送
+func DecodeMessage(msgSignature, timeStamp, nonce string, body []byte) (t wx_open.Message, err error) {
+	bs, err := util.Decrypt(Token, AesKey, AppId, msgSignature, timeStamp, nonce, body)
+	if err != nil {
+		return
+	}
+
+	err = xml.Unmarshal(bs, &t)
+	if err != nil {
+		return
+	}
+	return
+}

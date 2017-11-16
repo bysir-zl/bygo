@@ -57,6 +57,17 @@ func (p *WxPayClient) CheckWxPayNotify(request []byte) (data WxPayNotify, err er
 	return
 }
 
+func ResponseWxPayNotify(isSuccess bool, msg string) (rsp string) {
+	rspB := core.WXPayResultResponse{
+		ReturnCode: "FAIL",
+		ReturnMsg:  msg,
+	}
+	if isSuccess {
+		rspB.ReturnCode = "SUCCESS"
+	}
+	return rspB.ToXML()
+}
+
 func NewWxPayClient(appId string, mchId string, mchKey string) (*WxPayClient) {
 	wxConfig := core.WXKeyConfig{
 		APP_ID:  appId,

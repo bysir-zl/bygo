@@ -2,7 +2,6 @@ package third_party
 
 import (
 	"github.com/bysir-zl/bygo/wx_open/errs"
-	"github.com/bysir-zl/bygo/wx_open"
 	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
 	"github.com/pkg/errors"
@@ -52,8 +51,8 @@ func GetComponentAccessToken() (componentAccessToken string, err error) {
 
 	req := &ComponentAccessTokenReq{
 		ComponentVerifyTicket: ticket,
-		ComponentAppid:        wx_open.AppId,
-		ComponentAppsecret:    wx_open.AppSecret,
+		ComponentAppid:        AppId,
+		ComponentAppsecret:    AppSecret,
 	}
 	reqData, _ := json.Marshal(req)
 
@@ -93,7 +92,7 @@ type ComponentVerifyTicketReq struct {
 // 处理微信VerifyTicket回调
 // 成功后会将ticket保存在本地文件
 func HandleComponentVerifyTicketReq(msgSignature, timeStamp, nonce string, body []byte) (ticket string, err error) {
-	bs, err := util.Decrypt(msgSignature, timeStamp, nonce, body)
+	bs, err := util.Decrypt(Token, AesKey, AppId, msgSignature, timeStamp, nonce, body)
 	if err != nil {
 		return
 	}
@@ -180,7 +179,7 @@ type AuthorizedInfoRsp struct {
 func RefreshAccessToken(authorizerAppid, refreshToken string) (authorizedInfo *AuthorizedInfoRsp, err error) {
 	req := &AuthorizedInfoReq{
 		AuthorizerRefreshToken: refreshToken,
-		ComponentAppid:         wx_open.AppId,
+		ComponentAppid:         AppId,
 		AuthorizerAppid:        authorizerAppid,
 	}
 	reqData, _ := json.Marshal(req)
@@ -229,7 +228,7 @@ type AuthorizerTokenReq struct {
 
 func GetAuthorizerToken(authorizationCode string) (authorizerTokenRsp *AuthorizerTokenRsp, err error) {
 	req := &AuthorizerTokenReq{
-		ComponentAppid:    wx_open.AppId,
+		ComponentAppid:    AppId,
 		AuthorizationCode: authorizationCode,
 	}
 	reqData, _ := json.Marshal(req)
@@ -284,7 +283,7 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	}
 
 	req := &PreAuthCodeReq{
-		ComponentAppid: wx_open.AppId,
+		ComponentAppid: AppId,
 	}
 	reqData, _ := json.Marshal(req)
 	rsp, err := util.Post(URLPreAuthCode+componentAccessToken, reqData)
@@ -297,7 +296,6 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	if err != nil {
 		return
 	}
-	log.Printf("%+v", preAuthCodeRsp)
 
 	util.SaveData("PreAuthCode", &preAuthCodeRsp, preAuthCodeRsp.ExpiresIn)
 

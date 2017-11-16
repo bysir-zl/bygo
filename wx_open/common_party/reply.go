@@ -4,7 +4,7 @@ package common_party
 
 import (
 	"encoding/xml"
-	"github.com/bysir-zl/bygo/wx_open/util"
+	"github.com/pkg/errors"
 )
 
 type MessageReply struct {
@@ -21,8 +21,12 @@ type MessageReplyText struct {
 }
 
 // 请传入上面定义的结构体
-func DecodeMessageReply(m interface{}) (bs []byte, err error) {
-	rspBs, _ := xml.Marshal(m)
-	bs, err = util.Encrypt(rspBs)
+func MarshalMessageReply(m interface{}) (bs []byte, err error) {
+	_, ok := m.(MessageReply)
+	if !ok {
+		err = errors.New("bad data, please post a data in MessageReply")
+		return
+	}
+	bs, err = xml.Marshal(m)
 	return
 }
