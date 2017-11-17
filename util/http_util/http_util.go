@@ -80,9 +80,14 @@ func request(url string, method string, post []byte, header map[string]string, c
 	if err != nil {
 		return
 	}
-
+	
+	defer response.Body.Close()
 	code = response.StatusCode
-	body, _ := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return
+	}
+
 	result = body
 	return
 

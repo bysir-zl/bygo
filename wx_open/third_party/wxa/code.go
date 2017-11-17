@@ -43,12 +43,61 @@ func CommitCode(accessToken string, templateId int, extJson string, userVersion 
 
 // 获取体验小程序的体验二维码
 func GetQrcode(accessToken string) (image []byte, err error) {
-	rsp, err := util.Post(UrlGetQrcode+accessToken, nil)
+	rsp, err := util.Get(UrlGetQrcode + accessToken)
 	if err != nil {
 		return
 	}
-	image = rsp
+	if len(rsp) > 0 && rsp[0] == '{' {
+		r := WxResponse{}
+		err = json.Unmarshal(rsp, &r)
+		if err != nil {
+			return
+		}
+		err = r.Error()
+		if err != nil {
+			return
+		}
+	}
 
+	image = rsp
+	return
+}
+
+type Color struct {
+	R uint `json:"r"`
+	G uint `json:"g"`
+	B uint `json:"b"`
+}
+
+// 获取小程序码
+// 接口B：适用于需要的码数量极多，或仅临时使用的业务场景
+// 注意：通过该接口生成的小程序码，永久有效，数量暂无限制。用户扫描该码进入小程序后，开发者需在对应页面获取的码中 scene 字段的值，再做处理逻辑。
+// 使用如下代码可以获取到二维码中的 scene 字段的值。调试阶段可以使用开发工具的条件编译自定义参数 scene=xxxx 进行模拟，开发工具模拟时的 scene 的参数值需要进行 urlencode
+func GetAppCode(accessToken string, scene, page string, width int, autoColor bool, lineColor Color) (image []byte, err error) {
+	req, _ := json.Marshal(map[string]interface{}{
+		"scene":      scene,
+		"page":       page,
+		"width":      width,
+		"auto_color": autoColor,
+		"line_color": lineColor,
+	})
+	rsp, err := util.Post(UrlGetAppCode+accessToken, req)
+	if err != nil {
+		return
+	}
+	if len(rsp) > 0 && rsp[0] == '{' {
+		r := WxResponse{}
+		err = json.Unmarshal(rsp, &r)
+		if err != nil {
+			return
+		}
+		err = r.Error()
+		if err != nil {
+			return
+		}
+	}
+
+	image = rsp
 	return
 }
 
