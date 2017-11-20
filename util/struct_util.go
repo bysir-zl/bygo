@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"github.com/bysir-zl/bygo/log"
 	"reflect"
 	"strconv"
@@ -193,26 +192,22 @@ func setValue(v reflect.Value, value interface{}) (err error) {
 		if ok {
 			v.SetFloat(f)
 		}
-		//case reflect.Slice:
-		//	vv := reflect.ValueOf(value)
-		//	if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
-		//		l := vv.Len()
-		//		newV := reflect.MakeSlice(v.Type(), l, l)
-		//		for i := 0; i < l; i++ {
-		//			setValue(newV.Index(i), vv.Index(i).Interface())
-		//		}
-		//		v.Set(newV)
-		//	}
+	case reflect.Slice, reflect.Array:
+		vv := reflect.ValueOf(value)
+		if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
+			l := vv.Len()
+			newV := reflect.MakeSlice(v.Type(), l, l)
+			for i := 0; i < l; i++ {
+				setValue(newV.Index(i), vv.Index(i).Interface())
+			}
+			v.Set(newV)
+		}
 	default:
 		// 非基本类型
-		defer func() {
-			e := recover()
-			if e != nil {
-				err = fmt.Errorf("%s %v", v.Type().String(), e)
-			}
-		}()
-
-		v.Set(reflect.ValueOf(value))
+		vx := reflect.ValueOf(value)
+		if vx.Kind() == v.Kind() {
+			v.Set(vx)
+		}
 		break
 	}
 	return
@@ -586,6 +581,9 @@ func ItemInArrayInt(item int, max []int) (has bool) {
 }
 
 func IsEmptyValue(value interface{}) bool {
+	if value==nil{
+		return true
+	}
 	v := reflect.ValueOf(value)
 	switch v.Kind() {
 	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
