@@ -8,7 +8,7 @@ import (
 )
 
 func setValue(v reflect.Value, value interface{}) (err error) {
-	if !v.CanSet(){
+	if !v.CanSet() {
 		err = errors.New("can't set")
 		return
 	}
@@ -39,16 +39,7 @@ func setValue(v reflect.Value, value interface{}) (err error) {
 		if ok {
 			v.SetFloat(f)
 		}
-	case reflect.Slice, reflect.Array:
-		vv := reflect.ValueOf(value)
-		if vv.Kind() == reflect.Array || v.Kind() == reflect.Slice {
-			l := vv.Len()
-			newV := reflect.MakeSlice(v.Type(), l, l)
-			for i := 0; i < l; i++ {
-				setValue(newV.Index(i), vv.Index(i).Interface())
-			}
-			v.Set(newV)
-		}
+
 	default:
 		// 非基本类型
 		vx := reflect.ValueOf(value)
@@ -280,4 +271,48 @@ func Interface2StringWithType(value interface{}, strict bool) (v string, ok bool
 		v, ok = "bool:"+strconv.FormatBool(value.(bool)), true
 	}
 	return
+}
+
+
+
+// copy from decode.go, i can't understand ...
+//
+// indirect walks down v allocating pointers as needed,
+// until it gets to a non-pointer.
+// if it encounters an Unmarshaler, indirect stops and returns that.
+// if decodingNull is true, indirect stops at the last pointer so it can be set to nil.
+func indirect(v reflect.Value, decodingNull bool) (reflect.Value) {
+	// If v is a named type and is addressable,
+	// start with its address, so that if the type has pointer methods,
+	// we find them.
+	if v.Kind() != reflect.Ptr && v.Type().Name() != "" && v.CanAddr() {
+		v = v.Addr()
+	}
+	for {
+		// Load value from interface, but only if the result will be
+		// usefully addressable.
+		if v.Kind() == reflect.Interface && !v.IsNil() {
+			e := v.Elem()
+			if e.Kind() == reflect.Ptr && !e.IsNil() && (!decodingNull || e.Elem().Kind() == reflect.Ptr) {
+				v = e
+				continue
+			}
+		}
+
+		if v.Kind() != reflect.Ptr {
+			break
+		}
+
+		if v.Elem().Kind() != reflect.Ptr && decodingNull && v.CanSet() {
+			break
+		}
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		if v.Type().NumMethod() > 0 {
+
+		}
+		v = v.Elem()
+	}
+	return v
 }

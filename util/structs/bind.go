@@ -54,9 +54,17 @@ func Struct2MapString(v interface{}, useTag string) (map[string]string, error) {
 	return m, nil
 }
 
+func MapString2Struct(mapper map[string]string, obj interface{}, useTag string) (err error) {
+	mapper2 := map[string]interface{}{}
+	for k, v := range mapper {
+		mapper2[k] = v
+	}
+	return Map2Struct(mapper2, obj, useTag)
+}
+
 // 将map将转换为struct，支持组合与嵌套
 func Map2Struct(m map[string]interface{}, v interface{}, useTag string) (error) {
-	pointer := reflect.Indirect(reflect.ValueOf(v))
+	pointer := indirect(reflect.ValueOf(v), false)
 	typer := pointer.Type()
 
 	fieldNum := pointer.NumField()
@@ -95,6 +103,40 @@ func Map2Struct(m map[string]interface{}, v interface{}, useTag string) (error) 
 
 		if !field.CanSet() {
 			continue
+		}
+
+		switch field.Kind() {
+		case reflect.Struct:
+			// 嵌套结构体
+			if m2, ok := m[fieldName].(map[string]interface{}); ok {
+				vv := reflect.New(field.Type())
+				err := Map2Struct(m2, vv.Interface(), useTag)
+				if err != nil {
+					return err
+				}
+				err = setValue(field, vv.Elem().Interface())
+				if err != nil {
+					return err
+				}
+			}
+		case reflect.Slice, reflect.Array:
+			// 数组
+			vv := reflect.ValueOf(v)
+			if vv.Kind() == reflect.Array || vv.Kind() == reflect.Slice {
+				l := vv.Len()
+				newV := reflect.MakeSlice(vv.Elem().Type(), l, l)
+				for i := 0; i < l; i++ {
+					// 这里只支持设置普通类型的setValue, 后面优化
+					err := setValue(newV.Index(i), vv.Index(i).Interface())
+					if err != nil {
+						return err
+					}
+				}
+				err := setValue(field, newV.Elem().Interface())
+				if err != nil {
+					return err
+				}
+			}
 		}
 		setValue(field, m[fieldName])
 	}
