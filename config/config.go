@@ -15,9 +15,19 @@ func GetString(key string, section string) (value string) {
 	value = f.Section(section).Key(key).String()
 	return
 }
+
 func GetBool(key string, section string) (value bool) {
 	value, _ = f.Section(section).Key(key).Bool()
 	return
+}
+
+func Keys(section string) []string {
+	ks := f.Section(section).Keys()
+	r := make([]string, len(ks))
+	for i, l := range ks {
+		r[i] = l.Name()
+	}
+	return r
 }
 
 // filePath "config/app.ini"
