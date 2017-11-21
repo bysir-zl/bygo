@@ -213,11 +213,11 @@ type AuthorizerTokenRsp struct {
 		AuthorizerAccessToken  string `json:"authorizer_access_token"`
 		ExpiresIn              int64  `json:"expires_in"`
 		AuthorizerRefreshToken string `json:"authorizer_refresh_token"`
-		FuncInfo struct {
+		FuncInfo []struct{
 			FuncscopeCategory struct {
-				Id string `json:"id"`
+				Id int `json:"id"`
 			} `json:"funcscope_category"`
-		}
+		} `json:"func_info"`
 	} `json:"authorization_info"`
 }
 
