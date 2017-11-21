@@ -2,6 +2,7 @@ package payment
 
 import (
 	"github.com/bysir-zl/bygo/util/payment/core"
+	"errors"
 )
 
 type WxPayClient struct {
@@ -15,6 +16,11 @@ type WxPayNotify struct {
 
 // 微信调起支付准备
 func (p *WxPayClient) CreateWxPayPayInfo(tradeNo, subject, totalFee, clientIp, userOpenId string, wxNotifyUrl string) (i core.WXPayReqForJS, err error) {
+	if wxNotifyUrl == "" {
+		err = errors.New("wxNotifyUrl miss")
+		return
+	}
+
 	o := p.wxPay.NewUnifiedOrderRequest()
 	o.Body = subject
 	o.OutTradeNo = tradeNo
@@ -68,14 +74,23 @@ func ResponseWxPayNotify(isSuccess bool, msg string) (rsp string) {
 	return rspB.ToXML()
 }
 
-func NewWxPayClient(appId string, mchId string, mchKey string) (*WxPayClient) {
+func NewWxPayClient(appId string, mchId string, mchKey string) (*WxPayClient, error) {
 	wxConfig := core.WXKeyConfig{
 		APP_ID:  appId,
 		MCH_ID:  mchId,
 		MCH_KEY: mchKey,
 	}
+	if appId == "" {
+		return nil, errors.New("AppId miss")
+	}
+	if mchId == "" {
+		return nil, errors.New("MchId miss")
+	}
+	if mchKey == "" {
+		return nil, errors.New("mchKey miss")
+	}
 
 	return &WxPayClient{
 		wxPay: core.NewWxPay(wxConfig),
-	}
+	}, nil
 }
