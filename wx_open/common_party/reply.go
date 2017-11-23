@@ -1,10 +1,9 @@
-package common_party
-
 // 生成回复数据
+
+package common_party
 
 import (
 	"encoding/xml"
-	"github.com/pkg/errors"
 )
 
 type MessageReply struct {
@@ -20,13 +19,7 @@ type MessageReplyText struct {
 	Content string `xml:"Content"` // 消息内容
 }
 
-// 请传入上面定义的结构体
-func MarshalMessageReply(m interface{}) (bs []byte, err error) {
-	_, ok := m.(MessageReply)
-	if !ok {
-		err = errors.New("bad data, please post a data in MessageReply")
-		return
-	}
-	bs, err = xml.Marshal(m)
-	return
+func (x *MessageReplyText) Byte() []byte {
+	bs, _ := xml.Marshal(x)
+	return bs
 }

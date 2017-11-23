@@ -1,5 +1,7 @@
 package wx_open
 
+import "fmt"
+
 // 更多资料请看微信公众平台文档: https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140454
 // 事件消息结构体
 type Message struct {
@@ -17,4 +19,18 @@ type Message struct {
 	Content string `xml:"Content"` // 消息内容
 	MsgId   string `xml:"MsgId"`
 	Reason  string `xml:"Reason"`
+}
+
+// 已知的接口都是这个错误格式, 可以统一处理
+type WxResponse struct {
+	ErrCode int    `json:"errcode"`
+	ErrMsg  string `json:"errmsg"`
+}
+
+func (p WxResponse) Error() (error) {
+	if p.ErrCode == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("code:%d msg:%s", p.ErrCode, p.ErrMsg)
 }

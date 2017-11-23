@@ -21,11 +21,7 @@ func responseMock1(req wx_open.Message) (bs []byte, err error) {
 		Content: req.Event + "from_callback",
 	}
 
-	bs, err = common_party.MarshalMessageReply(rsp)
-	if err != nil {
-		return
-	}
-	bs, err = util.Encrypt(Token, AesKey, AppId, bs)
+	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
 	return
 }
 
@@ -41,11 +37,7 @@ func responseMock2(req wx_open.Message) (bs []byte, err error) {
 		Content: "TESTCOMPONENT_MSG_TYPE_TEXT_callback",
 	}
 
-	bs, err = common_party.MarshalMessageReply(rsp)
-	if err != nil {
-		return
-	}
-	bs, err = util.Encrypt(Token, AesKey, AppId, bs)
+	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
 	return
 }
 

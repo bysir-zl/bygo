@@ -9,6 +9,7 @@ import (
 	"github.com/schollz/jsonstore"
 	"time"
 	"encoding/xml"
+	"sync"
 )
 
 const (
@@ -36,9 +37,14 @@ type ComponentAccessTokenReq struct {
 	ComponentVerifyTicket string `json:"component_verify_ticket"`
 }
 
+var getComponentAccessTokenLock sync.Mutex
+
 // 获取ComponentAccessToken
 // 会检测过期时间自动刷新哟
 func GetComponentAccessToken() (componentAccessToken string, err error) {
+	getComponentAccessTokenLock.Lock()
+	defer getComponentAccessTokenLock.Unlock()
+
 	if t, ok := util.GetData("ComponentAccessTokenRsp"); ok {
 		return t.(*ComponentAccessTokenRsp).ComponentAccessToken, nil
 	}
@@ -213,7 +219,7 @@ type AuthorizerTokenRsp struct {
 		AuthorizerAccessToken  string `json:"authorizer_access_token"`
 		ExpiresIn              int64  `json:"expires_in"`
 		AuthorizerRefreshToken string `json:"authorizer_refresh_token"`
-		FuncInfo []struct{
+		FuncInfo []struct {
 			FuncscopeCategory struct {
 				Id int `json:"id"`
 			} `json:"funcscope_category"`
@@ -269,9 +275,13 @@ type PreAuthCodeReq struct {
 	ComponentAppid string `json:"component_appid"`
 }
 
+var getPreAuthCodeLock sync.Mutex
 // 获取PreAuthCode
 // 会检测过期时间自动刷新哟
 func GetPreAuthCode() (preAuthCode string, err error) {
+	getPreAuthCodeLock.Lock()
+	defer getPreAuthCodeLock.Unlock()
+
 	if t, ok := util.GetData("PreAuthCode"); ok {
 		return t.(*PreAuthCodeRsp).PreAuthCode, nil
 	}
