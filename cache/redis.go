@@ -236,3 +236,31 @@ func (p *BRedis) UnLock(key string) (err error) {
 	err = p.DEL(key)
 	return
 }
+
+// 监听事件
+/*
+case redis.Message:
+            fmt.Printf("Message: %s %s\n", n.Channel, n.Data)
+        case redis.PMessage:
+            fmt.Printf("PMessage: %s %s %s\n", n.Pattern, n.Channel, n.Data)
+        case redis.Subscription:
+*/
+func (p *BRedis) Subscribe(key string) (event chan interface{}) {
+	key = p.prefix + key
+	c := p.Get()
+	defer c.Close()
+
+	psc := redis.PubSubConn{Conn: c}
+	event = make(chan interface{}, 256)
+	go func() {
+		for {
+			switch n := psc.Receive().(type) {
+			case redis.Message, redis.PMessage, redis.Subscription:
+				event <- n
+			case error:
+				close(event)
+			}
+		}
+	}()
+	return
+}
