@@ -68,12 +68,12 @@ func (p *BRedis) HMSETALL(table string, mapper map[string]interface{}, expire in
 	c := p.Get()
 	defer c.Close()
 
+	if expire != 0 {
+		params = append(params, "EX", expire)
+	}
 	_, err := c.Do("HMSET", params...)
 	if err != nil {
 		return err
-	}
-	if expire != 0 {
-		c.Do("expire", table, expire)
 	}
 
 	return nil
@@ -99,12 +99,13 @@ func (p *BRedis) HMSET(tableName string, key string, value interface{}, expire i
 	tableName = p.prefix + tableName
 	c := p.Get()
 	defer c.Close()
-	_, err = c.Do("HMSET", tableName, key, value)
 	if err != nil {
 		return
 	}
 	if expire != 0 {
-		c.Do("expire", key, expire)
+		_, err = c.Do("HMSET", tableName, key, value, "EX", expire)
+	} else {
+		_, err = c.Do("HMSET", tableName, key, value)
 	}
 
 	return
@@ -114,14 +115,12 @@ func (p *BRedis) SET(key string, value interface{}, expire int) (err error) {
 	key = p.prefix + key
 	c := p.Get()
 	defer c.Close()
-
-	_, err = c.Do("SET", key, value)
-	if err != nil {
-		return
-	}
 	if expire != 0 {
-		c.Do("expire", key, expire)
+		_, err = c.Do("SET", key, value, "EX", expire)
+	} else {
+		_, err = c.Do("SET", key, value)
 	}
+
 	return
 }
 
@@ -245,20 +244,27 @@ case redis.Message:
             fmt.Printf("PMessage: %s %s %s\n", n.Pattern, n.Channel, n.Data)
         case redis.Subscription:
 */
-func (p *BRedis) Subscribe(key string) (event chan interface{}) {
-	key = p.prefix + key
-	c := p.Get()
-	defer c.Close()
 
+func (p *BRedis) Subscribe(key string) (event chan interface{}, err error) {
+	c := p.Get()
 	psc := redis.PubSubConn{Conn: c}
+	err = psc.Subscribe(key)
+	if err != nil {
+		c.Close()
+		return
+	}
 	event = make(chan interface{}, 256)
 	go func() {
+		defer c.Close()
 		for {
-			switch n := psc.Receive().(type) {
+			r := psc.Receive()
+			switch n := r.(type) {
 			case redis.Message, redis.PMessage, redis.Subscription:
 				event <- n
 			case error:
+				event <- n
 				close(event)
+				return
 			}
 		}
 	}()
