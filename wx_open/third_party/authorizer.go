@@ -275,17 +275,9 @@ type PreAuthCodeReq struct {
 	ComponentAppid string `json:"component_appid"`
 }
 
-var getPreAuthCodeLock sync.Mutex
 // 获取PreAuthCode
 // 会检测过期时间自动刷新哟
 func GetPreAuthCode() (preAuthCode string, err error) {
-	getPreAuthCodeLock.Lock()
-	defer getPreAuthCodeLock.Unlock()
-
-	if t, ok := util.GetData("PreAuthCode"); ok {
-		return t.(*PreAuthCodeRsp).PreAuthCode, nil
-	}
-
 	componentAccessToken, err := GetComponentAccessToken()
 
 	if err != nil {
@@ -306,8 +298,6 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	if err != nil {
 		return
 	}
-
-	util.SaveData("PreAuthCode", &preAuthCodeRsp, preAuthCodeRsp.ExpiresIn)
 
 	preAuthCode = preAuthCodeRsp.PreAuthCode
 	return

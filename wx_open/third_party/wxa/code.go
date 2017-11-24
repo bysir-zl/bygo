@@ -13,7 +13,7 @@ import (
 // 请注意其中ext_json必须是json的字符串, 而且里面的参数不能乱配置, 比如page参数的路径一定要是小程序模板里有的
 func CommitCode(accessToken string, templateId int64, extJson string, userVersion string, userDesc string) (err error) {
 	req := struct {
-		TemplateId  int64    `json:"template_id"`
+		TemplateId  int64  `json:"template_id"`
 		ExtJson     string `json:"ext_json"`
 		UserVersion string `json:"user_version"`
 		UserDesc    string `json:"user_desc"`
@@ -175,7 +175,9 @@ type SubmitAuditRsp struct {
 
 // 将第三方提交的代码包提交审核
 func SubmitAudit(accessToken string, auditItems []AuditItem) (auditid int64, err error) {
-	req, _ := json.Marshal(auditItems)
+	req, _ := json.Marshal(map[string]interface{}{
+		"item_list": auditItems,
+	})
 	rsp, err := util.Post(UrlSubmitAudit+accessToken, req)
 	if err != nil {
 		return
