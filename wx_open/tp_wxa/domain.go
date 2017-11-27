@@ -1,12 +1,13 @@
-package wxa
+package tp_wxa
 
 import (
 	"encoding/json"
 	"github.com/bysir-zl/bygo/wx_open/util"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 type DomainRsp struct {
-	WxResponse
+	wx_open.WxResponse
 	Requestdomain   []string `json:"requestdomain"`
 	Wsrequestdomain []string `json:"wsrequestdomain"`
 	Uploaddomain    []string `json:"uploaddomain"`
@@ -28,7 +29,7 @@ func ModifyDomain(accessToken string, action string, requestDomain, wsrequestdom
 	}
 
 	reqBs, _ := json.Marshal(req)
-	rsp, err := util.Post(UrlModifyDomain+accessToken, reqBs)
+	rsp, err := util.Post(("https://api.weixin.qq.com/wxa/modify_domain?access_token=")+accessToken, reqBs)
 	if err != nil {
 		return
 	}

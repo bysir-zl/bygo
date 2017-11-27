@@ -1,4 +1,4 @@
-package third_party
+package tp
 
 import (
 	"encoding/xml"
@@ -8,7 +8,7 @@ import (
 
 // 解密消息/事件推送
 func DecodeMessage(msgSignature, timeStamp, nonce string, body []byte) (t wx_open.Message, err error) {
-	bs, err := util.Decrypt(Token, AesKey, AppId, msgSignature, timeStamp, nonce, body)
+	bs, err := util.Decrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId, msgSignature, timeStamp, nonce, body)
 	if err != nil {
 		return
 	}

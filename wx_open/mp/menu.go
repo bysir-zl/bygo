@@ -1,4 +1,4 @@
-package common_party
+package mp
 
 import (
 	"encoding/json"

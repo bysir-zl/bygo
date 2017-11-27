@@ -1,10 +1,11 @@
-package wxa
+package tp_wxa
 
 import (
 	"fmt"
 	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
 	"log"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 var _ = log.Ldate
 
@@ -21,7 +22,7 @@ type MessageTpl struct {
 func GetMsgTpl(accessToken string, offset int, count int) (tplList []MessageTpl, err error) {
 	req := []byte(fmt.Sprintf(`{"offset":%d,"count":%d}`, offset, count))
 
-	rsp, err := util.Post(UrlGetMsgTpl+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/wxopen/template/list?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -49,7 +50,7 @@ func GetMsgTpl(accessToken string, offset int, count int) (tplList []MessageTpl,
 func DelMsgTpl(accessToken string, id string) (err error) {
 	req := []byte(fmt.Sprintf(`{"template_id":"%s"}`, id))
 
-	rsp, err := util.Post(UrlDelMsgTpl+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/wxopen/template/del?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -79,9 +80,9 @@ func DelMsgTpl(accessToken string, id string) (err error) {
 1.获取小程序模板库标题列表
 2.获取模板库某个模板标题下关键词库
 3.组合模板并添加至帐号下的个人模板库
-是不是不知所云? 无任何逻辑解释, 只有猜着理解...
+无任何逻辑解释, 只有猜着理解.
 
-去研究公众平台的[模板消息]才理解到:
+去研究公众平台的[模板消息]才理解:
 1. 模板只能选择在微信模板库已有的模板, 而怎么得到已有模板库? 就是接口1
 2. 模板里的KV也只能使用模板库里已有的, 比如商城支付成功通知 里面只能有订单号:xxx等信息, 而不能有管道疏通:158xxxxxxxx等信息, 怎么得到KV列表? 就是接口2
 3. 得到模板标题, 和模板KV, 就能组装一个完整的模板并添加了, 这就是 接口3所说的组合模板
@@ -94,10 +95,10 @@ type WxTplTitle struct {
 
 // 获取小程序模板库标题列表
 // accessToken: 公众平台的token, 而不是第三方的token
-func GetWxTplTitleList(accessToken string, offset int, count int) (tplList []WxTplTitle, total int64, err error) {
+func GetTplMsgLibTitleList(accessToken string, offset int, count int) (tplList []WxTplTitle, total int64, err error) {
 	req := []byte(fmt.Sprintf(`{"offset":%d,"count":%d}`, offset, count))
 
-	rsp, err := util.Post(UrlGetWxMsgTplList+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/wxopen/template/library/list?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -130,10 +131,10 @@ type Keyword struct {
 }
 
 // 获取模板库某个模板标题下关键词库
-func GetWxTplKV(accessToken string, tplTitleId string) (kvs []Keyword, err error) {
+func GetMsgTplLibKV(accessToken string, tplTitleId string) (kvs []Keyword, err error) {
 	req := []byte(fmt.Sprintf(`{"id":"%s"}`, tplTitleId))
 
-	rsp, err := util.Post(UrlGetWxMsgTplKV+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/wxopen/template/library/get?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -166,13 +167,13 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 	}
 	req, _ := json.Marshal(reqB)
 
-	rsp, err := util.Post(UrlAddMsgTplToSelf+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/wxopen/template/add?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
 
 	r := struct {
-		WxResponse
+		wx_open.WxResponse
 		TemplateId string `json:"template_id"`
 	}{}
 	err = json.Unmarshal(rsp, &r)
@@ -221,12 +222,12 @@ func SendTpl(accessToken string, toUserOpenId string, tplId string, formId strin
 	}
 
 	req, _ := json.Marshal(reqB)
-	rsp, err := util.Post(UrlSendTpl+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
 
-	r := WxResponse{}
+	r := wx_open.WxResponse{}
 	err = json.Unmarshal(rsp, &r)
 	if err != nil {
 		return

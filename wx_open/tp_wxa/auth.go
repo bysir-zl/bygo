@@ -1,14 +1,15 @@
-package wxa
+package tp_wxa
 
 import (
 	"fmt"
-	"github.com/bysir-zl/bygo/wx_open/third_party"
 	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
+	"github.com/bysir-zl/bygo/wx_open/tp"
+	"github.com/bysir-zl/bygo/wx_open"
 )
 
 type AuthResponse struct {
-	WxResponse
+	wx_open.WxResponse
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 }
@@ -19,11 +20,11 @@ type AuthResponse struct {
 // 为了自身应用安全，session_key 不应该在网络上传输。
 // appId: wxappid
 func GetSessionKeyByCode(appId string, code string) (r AuthResponse, err error) {
-	t, err := third_party.GetComponentAccessToken()
+	t, err := tp.GetComponentAccessToken()
 	if err != nil {
 		return
 	}
-	u := fmt.Sprintf(UrlGetSessionKey, appId, code, third_party.AppId, t)
+	u := fmt.Sprintf("https://api.weixin.qq.com/sns/component/jscode2session?appid=%s&js_code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s", appId, code, wx_open.AppId, t)
 	rsp, err := util.Post(u, nil)
 	if err != nil {
 		return

@@ -1,4 +1,4 @@
-package common_party
+package mp
 
 import (
 	"github.com/bysir-zl/bygo/wx_open/util"

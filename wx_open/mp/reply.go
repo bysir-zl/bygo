@@ -1,6 +1,6 @@
 // 生成回复数据
 
-package common_party
+package mp
 
 import (
 	"encoding/xml"

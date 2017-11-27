@@ -1,17 +1,17 @@
-package third_party
+package tp
 
 import (
-	"github.com/bysir-zl/bygo/wx_open/common_party"
 	"time"
 	"strings"
 	"github.com/bysir-zl/bygo/wx_open"
 	"github.com/bysir-zl/bygo/wx_open/util"
+	"github.com/bysir-zl/bygo/wx_open/mp"
 )
 
 // 1. 模拟粉丝触发专用测试公众号的事件，并推送事件消息到专用测试公众号，第三方平台方开发者需要提取推送XML信息中的event值，并在5秒内立即返回按照下述要求组装的文本消息给粉丝。
 func responseMock1(req wx_open.Message) (bs []byte, err error) {
-	rsp := common_party.MessageReplyText{
-		MessageReply: common_party.MessageReply{
+	rsp := mp.MessageReplyText{
+		MessageReply: mp.MessageReply{
 			MsgType:      "text",
 			ToUserName:   req.FromUserName,
 			FromUserName: req.ToUserName,
@@ -21,14 +21,14 @@ func responseMock1(req wx_open.Message) (bs []byte, err error) {
 		Content: req.Event + "from_callback",
 	}
 
-	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
+	bs, err = util.Encrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId, rsp.Byte())
 	return
 }
 
 // 2. 模拟粉丝发送文本消息给专用测试公众号，第三方平台方需根据文本消息的内容进行相应的响应：
 func responseMock2(req wx_open.Message) (bs []byte, err error) {
-	rsp := common_party.MessageReplyText{
-		MessageReply: common_party.MessageReply{
+	rsp := mp.MessageReplyText{
+		MessageReply: mp.MessageReply{
 			MsgType:      "text",
 			ToUserName:   req.FromUserName,
 			FromUserName: req.ToUserName,
@@ -37,7 +37,7 @@ func responseMock2(req wx_open.Message) (bs []byte, err error) {
 		Content: "TESTCOMPONENT_MSG_TYPE_TEXT_callback",
 	}
 
-	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
+	bs, err = util.Encrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId, rsp.Byte())
 	return
 }
 
@@ -54,7 +54,7 @@ func responseMock3(req wx_open.Message) (err error) {
 	}
 
 	at := t.AuthorizationInfo.AuthorizerAccessToken
-	err = common_party.SendMessageText(at, req.FromUserName, authCode+"_from_api")
+	err = mp.SendMessageText(at, req.FromUserName, authCode+"_from_api")
 	if err != nil {
 		return
 	}

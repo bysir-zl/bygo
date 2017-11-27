@@ -15,7 +15,7 @@ type Tpl struct {
 
 // 获取草稿箱内的所有临时代码草稿
 func GetTplDraft(accessToken string) (tplList []Tpl, err error) {
-	rsp, err := util.Get(UrlGetTplDraft + accessToken)
+	rsp, err := util.Get(("https://api.weixin.qq.com/wxa/gettemplatedraftlist?access_token=") + accessToken)
 	if err != nil {
 		return
 	}
@@ -41,7 +41,7 @@ func GetTplDraft(accessToken string) (tplList []Tpl, err error) {
 
 // 获取代码模版库中的所有小程序代码模版
 func GetTpl(accessToken string) (tplList []Tpl, err error) {
-	rsp, err := util.Get(UrlGetTpl + accessToken)
+	rsp, err := util.Get(("https://api.weixin.qq.com/wxa/gettemplatelist?access_token=") + accessToken)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func GetTpl(accessToken string) (tplList []Tpl, err error) {
 // 将草稿箱的草稿选为小程序代码模版
 func AddDraftToTpl(accessToken string, draftId int) (err error) {
 	req := []byte(fmt.Sprintf(`{"draft_id":%d}`, draftId))
-	rsp, err := util.Post(UrlAddToTpl+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/wxa/addtotemplate?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
@@ -93,7 +93,7 @@ func AddDraftToTpl(accessToken string, draftId int) (err error) {
 // 删除指定小程序代码模版
 func DelTpl(accessToken string, id int) (err error) {
 	req := []byte(fmt.Sprintf(`{"template_id":%d}`, id))
-	rsp, err := util.Post(UrlDelTpl+accessToken, req)
+	rsp, err := util.Post(("https://api.weixin.qq.com/wxa/deletetemplate?access_token=")+accessToken, req)
 	if err != nil {
 		return
 	}
