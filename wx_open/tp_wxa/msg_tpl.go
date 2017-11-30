@@ -7,6 +7,7 @@ import (
 	"log"
 	"github.com/bysir-zl/bygo/wx_open"
 )
+
 var _ = log.Ldate
 
 // 消息模板管理
@@ -185,7 +186,6 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 		return
 	}
 
-
 	templateId = r.TemplateId
 	return
 }
@@ -206,7 +206,7 @@ func SendTpl(accessToken string, toUserOpenId string, tplId string, formId strin
 	reqB := map[string]interface{}{
 		"touser":      toUserOpenId,
 		"template_id": tplId,
-		"formId":      formId,
+		"form_id":     formId,
 	}
 	if page != "" {
 		reqB["page"] = page

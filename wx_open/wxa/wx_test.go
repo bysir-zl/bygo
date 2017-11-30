@@ -12,7 +12,7 @@ func TestGetCategory(t *testing.T) {
 }
 
 func TestGetAppCode(t *testing.T) {
-	x, err := GetAppCode("JI7Rr1w0mW_DcoBMU07WYbLzIWpa9uuItJg-ojMvDoT7Eh7FFUfZ_0V9QUXwLWrFrVGu4uRU2_e83a82RYXwO4xUk1OeS0Q3cvq2XZBjcnYaxlzPATslyWq7SYFJVGZqGPKjAMDSBW", "123", "pages/index/index", 0, false, Color{})
+	x, err := GetAppCode("fMvkYCehn8D_OaKbpMrFYES4nRwG8s4Azx0L8d2Yj9-0algp0sJ-9UCtBRFUY7I-W320Ddozre8uXTece2S4LarLUSUCpglJyB6KfS1Tg23Tcbii5KSPC1K2cv_yqN5YSZOdADDCJY", "123", "pages/index/index", 0, false, Color{})
 	if err != nil {
 		t.Fatal(err)
 	}

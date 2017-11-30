@@ -2,7 +2,6 @@ package core
 
 import (
 	"testing"
-	"encoding/xml"
 )
 
 func TestBbnpay(t *testing.T) {
@@ -49,22 +48,20 @@ func TestAlipay(t *testing.T) {
 
 func TestWxPay(t *testing.T) {
 	wxConfig := WXKeyConfig{
-		APP_ID:  "123",
-		MCH_ID:  "123",
-		MCH_KEY: "123",
+		APP_ID:  "",
+		MCH_ID:  "",
+		MCH_KEY: "",
 	}
+	w := NewWxPay(wxConfig)
 
-	InitWXKey(wxConfig)
-
-	o := WXUnifiedOrderRequest{
-		Body:           "hello",
-		OutTradeNo:     "orderId1",
-		TotalFee:       "1", // 1分
-		SpBillCreateIp: "123.12.12.123",
-		NotifyURL:      "http://123123/",
-		TradeType:      "JSAPI",
-		OpenId:         "123",
-	}
+	o := w.NewUnifiedOrderRequest()
+	o.Body = "123"
+	o.OutTradeNo = "1_0000000000102310239999"
+	o.TotalFee = "1"
+	o.SpBillCreateIp = "127.0.0.1"
+	o.NotifyURL = "http://12"
+	o.TradeType = "JSAPI"
+	o.OpenId = "o61n00Doy_zsrMshy78nSMYLgrz8"
 
 	rsp, err := o.Post()
 	if err != nil {
@@ -85,7 +82,7 @@ func TestWxPayCallback(t *testing.T) {
 		MCH_KEY: "123",
 	}
 
-	InitWXKey(wxConfig)
+	w := NewWxPay(wxConfig)
 
 	body := []byte(`
 	<xml>
@@ -108,9 +105,7 @@ func TestWxPayCallback(t *testing.T) {
    <transaction_id><![CDATA[1004400740201409030005092168]]></transaction_id>
  </xml> `)
 
-	n := PayNotify{}
-	xml.Unmarshal(body, &n)
-	err := n.IsError()
+	n, err := w.NewWXPayNotify(body)
 	if err != nil {
 		t.Fatal(err)
 	}
