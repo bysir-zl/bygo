@@ -1,4 +1,4 @@
-package wx_open
+package tp
 
 var (
 	Token     string

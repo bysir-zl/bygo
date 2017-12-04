@@ -24,7 +24,7 @@ func GetSessionKeyByCode(appId string, code string) (r AuthResponse, err error) 
 	if err != nil {
 		return
 	}
-	u := fmt.Sprintf("https://api.weixin.qq.com/sns/component/jscode2session?appid=%s&js_code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s", appId, code, wx_open.AppId, t)
+	u := fmt.Sprintf("https://api.weixin.qq.com/sns/component/jscode2session?appid=%s&js_code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s", appId, code, tp.AppId, t)
 	rsp, err := util.Post(u, nil)
 	if err != nil {
 		return

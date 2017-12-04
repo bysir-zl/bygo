@@ -10,7 +10,6 @@ import (
 	"time"
 	"encoding/xml"
 	"sync"
-	"github.com/bysir-zl/bygo/wx_open"
 )
 
 const (
@@ -58,8 +57,8 @@ func GetComponentAccessToken() (componentAccessToken string, err error) {
 
 	req := &ComponentAccessTokenReq{
 		ComponentVerifyTicket: ticket,
-		ComponentAppid:        wx_open.AppId,
-		ComponentAppsecret:    wx_open.AppSecret,
+		ComponentAppid:        AppId,
+		ComponentAppsecret:    AppSecret,
 	}
 	reqData, _ := json.Marshal(req)
 
@@ -99,7 +98,7 @@ type ComponentVerifyTicketReq struct {
 // 处理微信VerifyTicket回调
 // 成功后会将ticket保存在本地文件
 func HandleComponentVerifyTicketReq(msgSignature, timeStamp, nonce string, body []byte) (ticket string, err error) {
-	bs, err := util.Decrypt(wx_open.Token, wx_open.AesKey, wx_open.AppId, msgSignature, timeStamp, nonce, body)
+	bs, err := util.Decrypt(Token, AesKey, AppId, msgSignature, timeStamp, nonce, body)
 	if err != nil {
 		return
 	}
@@ -186,7 +185,7 @@ type AuthorizedInfoRsp struct {
 func RefreshAccessToken(authorizerAppid, refreshToken string) (authorizedInfo *AuthorizedInfoRsp, err error) {
 	req := &AuthorizedInfoReq{
 		AuthorizerRefreshToken: refreshToken,
-		ComponentAppid:         wx_open.AppId,
+		ComponentAppid:         AppId,
 		AuthorizerAppid:        authorizerAppid,
 	}
 	reqData, _ := json.Marshal(req)
@@ -235,7 +234,7 @@ type AuthorizerTokenReq struct {
 
 func GetAuthorizerToken(authorizationCode string) (authorizerTokenRsp *AuthorizerTokenRsp, err error) {
 	req := &AuthorizerTokenReq{
-		ComponentAppid:    wx_open.AppId,
+		ComponentAppid:    AppId,
 		AuthorizationCode: authorizationCode,
 	}
 	reqData, _ := json.Marshal(req)
@@ -286,7 +285,7 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	}
 
 	req := &PreAuthCodeReq{
-		ComponentAppid: wx_open.AppId,
+		ComponentAppid: AppId,
 	}
 	reqData, _ := json.Marshal(req)
 	rsp, err := util.Post(URLPreAuthCode+componentAccessToken, reqData)
