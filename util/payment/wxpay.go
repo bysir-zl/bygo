@@ -15,7 +15,7 @@ type WxPayNotify struct {
 }
 
 // 微信调起支付准备
-func (p *WxPayClient) CreateWxPayPayInfo(tradeNo, subject, totalFee, clientIp, userOpenId string, wxNotifyUrl string) (i core.WXPayReqForJS, err error) {
+func (p *WxPayClient) CreateWxPayPayInfoJSAPI(tradeNo, subject, totalFee, clientIp, userOpenId string, wxNotifyUrl string) (i core.WXPayReqForJS, err error) {
 	if wxNotifyUrl == "" {
 		err = errors.New("wxNotifyUrl miss")
 		return

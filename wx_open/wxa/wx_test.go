@@ -12,7 +12,25 @@ func TestGetCategory(t *testing.T) {
 }
 
 func TestGetAppCode(t *testing.T) {
-	x, err := GetAppCode("fMvkYCehn8D_OaKbpMrFYES4nRwG8s4Azx0L8d2Yj9-0algp0sJ-9UCtBRFUY7I-W320Ddozre8uXTece2S4LarLUSUCpglJyB6KfS1Tg23Tcbii5KSPC1K2cv_yqN5YSZOdADDCJY", "123", "pages/index/index", 0, false, Color{})
+	x, err := GetAppCode("eE7v52HriTk2V-6njRedn7PdkxjO7wslaBJb0y20ev27aTPFuWoUMVst90hNlLn7if5yn460uV2rCC5_IQSSKURwNgc7Eb1_0L-E2lyUn5_EKtjqU1MOcWCCC0WCq8QYZDWhAHDOSL", "?orderid=1", "pages/start/index", 0, false, Color{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(x)
+}
+
+func TestGetMonthRetain(t *testing.T) {
+	x, err := GetMonthRetain("3CWYQOE52KfMWPMxO3nhyv8iYZydDRc2pzKOcp7LeJpzT0I6vZQIYiI76i2CAj2Cr4srV0VzmHHkf1lwCESm6O1UA8d1cugN-Kf1mcPLH1gMsjg5dxQ2FEa7Kzcl9XDxRVScAHDYCZ","201711")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(x)
+}
+
+func TestMonthVisitRsp(t *testing.T) {
+	x, err := GetMonthVisit("3CWYQOE52KfMWPMxO3nhyv8iYZydDRc2pzKOcp7LeJpzT0I6vZQIYiI76i2CAj2Cr4srV0VzmHHkf1lwCESm6O1UA8d1cugN-Kf1mcPLH1gMsjg5dxQ2FEa7Kzcl9XDxRVScAHDYCZ","201711")
 	if err != nil {
 		t.Fatal(err)
 	}
