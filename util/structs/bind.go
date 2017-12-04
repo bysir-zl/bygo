@@ -64,7 +64,11 @@ func MapString2Struct(mapper map[string]string, obj interface{}, useTag string) 
 
 // 将map将转换为struct，支持组合与嵌套
 func Map2Struct(m map[string]interface{}, v interface{}, useTag string) (error) {
-	pointer := indirect(reflect.ValueOf(v), false)
+	return Map2StructValue(m, reflect.ValueOf(v), useTag)
+}
+
+func Map2StructValue(m map[string]interface{}, v reflect.Value, useTag string) (error) {
+	pointer := indirect(v, false)
 	typer := pointer.Type()
 
 	fieldNum := pointer.NumField()
@@ -74,15 +78,10 @@ func Map2Struct(m map[string]interface{}, v interface{}, useTag string) (error) 
 		fieldT := typer.Field(i)
 		// 如果是匿名 则需要扁平化
 		if fieldT.Anonymous {
-			// 本来开始是直接把field.interface甩进去的, 但是得到的field是!CanSet的,
-			// 所以这里直接新建一个 直接赋值整个结构体
-			value := reflect.New(field.Type())
-			t := value.Interface()
-			e := Map2Struct(m, t, useTag)
+			e := Map2StructValue(m, field, useTag)
 			if e != nil {
 				return e
 			}
-			field.Set(value.Elem())
 			continue
 		}
 
@@ -109,36 +108,33 @@ func Map2Struct(m map[string]interface{}, v interface{}, useTag string) (error) 
 		case reflect.Struct:
 			// 嵌套结构体
 			if m2, ok := m[fieldName].(map[string]interface{}); ok {
-				vv := reflect.New(field.Type())
-				err := Map2Struct(m2, vv.Interface(), useTag)
-				if err != nil {
-					return err
-				}
-				err = setValue(field, vv.Elem().Interface())
+				err := Map2StructValue(m2, field, useTag)
 				if err != nil {
 					return err
 				}
 			}
-		case reflect.Slice, reflect.Array:
+		case reflect.Slice:
 			// 数组
-			vv := reflect.ValueOf(v)
-			if vv.Kind() == reflect.Array || vv.Kind() == reflect.Slice {
+			vv := reflect.ValueOf(m[fieldName])
+			if vv.Kind() == reflect.Slice {
 				l := vv.Len()
-				newV := reflect.MakeSlice(vv.Elem().Type(), l, l)
+
+				newV := reflect.MakeSlice(field.Type(), l, l)
 				for i := 0; i < l; i++ {
-					// 这里只支持设置普通类型的setValue, 后面优化
+					// 这里只支持设置普通类型, 不支持结构体
 					err := setValue(newV.Index(i), vv.Index(i).Interface())
 					if err != nil {
 						return err
 					}
 				}
-				err := setValue(field, newV.Elem().Interface())
+				err := setValue(field, newV.Interface())
 				if err != nil {
 					return err
 				}
 			}
+		default:
+			setValue(field, m[fieldName])
 		}
-		setValue(field, m[fieldName])
 	}
 
 	return nil
