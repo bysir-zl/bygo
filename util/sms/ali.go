@@ -13,7 +13,6 @@ import (
 	"github.com/bysir-zl/bygo/util/http_util"
 	"errors"
 	"strings"
-	"github.com/bysir-zl/bygo/log"
 )
 
 const (
@@ -62,8 +61,6 @@ func (a *Ali) Send(tplCode string, signName string, phones string, data map[stri
 	signName, _ = a.Sign(kv)
 	kv.Add("Signature", signName)
 
-	//http.Get()
-
 	code, rsp, err := http_util.Get(HostAliSms+ApiAliSms, kv, nil)
 	if err != nil {
 		return err
@@ -85,6 +82,5 @@ func (a *Ali) Sign(kv util.OrderKV) (sign string, err error) {
 	signBs := encoder.Hmac([]byte(signStr), []byte(a.apiSecret+"&"), crypto.SHA1)
 	signBs = encoder.Base64Encode(signBs)
 	sign = string(signBs)
-	log.Info("sing: ", sign)
 	return
 }
