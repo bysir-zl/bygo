@@ -7,6 +7,7 @@ import (
 	"github.com/bysir-zl/bygo/wx_open"
 	"github.com/bysir-zl/bygo/wx_open/util"
 	"encoding/json"
+	"errors"
 )
 
 type WxAppInfo struct {
@@ -21,10 +22,28 @@ type AuthorizerInfo struct {
 	PrincipalName string `json:"principal_name"` // 小程序的主体名称
 	Signature     string `json:"signature"`      // 帐号介绍
 	QrcodeUrl     string `json:"qrcode_url"`     // 二维码图片的URL，开发者最好自行也进行保存
+	VerifyTypeInfo struct {
+		Id int `json:"id"`
+	} `json:"verify_type_info"`                  // 授权方认证类型，-1代表未认证，0代表微信认证
+	MiniProgramInfo struct {
+		Network struct {
+			RequestDomain   []string `json:"RequestDomain"`
+			WsRequestDomain []string `json:"WsRequestDomain"`
+			UploadDomain    []string `json:"UploadDomain"`
+			DownloadDomain  []string `json:"DownloadDomain"`
+		} `json:"network"`
+	} `json:"MiniProgramInfo"`
+	BusinessInfo struct {
+		OpenPay   int `json:"open_pay"`   // 是否开通微信支付功能
+		OpenShake int `json:"open_shake"` // 是否开通微信摇一摇功能
+		OpenScan  int `json:"open_scan"`  // 是否开通微信扫商品功能
+		OpenCard  int `json:"open_card"`  // 是否开通微信卡券功能
+		OpenStore int `json:"open_store"` // 是否开通微信门店功能
+	} `json:"business_info"`
 }
 
 // 获取小程序账号信息
-func GetWxAppInfo(appId string) (wxappInfo WxAppInfo, err error) {
+func GetWxAppInfo(appId string) (wxappInfo AuthorizerInfo, err error) {
 	componentAccessToken, err := GetComponentAccessToken()
 	if err != nil {
 		return
@@ -40,6 +59,7 @@ func GetWxAppInfo(appId string) (wxappInfo WxAppInfo, err error) {
 	r := WxAppInfo{}
 	err = json.Unmarshal(rsp, &r)
 	if err != nil {
+		err = errors.New("json Unmarshal err:" + err.Error())
 		return
 	}
 	err = r.Error()
@@ -47,6 +67,6 @@ func GetWxAppInfo(appId string) (wxappInfo WxAppInfo, err error) {
 		return
 	}
 
-	wxappInfo = r
+	wxappInfo = r.AuthorizerInfo
 	return
 }
