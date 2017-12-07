@@ -41,7 +41,6 @@ type Color struct {
 func GetAppCode(accessToken string, scene, page string, width int, autoColor bool, lineColor Color) (image []byte, err error) {
 	req, _ := json.Marshal(map[string]interface{}{
 		"scene":      scene,
-		//"path":       page,
 		"page":       page,
 		"width":      width,
 		"auto_color": autoColor,

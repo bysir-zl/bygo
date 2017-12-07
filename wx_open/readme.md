@@ -8,7 +8,7 @@
 
 
 ### usage 
-先配置app信息, 毕竟微信的接口是加密的
+如果要使用第三方平台先配置app信息, 毕竟微信的接口是加密的
 ```go
-wx_open.Init(token, aeskey, appid, appSecret)
+tp.Init(token, aeskey, appid, appSecret)
 ```
