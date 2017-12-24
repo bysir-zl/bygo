@@ -67,6 +67,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			ch, err := conn.Channel()
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
+				conn.Close()
 				time.Sleep(5 * time.Second)
 				continue
 			}
@@ -80,12 +81,14 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			)
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
+				conn.Close()
 				time.Sleep(5 * time.Second)
 				continue
 			}
 			msg, err := ch.Consume(q.Name, "", true, false, false, false, nil)
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
+				conn.Close()
 				time.Sleep(5 * time.Second)
 				continue
 			}
