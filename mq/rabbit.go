@@ -27,7 +27,7 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 	}
 	q, err := ch.QueueDeclare(
 		queue, // name
-		false, // durable
+		true, // durable
 		false, // delete when unused
 		false, // exclusive
 		false, // no-wait
@@ -72,7 +72,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			}
 			q, err := ch.QueueDeclare(
 				queue, // name
-				false, // durable
+				true, // durable
 				false, // delete when unused
 				false, // exclusive
 				false, // no-wait
