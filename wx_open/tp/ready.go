@@ -3,9 +3,10 @@ package tp
 import (
 	"time"
 	"strings"
-	"github.com/bysir-zl/bygo/wx_open"
-	"github.com/bysir-zl/bygo/wx_open/util"
-	"github.com/bysir-zl/bygo/wx_open/mp"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/mp"
+	"encoding/xml"
 )
 
 // 1. 模拟粉丝触发专用测试公众号的事件，并推送事件消息到专用测试公众号，第三方平台方开发者需要提取推送XML信息中的event值，并在5秒内立即返回按照下述要求组装的文本消息给粉丝。
@@ -62,10 +63,12 @@ func responseMock3(req wx_open.Message) (err error) {
 }
 
 // 拦截测试消息并相应
-func FilterReady(appId string, req wx_open.Message) (stop bool, response []byte, err error) {
+func FilterReady(appId string, body []byte) (stop bool, response []byte, err error) {
 	if appId != "wx570bc396a51b8ff8" && appId != "wxd101a85aa106f53e" {
 		return
 	}
+	req := wx_open.Message{}
+	xml.Unmarshal(body, &req)
 
 	stop = true
 	switch req.MsgType {

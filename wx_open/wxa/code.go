@@ -1,9 +1,9 @@
 package wxa
 
 import (
-	"github.com/bysir-zl/bygo/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_open"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 )
 
 // 获取体验小程序的体验二维码
@@ -18,7 +18,7 @@ func GetQrcode(accessToken string) (image []byte, err error) {
 		if err != nil {
 			return
 		}
-		err = r.Error()
+		err = r.HasError()
 		if err != nil {
 			return
 		}
@@ -56,7 +56,7 @@ func GetAppCode(accessToken string, scene, page string, width int, autoColor boo
 		if err != nil {
 			return
 		}
-		err = r.Error()
+		err = r.HasError()
 		if err != nil {
 			return
 		}
@@ -88,7 +88,7 @@ func GetCategory(accessToken string) (categoryList []Category, err error) {
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}

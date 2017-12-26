@@ -2,9 +2,8 @@ package wxa
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_open/util"
-	"github.com/bysir-zl/bygo/wx_open"
-	"github.com/lunny/log"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 	"time"
 )
 
@@ -46,7 +45,7 @@ func GetMonthRetain(accessToken string, month string) (data MonthRetainRsp, err 
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -56,13 +55,13 @@ func GetMonthRetain(accessToken string, month string) (data MonthRetainRsp, err 
 
 type (
 	MonthVisit struct {
-		VisitUvNew      int `json:"visit_uv_new"`
-		StayTimeSession int `json:"stay_time_session"`
-		VisitDepth      int `json:"visit_depth"`
-		RefDate         string  `json:"ref_date"`
-		SessionCnt      int `json:"session_cnt"`
-		VisitPv         int `json:"visit_pv"`
-		VisitUv         int `json:"visit_uv"`
+		VisitUvNew      int    `json:"visit_uv_new"`
+		StayTimeSession int    `json:"stay_time_session"`
+		VisitDepth      int    `json:"visit_depth"`
+		RefDate         string `json:"ref_date"`
+		SessionCnt      int    `json:"session_cnt"`
+		VisitPv         int    `json:"visit_pv"`
+		VisitUv         int    `json:"visit_uv"`
 	}
 
 	MonthVisitRsp struct {
@@ -89,14 +88,13 @@ func GetMonthVisit(accessToken string, month string) (data MonthVisitRsp, err er
 	if err != nil {
 		return
 	}
-	log.Info(string(rsp))
 
 	r := MonthVisitRsp{}
 	err = json.Unmarshal(rsp, &r)
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}

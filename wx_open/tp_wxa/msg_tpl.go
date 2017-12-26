@@ -2,10 +2,10 @@ package tp_wxa
 
 import (
 	"fmt"
-	"github.com/bysir-zl/bygo/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"encoding/json"
 	"log"
-	"github.com/bysir-zl/bygo/wx_open"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 )
 
 var _ = log.Ldate
@@ -181,7 +181,7 @@ func AddWxTplToSelf(accessToken string, tplTitleId string, keywordIdList []int) 
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -232,7 +232,7 @@ func SendTpl(accessToken string, toUserOpenId string, tplId string, formId strin
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}

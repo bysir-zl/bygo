@@ -2,8 +2,8 @@ package tp_wxa
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_open/util"
-	"github.com/bysir-zl/bygo/wx_open"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 )
 
 type DomainRsp struct {
@@ -39,7 +39,7 @@ func ModifyDomain(accessToken string, action string, requestDomain, wsrequestdom
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}

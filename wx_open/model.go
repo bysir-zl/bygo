@@ -27,10 +27,22 @@ type WxResponse struct {
 	ErrMsg  string `json:"errmsg"`
 }
 
-func (p WxResponse) Error() (error) {
+type WxResponseErr struct {
+	ErrCode int    `json:"errcode"`
+	ErrMsg  string `json:"errmsg"`
+}
+
+func (p WxResponseErr) Error() string {
+	return fmt.Sprintf("code:%d msg:%s", p.ErrCode, p.ErrMsg)
+}
+
+func (p WxResponse) HasError() (error) {
 	if p.ErrCode == 0 {
 		return nil
 	}
 
-	return fmt.Errorf("code:%d msg:%s", p.ErrCode, p.ErrMsg)
+	return WxResponseErr{
+		ErrCode: p.ErrCode,
+		ErrMsg:  p.ErrMsg,
+	}
 }

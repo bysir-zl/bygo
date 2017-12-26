@@ -23,6 +23,8 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 	//defer conn.Close()
 	ch, err := p.publishConn.Channel()
 	if err != nil {
+		p.publishConn.Close()
+		p.publishConn = nil
 		return err
 	}
 	q, err := ch.QueueDeclare(
@@ -34,6 +36,8 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 		nil,   // arguments
 	)
 	if err != nil {
+		p.publishConn.Close()
+		p.publishConn = nil
 		return err
 	}
 	err = ch.Publish("", q.Name, false, false, amqp.Publishing{
@@ -41,6 +45,8 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 		Body:        body,
 	})
 	if err != nil {
+		p.publishConn.Close()
+		p.publishConn = nil
 		return err
 	}
 	return nil

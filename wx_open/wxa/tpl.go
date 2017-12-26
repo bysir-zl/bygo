@@ -2,7 +2,7 @@ package wxa
 
 import (
 	"fmt"
-	"github.com/bysir-zl/bygo/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"encoding/json"
 )
 

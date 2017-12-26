@@ -2,9 +2,9 @@ package tp_wxa
 
 import (
 	"encoding/json"
-	"github.com/bysir-zl/bygo/wx_open/util"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"fmt"
-	"github.com/bysir-zl/bygo/wx_open"
+	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 )
 
 // 代码管理
@@ -35,7 +35,7 @@ func CommitCode(accessToken string, templateId int64, extJson string, userVersio
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -58,7 +58,7 @@ func GetPage(accessToken string) (pages []string, err error) {
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -96,7 +96,7 @@ func SubmitAudit(accessToken string, auditItems []AuditItem) (auditid int64, err
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -123,7 +123,7 @@ func GetLatestAuditstatus(accessToken string) (r LatestAuditstatusRsp, err error
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -142,7 +142,7 @@ func Release(accessToken string) (err error) {
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
@@ -165,7 +165,7 @@ func ChangeVisitstatus(accessToken string, open bool) (err error) {
 	if err != nil {
 		return
 	}
-	err = r.Error()
+	err = r.HasError()
 	if err != nil {
 		return
 	}
