@@ -11,8 +11,8 @@ type BRedis struct {
 	prefix string
 }
 
-func NewRedis(ip string) *BRedis {
-	if ip == "" {
+func NewRedis(address string) *BRedis {
+	if address == "" {
 		return nil
 	}
 	var pool = &redis.Pool{
@@ -20,7 +20,7 @@ func NewRedis(ip string) *BRedis {
 		MaxActive:   12000, // max number of connections
 		IdleTimeout: 180 * time.Second,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", ip)
+			c, err := redis.Dial("tcp", address)
 			return c, err
 		},
 	}

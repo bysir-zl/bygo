@@ -4,7 +4,6 @@ import (
 	"os"
 	"github.com/bysir-zl/bygo/artisan"
 	"github.com/bysir-zl/bygo/log"
-	_ "github.com/bysir-zl/bygo/wx_open/third_party"
 )
 
 func main() {
@@ -33,6 +32,13 @@ func main() {
 		artisan.Swagger(path, out)
 	case "json2go":
 		err := artisan.Json2Go()
+		if err != nil {
+			log.ErrorT("bygo", err.Error())
+		} else {
+			log.InfoT("bygo", "gen go struct from clipboard success")
+		}
+	case "xml2go":
+		err := artisan.Xml2Go()
 		if err != nil {
 			log.ErrorT("bygo", err.Error())
 		} else {
