@@ -4,13 +4,13 @@ import (
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open/errs"
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"log"
 	"github.com/schollz/jsonstore"
 	"time"
 	"encoding/xml"
 	"sync"
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
+	"errors"
 )
 
 const (
@@ -65,7 +65,7 @@ func GetComponentAccessToken() (componentAccessToken string, err error) {
 
 	rsp, err := util.Post(URLComponentToken, reqData)
 	if err != nil {
-		err = errors.Wrap(err, "GetComponentAccessToken")
+		err = errors.New("GetComponentAccessToken err:" + err.Error())
 		return
 	}
 	var componentAccessTokenRsp ComponentAccessTokenRsp
@@ -114,6 +114,9 @@ func HandleComponentVerifyTicketReq(bs []byte) (ticket string, err error) {
 	ticket = t.ComponentVerifyTicket
 	if ticket != "" {
 		err = SaveVerifyTicket(ticket)
+		if err != nil {
+			err = errors.New("saveTicket err:" + err.Error())
+		}
 	}
 	return
 }
@@ -201,7 +204,7 @@ func RefreshAccessToken(authorizerAppid, refreshToken string) (authorizedInfo *A
 
 	rsp, err := util.Post(URLRefreshOtherAuthToken+componentAccessToken, reqData)
 	if err != nil {
-		err = errors.Wrap(err, "RefreshAccessToken")
+		err = errors.New("RefreshAccessToken err:" + err.Error())
 		return
 	}
 	var r AuthorizedInfoRsp
@@ -253,7 +256,7 @@ func GetAuthorizerToken(authorizationCode string) (authorizerTokenRsp *Authorize
 	}
 	rsp, err := util.Post(URLOtherAuthToken+componentAccessToken, reqData)
 	if err != nil {
-		err = errors.Wrap(err, "GetAuthorizerToken")
+		err = errors.New("GetAuthorizerToken err:" + err.Error())
 		return
 	}
 
@@ -298,7 +301,7 @@ func GetPreAuthCode() (preAuthCode string, err error) {
 	reqData, _ := json.Marshal(req)
 	rsp, err := util.Post(URLPreAuthCode+componentAccessToken, reqData)
 	if err != nil {
-		err = errors.Wrap(err, "GetPreAuthCode")
+		err = errors.New("GetPreAuthCode err:" + err.Error())
 		return
 	}
 	var preAuthCodeRsp PreAuthCodeRsp

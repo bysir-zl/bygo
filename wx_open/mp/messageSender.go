@@ -19,7 +19,7 @@ type MessageText struct {
 }
 
 type Response struct {
-	ErrCode int `json:"errcode"`
+	ErrCode int    `json:"errcode"`
 	ErrMsg  string `json:"errmsg"`
 }
 

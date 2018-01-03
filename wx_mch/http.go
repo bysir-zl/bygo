@@ -19,14 +19,14 @@ func getTLSConfig() (*tls.Config, error) {
 	}
 
 	// load cert
-	cert, err := tls.LoadX509KeyPair(CertPemPath, KeyPemPath)
+	cert, err := tls.LoadX509KeyPair(certPemPath, keyPemPath)
 	if err != nil {
 		log.Error("load wechat keys fail", err)
 		return nil, err
 	}
 
 	// load root ca
-	caData, err := ioutil.ReadFile(CAPemPath)
+	caData, err := ioutil.ReadFile(cAPemPath)
 	if err != nil {
 		log.Error("read wechat ca fail", err)
 		return nil, err
@@ -40,7 +40,6 @@ func getTLSConfig() (*tls.Config, error) {
 	}
 	return tlsConfig, nil
 }
-
 func SecurePost(url string, xmlContent []byte) ([]byte, error) {
 	tlsConfig, err := getTLSConfig()
 	if err != nil {

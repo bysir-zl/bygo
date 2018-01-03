@@ -19,6 +19,11 @@ type MessageReplyText struct {
 	Content string `xml:"Content"` // 消息内容
 }
 
+func (x *MessageReply) Byte() []byte {
+	bs, _ := xml.Marshal(x)
+	return bs
+}
+
 func (x *MessageReplyText) Byte() []byte {
 	bs, _ := xml.Marshal(x)
 	return bs

@@ -4,7 +4,6 @@ import (
 	"time"
 	"strings"
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
-	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open/mp"
 	"encoding/xml"
 )
@@ -21,8 +20,7 @@ func responseMock1(req wx_open.Message) (bs []byte, err error) {
 
 		Content: req.Event + "from_callback",
 	}
-
-	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
+	bs, err = EncodeMessageByte(rsp.Byte())
 	return
 }
 
@@ -37,8 +35,7 @@ func responseMock2(req wx_open.Message) (bs []byte, err error) {
 		},
 		Content: "TESTCOMPONENT_MSG_TYPE_TEXT_callback",
 	}
-
-	bs, err = util.Encrypt(Token, AesKey, AppId, rsp.Byte())
+	bs, err = EncodeMessageByte(rsp.Byte())
 	return
 }
 

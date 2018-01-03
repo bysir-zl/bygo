@@ -31,6 +31,12 @@ func DecodeMessageByte(msgSignature, timeStamp, nonce string, body []byte) (bs [
 	return
 }
 
+// 加密
+func EncodeMessageByte(body []byte) (bs []byte, err error) {
+	bs, err = util.Encrypt(Token, AesKey, AppId, body)
+	return
+}
+
 type (
 	// 初步解析body, 得到type
 	EventReq struct {
