@@ -3,12 +3,12 @@ package wx_mch
 import (
 	"encoding/xml"
 	"errors"
+	"github.com/bysir-zl/bygo/util/payment/core"
 )
 
 // 企业付款参数
 // https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2
 type TransfersParams struct {
-	NonceStr       string // 随机字符串，不长于32位
 	PartnerTradeNo string // 商户订单号，需保持唯一性 (只能是字母或者数字，不能包含有符号)
 	Openid         string // 商户appid下，某用户的openid
 	CheckName      string // NO_CHECK：不校验真实姓名 FORCE_CHECK：强校验真实姓名
@@ -25,7 +25,7 @@ const (
 
 type (
 	transfersReq struct {
-		XMLName        struct{} `xml:"xml" sign:"false"`              // root node name
+		XMLName        struct{} `xml:"xml" sign:"false"`             // root node name
 		MchAppid       string   `xml:"mch_appid" sign:"true"`        // 微信分配的账号ID（企业号corpid即为此appId）
 		Mchid          string   `xml:"mchid" sign:"true"`            // 微信支付分配的商户号
 		NonceStr       string   `xml:"nonce_str" sign:"true"`        // 随机字符串，不长于32位
@@ -55,7 +55,7 @@ type (
 
 func Transfers(p TransfersParams) (rsp TransfersRsp, err error) {
 	req := transfersReq{
-		NonceStr:       p.NonceStr,
+		NonceStr:       core.RandStr(),
 		PartnerTradeNo: p.PartnerTradeNo,
 		Openid:         p.Openid,
 		CheckName:      p.CheckName,
@@ -81,5 +81,8 @@ func Transfers(p TransfersParams) (rsp TransfersRsp, err error) {
 		return rsp, errors.New("xml Unmarshal err:" + err.Error())
 	}
 
+	if rsp.ResultCode != "SUCCESS" || rsp.ReturnCode != "SUCCESS" {
+		return rsp, errors.New(rsp.ResultCode + ":" + rsp.ReturnMsg)
+	}
 	return rsp, nil
 }

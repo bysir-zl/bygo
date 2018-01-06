@@ -11,7 +11,8 @@ import (
 // 签名
 func SignData(src interface{}, key string) (sign string) {
 	kv := wxParseSignFields(src)
-	s := kv.EncodeString()
+	kv.Sort()
+	s := kv.EncodeStringWithoutEscape()
 	if len(s) > 0 {
 		s += "&"
 	}
