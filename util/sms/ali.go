@@ -51,15 +51,15 @@ func (a *Ali) Send(tplCode string, signName string, phones string, data map[stri
 		"Version":       "2017-05-25",
 		"RegionId":      "cn-hangzhou",
 		"PhoneNumbers":  phones,
-		"SignName":      "阿里云短信测试专用",
+		"SignName":      signName,
 		"TemplateParam": string(bs),
 		"TemplateCode":  tplCode,
 		"OutId":         "123",
 	}
 	kv := util.ParseOrderKV(params)
 
-	signName, _ = a.Sign(kv)
-	kv.Add("Signature", signName)
+	sign, _ := a.Sign(kv)
+	kv.Add("Signature", sign)
 
 	code, rsp, err := http_util.Get(HostAliSms+ApiAliSms, kv, nil)
 	if err != nil {
