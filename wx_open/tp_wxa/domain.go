@@ -2,7 +2,7 @@ package tp_wxa
 
 import (
 	"encoding/json"
-	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
+	"github.com/bysir-zl/bygo/wx_open"
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open"
 )
 

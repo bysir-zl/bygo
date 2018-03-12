@@ -2,7 +2,7 @@ package tp
 
 import (
 	"git.coding.net/zzjz/wx_open.git/lib/wx_open/errs"
-	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
+	"github.com/bysir-zl/bygo/wx_open"
 	"encoding/json"
 	"log"
 	"github.com/schollz/jsonstore"

@@ -1,9 +1,9 @@
 package mp
 
 import (
-	"git.coding.net/zzjz/wx_open.git/lib/wx_open/util"
 	"encoding/json"
 	"fmt"
+	"github.com/bysir-zl/bygo/wx_open/util"
 )
 
 type Message struct {
