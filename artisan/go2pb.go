@@ -41,8 +41,9 @@ func go2pb(in string) (out string, err error) {
 	result := strings.Split(in, "\n")
 
 	typesMap := map[string]string{
-		"int":  "int32",
-		"int8": "int32",
+		"int":               "int32",
+		"int8":              "int32",
+		"map[string]string": "map<string, string>",
 	}
 
 	message := "message "
