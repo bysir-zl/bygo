@@ -44,6 +44,13 @@ func main() {
 		} else {
 			log.InfoT("bygo", "gen go struct from clipboard success")
 		}
+	case "go2pb":
+		err := artisan.Go2Pb()
+		if err != nil {
+			log.ErrorT("bygo", err.Error())
+		} else {
+			log.InfoT("bygo", "gen pb struct from clipboard success")
+		}
 	}
 
 }
