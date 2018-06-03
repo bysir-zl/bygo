@@ -62,6 +62,10 @@ func go2pb(in string) (out string, err error) {
 		if len(v) < 2 {
 			continue
 		}
+		// 跳过注释
+		if v[0][0] == '/' {
+			continue
+		}
 
 		if v[0] == "type" {
 			message += v[1] + " {\n"
