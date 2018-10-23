@@ -23,6 +23,13 @@ func NewRedis(address string) *BRedis {
 			c, err := redis.Dial("tcp", address)
 			return c, err
 		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			if time.Since(t) < 60 {
+				return nil
+			}
+			_, err := c.Do("PING")
+			return err
+		},
 	}
 
 	cache := BRedis{
