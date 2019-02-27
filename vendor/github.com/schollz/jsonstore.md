@@ -1,21 +1,22 @@
-# jsonstore  :convenience_store:
+# README
+
+## jsonstore  :convenience\_store:
 
 [![GoDoc](https://godoc.org/github.com/schollz/jsonstore?status.svg)](https://godoc.org/github.com/schollz/jsonstore)
 
-*JSONStore* is a Go-library for a simple thread-safe in-memory JSON key-store with persistent backend. It's made for those times where you don't need a RDBMS like [MySQL](https://www.mysql.com/), or a NoSQL like [MongoDB](https://www.mongodb.com/) - basically when you just need a simple keystore. A really simple keystore. *JSONStore* is used in those times you don't need a distributed keystore like [etcd](https://coreos.com/etcd/docs/latest/), or
-a remote keystore [Redis](https://redis.io/) or a local keystore like [Bolt](https://github.com/boltdb/bolt). Its really for those times where you just need a JSON file.
+_JSONStore_ is a Go-library for a simple thread-safe in-memory JSON key-store with persistent backend. It's made for those times where you don't need a RDBMS like [MySQL](https://www.mysql.com/), or a NoSQL like [MongoDB](https://www.mongodb.com/) - basically when you just need a simple keystore. A really simple keystore. _JSONStore_ is used in those times you don't need a distributed keystore like [etcd](https://coreos.com/etcd/docs/latest/), or a remote keystore [Redis](https://redis.io/) or a local keystore like [Bolt](https://github.com/boltdb/bolt). Its really for those times where you just need a JSON file.
 
-## Usage
+### Usage
 
 First, install the library using:
 
-```
+```text
 go get -u -v github.com/schollz/jsonstore
 ```
 
 Then you can add it to your program. Check out the examples, or see below for basic usage:
 
-```golang
+```go
 ks := new(jsonstore.JSONStore)
 
 // set a key to any object you want
@@ -57,16 +58,15 @@ $ zcat humans.json.gz
 }
 ```
 
-
 **JSONStore** in the wild:
 
-- [schollz/urls](https://github.com/schollz/urls) - URL shortening
+* [schollz/urls](https://github.com/schollz/urls) - URL shortening
 
-# Dev
+## Dev
 
-Benchmark against using Redis and BoltDB as KeyStores using Go1.8 (Intel i5-4310U CPU @ 2.00GHz). Take away is that setting/getting is faster in *JSONStore* (because its just a map), but opening is much slower (because its a file that is read into memory). So don't use this if you have to store 1,000,000+ things!
+Benchmark against using Redis and BoltDB as KeyStores using Go1.8 \(Intel i5-4310U CPU @ 2.00GHz\). Take away is that setting/getting is faster in _JSONStore_ \(because its just a map\), but opening is much slower \(because its a file that is read into memory\). So don't use this if you have to store 1,000,000+ things!
 
-```
+```text
 $ go test -bench=. tests/redis/* > redis.txt
 $ go test -bench=. tests/bolt/* > bolt.txt
 $ go test -bench=. > jsonstore.txt
@@ -84,6 +84,7 @@ BenchmarkOpen100-4       6221          148035        +2279.60%
 BenchmarkOpen10000-4     4951          19722376      +398251.36%
 ```
 
-# License
+## License
 
 MIT
+
