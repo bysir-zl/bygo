@@ -1,6 +1,6 @@
 # bygo
 
-{% api-method method="get" host="https://123.com" path="/v1/userf" %}
+{% api-method method="get" host="https://123.com" path="/v1/user" %}
 {% api-method-summary %}
 获取用户信息
 {% endapi-method-summary %}
