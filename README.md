@@ -1,9 +1,5 @@
 # bygo
 
-golang util
-
-1 2
-
 {% api-method method="get" host="http:/a.com" path="/user" %}
 {% api-method-summary %}
 获取用户信息
