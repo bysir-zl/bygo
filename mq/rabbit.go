@@ -29,7 +29,7 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 	}
 	q, err := ch.QueueDeclare(
 		queue, // name
-		true, // durable
+		true,  // durable
 		false, // delete when unused
 		false, // exclusive
 		false, // no-wait
@@ -56,6 +56,8 @@ type Handler func(amqp.Delivery) error
 
 // 接收消息, 如果断线会在5s后重试
 func (p *Rabbit) Receive(queue string, h Handler) (error) {
+	var flag = false
+	var conn *amqp.Connection
 	conn, err := amqp.Dial(p.url)
 	if err != nil {
 		return err
@@ -64,11 +66,14 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 
 	go func() {
 		for {
-			conn, err := amqp.Dial(p.url)
-			if err != nil {
-				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
-				time.Sleep(5 * time.Second)
-				continue
+			if !flag {
+				conn, err = amqp.Dial(p.url)
+				if err != nil {
+					log.Printf("[rabbit] receive error: %v, try again after 5s", err)
+					time.Sleep(5 * time.Second)
+					continue
+				}
+				flag = true
 			}
 			ch, err := conn.Channel()
 			if err != nil {
@@ -79,7 +84,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			}
 			q, err := ch.QueueDeclare(
 				queue, // name
-				true, // durable
+				true,  // durable
 				false, // delete when unused
 				false, // exclusive
 				false, // no-wait
